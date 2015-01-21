@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @class
 	 * The Table control provides a set of sophisticated and comfort functions for table design. For example, you can make settings for the number of visible rows. The first visible row can be explicitly set. For the selection of rows, a Multi, a Single, and a None mode are available.
 	 * @extends sap.ui.core.Control
-	 * @version 1.26.3
+	 * @version 1.26.4
 	 *
 	 * @constructor
 	 * @public
@@ -88,11 +88,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			 * Flag whether the controls of the Table are editable or not (currently this only controls the background color!)
 			 */
 			editable : {type : "boolean", group : "Behavior", defaultValue : true},
-
-			/**
-			 * Invisible controls are not rendered.
-			 */
-			visible : {type : "boolean", group : "Appearance", defaultValue : true},
 
 			/**
 			 * Flag whether to use the scroll mode or paging mode. If the Paginator mode is used it will require the sap.ui.commons library!
@@ -2810,7 +2805,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @private
 	 */
 	Table.prototype._onColumnMoveStart = function(oColumn) {
-
+		this.$().addClass("sapUiTableDragDrop");
+		
 		this._disableTextSelection();
 
 		var $col = oColumn.$();
@@ -2993,6 +2989,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @private
 	 */
 	Table.prototype._onColumnMoved = function(oEvent) {
+		this.$().removeClass("sapUiTableDragDrop");
 
 		var iDnDColIndex = parseInt(this._$colGhost.attr("data-sap-ui-colindex"), 10);
 		var oDnDCol = this.getColumns()[iDnDColIndex];
@@ -3056,8 +3053,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 				"opacity": ""
 			});
 		}
-		delete this._iNewColPos;
 
+		// Re-apply focus
+		if (sap.ui.Device.browser.msie) {
+			setTimeout(function() {
+				var iOldFocusedIndex = this._oItemNavigation.getFocusedIndex();
+				this._oItemNavigation.focusItem(0, oEvent);
+				this._oItemNavigation.focusItem(iOldFocusedIndex, oEvent);
+			}.bind(this), 0);
+		}
+
+		delete this._iNewColPos;
 	};
 
 	/**
@@ -4917,22 +4923,38 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		}
 	};
 
+	/**
+	 * Calculates the maximum rows to display within the table.
+	 */
 	Table.prototype._calculateRowsToDisplay = function(iHeight) {
+		var iMinRowCount = this.getMinAutoRowCount() || 5;
+
+		// If no iHeight is passed, return minimum row count.
+		if (!iHeight) {
+			return iMinRowCount;
+		}
 		var $this = this.$();
 		var iControlHeight = this.$().outerHeight();
 		var iContentHeight = $this.find('.sapUiTableCCnt').outerHeight();
-		var iMinRowCount = this.getMinAutoRowCount() || 5;
 
-		var iRowHeight = $this.find(".sapUiTableCtrl tr[data-sap-ui-rowindex='0']").outerHeight();
-		//No rows displayed when visible row count == 0, now row height can be determined, therefore we set standard row height
-		if (iRowHeight == null) {
+		// Determine default row height.
+		var iRowHeight = jQuery("tr:not(.sapUiAnalyticalTableSum) .sapUiTableCell").parent().outerHeight();
+
+		// No rows displayed when visible row count == 0, no row height can be determined, therefore we set standard row height
+		if (!iRowHeight) {
 			var sRowHeightParamName = "sap.ui.table.Table:sapUiTableRowHeight";
 			if ($this.parents().hasClass('sapUiSizeCompact')) {
 				sRowHeightParamName = "sap.ui.table.Table:sapUiTableCompactRowHeight";
 			}
 			iRowHeight = parseInt(Parameters.get(sRowHeightParamName), 10);
 		}
-		var iAvailableSpace = iHeight - (iControlHeight - iContentHeight);
+
+		// Maximum height of the table is the height of the window minus two row height, reserved for header and footer.
+		var iMaxHeight = jQuery(window).height() - 2 * iRowHeight;
+		var iCalculatedSpace = iHeight - (iControlHeight - iContentHeight);
+
+		// Make sure that table does not grow to infinity
+		var iAvailableSpace = Math.min(iCalculatedSpace, iMaxHeight);
 
 		// the last content row height is iRowHeight - 1, therefore + 1 in the formula below:
 		return Math.max(iMinRowCount, Math.floor((iAvailableSpace + 1) / iRowHeight));

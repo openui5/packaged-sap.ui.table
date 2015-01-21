@@ -358,6 +358,19 @@ html[data-sap-ui-browser="ie8"] .sapUiTable {
   text-align: center;
   padding: 2px;
 }
+.sapUiTableDragDrop {
+  cursor: move;
+}
+.sapUiTableDragDrop .sapUiTableCCnt,
+.sapUiTableDragDrop .sapUiTableColRsz {
+  pointer-events: none;
+}
+.sapUiTableDragDrop .sapUiTableCol {
+  cursor: move;
+}
+.sapUiTableDragDrop .sapUiTableCol * {
+  cursor: move;
+}
 /*******************************************************************************
  * DND & RESIZE ELEMENTS
  ******************************************************************************/
@@ -458,6 +471,10 @@ html[data-sap-ui-browser="ie8"] .sapUiTable {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* Keep sure that sap.m.Link is vertically aligned inside a table cell */
+.sapUiTableCell .sapUiLnk {
+  vertical-align: middle;
 }
 .sapUiTableCell > .sapUiImg {
   margin-top: 1px;
@@ -1001,4 +1018,8 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
   left: .0625rem;
   bottom: .0625rem;
   right: .0625rem;
+}
+/* Keep sure that sap.m.Link is vertically aligned inside a table cell */
+.sapUiTableCell .sapUiLnk {
+  vertical-align: middle;
 }
