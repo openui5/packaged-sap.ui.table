@@ -644,6 +644,20 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 /* modal, bubble, bottom, top */
 /* modal, bubble, bottom, top */
 /* Toolbar Separator */
+/* ------------------------------------------------------------------- */
+/* Generic Mapping: not for usage in standard control development !!!! */
+/* ------------------------------------------------------------------- */
+/* Semantic Text Colors */
+/* Semantic Element Colors */
+/* Semantic Backgrounds */
+/* Background Brand */
+/* Text Colors */
+/* Border Colors */
+/* @sapUiLightBorder: @sapHCStandardFG; */
+/* @sapUiExtraLightBorder: @sapHCStandardFG; */
+/* Accent */
+/* Backgrounds Header/Footer */
+/* Background */
 /* ============================================ */
 /* CSS for control sap.ui.commons/Table.control */
 /* SAP-HCB Theme                                */
