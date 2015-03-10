@@ -538,7 +538,7 @@ html[data-sap-ui-browser="ie8"] .sapUiTable {
   text-align: center;
   vertical-align: middle;
 }
-.sapUiSizeCompact .sapUiTableGroupIcon::before {
+.sapUiTableGroupIcon {
   line-height: 28px;
 }
 .sapUiSizeCompact .sapUiTableGroupIcon.sapUiTableGroupIconOpen::before,
@@ -552,28 +552,27 @@ html[data-sap-ui-browser="ie8"] .sapUiTable {
 .sapUiTableRowHdr.sapUiTableGroupHeader {
   border-left: none;
 }
-.sapUiSizeCompact .sapUiTableRowHdr.sapUiTableGroupHeader {
+.sapUiTableRowHdr.sapUiTableGroupHeader {
   position: relative;
 }
 .sapUiTableRowHdr.sapUiTableGroupHeader > div {
-  position: absolute;
   right: 3px;
   margin-top: 5px;
   white-space: nowrap;
   z-index: 1;
-}
-.sapUiSizeCompact .sapUiTableRowHdr.sapUiTableGroupHeader > div {
+  margin-top: 0;
   position: absolute;
   top: 0;
   bottom: 0;
-  padding-left: 15px;
   font-weight: normal;
-  margin-top: 0;
-  right: 0;
+  padding-left: 15px;
   color: #ffffff;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 60px;
+}
+.sapUiSizeCompact .sapUiTableRowHdr.sapUiTableGroupHeader > div {
+  right: 0;
 }
 .sapUiSizeCompact .sapUiTableTr > td {
   padding-top: 0px;
