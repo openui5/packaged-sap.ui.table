@@ -569,7 +569,7 @@ html[data-sap-ui-browser="ie8"] .sapUiTable {
 .sapUiTableRowHdr.sapUiTableGroupHeader {
   border-right: none;
 }
-.sapUiSizeCompact .sapUiTableRowHdr.sapUiTableGroupHeader {
+.sapUiTableRowHdr.sapUiTableGroupHeader {
   position: relative;
 }
 .sapUiTableRowHdr.sapUiTableGroupHeader > div {

@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable Control.
 	 * @extends sap.ui.table.Table
-	 * @version 1.28.0
+	 * @version 1.28.1
 	 *
 	 * @constructor
 	 * @public
@@ -149,7 +149,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	TreeTable.prototype.refreshRows = function(sReason) {
 		this._bBusyIndicatorAllowed = true;
 		var oBinding = this.getBinding("rows");
-		if (oBinding && !oBinding.hasListeners("selectionChanged")) {
+		if (oBinding && this.isTreeBinding("rows") && !oBinding.hasListeners("selectionChanged")) {
 			oBinding.attachSelectionChanged(this._onSelectionChanged, this);
 		}
 		

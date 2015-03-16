@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 	 * @class
 	 * Table which handles analytical OData backends
 	 * @extends sap.ui.table.Table
-	 * @version 1.28.0
+	 * @version 1.28.1
 	 *
 	 * @constructor
 	 * @public
@@ -458,7 +458,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 				var iRowIndex = this.getFirstVisibleRow() + parseInt($TargetDIV.attr("data-sap-ui-rowindex"), 10);
 				var oBinding = this.getBinding("rows");
 				oBinding.toggleIndex(iRowIndex);
-				this.updateRows();
 				return;
 			}
 			if (Table.prototype.onsapselect) {
@@ -474,7 +473,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 			var iRowIndex = this.getFirstVisibleRow() + parseInt($parent.attr("data-sap-ui-rowindex"), 10);
 			var oBinding = this.getBinding("rows");
 			oBinding.toggleIndex(iRowIndex);
-			this.updateRows();
 		}
 
 		oEvent.preventDefault();
@@ -675,7 +673,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 				select: function() {
 					that.getBinding("rows").collapseAll(that._iGroupedLevel);
 					that._oSelection.clearSelection();
-					that.updateRows();
 				}
 			}));
 			this._oGroupHeaderMenu.addItem(new sap.ui.unified.MenuItem({
@@ -683,7 +680,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 				select: function() {
 					that.getBinding("rows").collapseAll();
 					that._oSelection.clearSelection();
-					that.updateRows();
 				}
 			}));
 		}
@@ -712,7 +708,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 		if (oBinding) {
 			var oContext = this.getContextByIndex(iRowIndex);
 			oBinding.expand(oContext);
-			this.updateRows();
 		}
 	};
 
@@ -721,7 +716,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 		if (oBinding) {
 			var oContext = this.getContextByIndex(iRowIndex);
 			oBinding.collapse(oContext);
-			this.updateRows();
 		}
 	};
 
