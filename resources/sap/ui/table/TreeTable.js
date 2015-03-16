@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable Control.
 	 * @extends sap.ui.table.Table
-	 * @version 1.28.1
+	 * @version 1.28.2
 	 *
 	 * @constructor
 	 * @public
@@ -896,6 +896,8 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @returns {TreeTable}
 	 */
 	TreeTable.prototype.setRootLevel = function(iRootLevel) {
+		this.setFirstVisibleRow(0);
+		
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
 			jQuery.sap.assert(oBinding.setRootLevel, "rootLevel is not supported by the used binding");
@@ -904,6 +906,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 			}
 		}
 		this.setProperty("rootLevel", iRootLevel, true);
+		
 		return this;
 	};
 

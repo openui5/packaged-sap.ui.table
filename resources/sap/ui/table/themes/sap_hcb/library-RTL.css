@@ -189,8 +189,10 @@ html[data-sap-ui-browser="ie8"] .sapUiTable {
 /* COL HEADER */
 .sapUiTableColHdrCnt {
   display: none;
-  min-height: 32px;
   background-color: #000000;
+}
+.sapUiTableColHdrCnt {
+  min-height: 32px;
 }
 .sapUiTableCHdr .sapUiTableColHdrCnt {
   display: block;
@@ -225,7 +227,8 @@ html[data-sap-ui-browser="ie8"] .sapUiTable {
   position: relative;
   vertical-align: top;
 }
-.sapUiTableColCell {
+.sapUiTableColCell,
+.sapUiTableColRowHdrIco {
   text-overflow: ellipsis;
   overflow: hidden;
   padding: 0 8px;
@@ -431,6 +434,49 @@ html[data-sap-ui-browser="ie8"] .sapUiTable {
 }
 .sapUiTableVScr .sapUiTableVSb {
   display: block;
+}
+/* Cozy Mode when sap.m. library is loaded */
+.sapUiTableM.sapUiTableCozy {
+  /* Header */
+  /* Footer */
+  /* Row */
+  /* Cell Adjustments */
+  /* Group Header Adjustments */
+  /* Footer Adjustments */
+}
+.sapUiTableM.sapUiTableCozy > .sapUiTableCnt > .sapUiTableColHdrCnt {
+  min-height: 3rem;
+}
+.sapUiTableM.sapUiTableCozy > .sapUiTableFtr {
+  height: 3rem;
+  line-height: 3rem;
+  padding-top: 0;
+}
+.sapUiTableM.sapUiTableCozy .sapUiTableCtrl tr {
+  height: 3rem;
+}
+.sapUiTableM.sapUiTableCozy .sapUiTableColCell,
+.sapUiTableM.sapUiTableCozy .sapUiTableColRowHdrIco {
+  position: absolute;
+  display: block;
+  right: 0;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+}
+.sapUiTableM.sapUiTableCozy .sapUiTableColIcons {
+  padding-top: 0px;
+}
+.sapUiTableM.sapUiTableCozy div.sapUiTableGroupHeader div.sapUiTableGroupIcon {
+  height: 3rem;
+  line-height: 3rem;
+  background-color: transparent;
+}
+.sapUiTableM.sapUiTableCozy .sapUiTableFtr > .sapMLabel {
+  height: 3rem;
+  line-height: 3rem;
 }
 /*******************************************************************************
  * HORIZONTAL SCROLLBAR
@@ -783,7 +829,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
   padding: 0;
   margin-bottom: 2px;
 }
-.sapUiTableHdrTitle {
+.sapUiTable .sapUiTableHdrTitle {
   font-size: 18px;
   height: 100%;
 }

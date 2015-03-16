@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 	 * @class
 	 * Table which handles analytical OData backends
 	 * @extends sap.ui.table.Table
-	 * @version 1.28.1
+	 * @version 1.28.2
 	 *
 	 * @constructor
 	 * @public
@@ -706,24 +706,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 	AnalyticalTable.prototype.expand = function(iRowIndex) {
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
-			var oContext = this.getContextByIndex(iRowIndex);
-			oBinding.expand(oContext);
+			oBinding.expand(iRowIndex);
 		}
 	};
 
 	AnalyticalTable.prototype.collapse = function(iRowIndex) {
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
-			var oContext = this.getContextByIndex(iRowIndex);
-			oBinding.collapse(oContext);
+			oBinding.collapse(iRowIndex);
 		}
 	};
 
 	AnalyticalTable.prototype.isExpanded = function(iRowIndex) {
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
-			var oContext = this.getContextByIndex(iRowIndex);
-			return oBinding.isExpanded(oContext);
+			return oBinding.isExpanded(iRowIndex);
 		}
 		return false;
 	};
@@ -1023,6 +1020,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 		}
 	};
 
+	AnalyticalTable.prototype._isRowSelectable = function(iRowIndex) {
+		return !this.getBinding("rows").indexHasChildren(iRowIndex);
+	};
 
 	return AnalyticalTable;
 

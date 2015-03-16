@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @class
 	 * The Table control provides a set of sophisticated and comfort functions for table design. For example, you can make settings for the number of visible rows. The first visible row can be explicitly set. For the selection of rows, a Multi, a Single, and a None mode are available.
 	 * @extends sap.ui.core.Control
-	 * @version 1.28.1
+	 * @version 1.28.2
 	 *
 	 * @constructor
 	 * @public
@@ -614,6 +614,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 
 		var $this = this.$();
 
+		if (!$this.closest('.sapUiSizeCompact,.sapUiSizeCondensed').length) {
+			$this.addClass("sapUiTableCozy");
+
+			if (sap.ui.Device.system.tablet) {
+				$this.addClass("sapUiTableTouch");
+			}
+		}
+
 		this._renderOverlay();
 		this._updateVSb(true);
 		this._updateTableContent();
@@ -641,7 +649,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			this._determineVisibleCols();
 			this._bDetermineVisibleCols = false;
 		}
-
 	};
 
 	Table.prototype._renderOverlay = function() {
@@ -858,7 +865,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 
 		// initialization of item navigation for the Table control
 		if (!this._oItemNavigation) {
-			this._iLastSelectedDataRow = 1;
+			this._iLastSelectedDataRow = this._getHeaderRowCount();
 			this._oItemNavigation = new ItemNavigation();
 			this._oItemNavigation.setTableMode(true);
 			this._oItemNavigation.attachEvent(ItemNavigation.Events.BeforeFocus, function(oEvent) {
@@ -1214,7 +1221,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	Table.prototype.autoResizeColumn = function(iColId) {
 		var oCol = this.getColumns()[iColId];
 		this._iColumnResizeStart = null;
-		oCol._iNewWidth = this._calculateAutomaticColumnWidth(iColId);
+		var iNewWidth = this._calculateAutomaticColumnWidth(iColId);
+		if (iNewWidth == null) {
+			return;
+		}
+
+		oCol._iNewWidth = iNewWidth;
 		this._oCalcColumnWidths[iColId] = oCol._iNewWidth;
 		this._onColumnResized(null, iColId);
 	};
@@ -1491,7 +1503,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 				$sapUiTableHSb.css('padding-left', iScrollPadding + 'px');
 			}
 
-			this._oHSb.setContentSize(iColsWidth - iScrollPadding + "px");
+			this._oHSb.setContentSize(iColsWidth + "px");
 
 			if (this._oHSb.getDomRef()) {
 				this._oHSb.rerender();
@@ -1987,7 +1999,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @private
 	 */
 	Table.prototype._getHeaderRowCount = function() {
-		if (!this._useMultiHeader()) {
+		if (!this.getColumnHeaderVisible()) {
+			return 0;
+		} else if (!this._useMultiHeader()) {
 			return 1;
 		}
 		var iHeaderRows = 0;
@@ -2784,6 +2798,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	// ROW EVENT HANDLING
 	// =============================================================================
 
+	Table.prototype._isRowSelectable = function(iRowIndex) {
+		return true;
+	};
+
 	/**
 	 * handles the row selection (depending on the mode)
 	 * @private
@@ -2807,9 +2825,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		}
 
 		// Make sure that group headers, which represents a tree node in AnalyticalTable, are not selectable.
-		if (oBinding.getContextInfo && 
-			this._aGroupedColumns.length > 0 && 
-			this._aGroupedColumns.length !== oBinding.getContextInfo(iRowIndex).level) {
+		if (!this._isRowSelectable(iRowIndex)) {
 			return;
 		}
 
@@ -2875,7 +2891,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @private
 	 */
 	Table.prototype._onColumnSelect = function(oColumn) {
-
 		// forward the event
 		var bExecuteDefault = this.fireColumnSelect({
 			column: oColumn
@@ -5138,7 +5153,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		var iContentHeight = $this.find('.sapUiTableCCnt').outerHeight();
 
 		// Determine default row height.
-		var iRowHeight = jQuery("tr:not(.sapUiAnalyticalTableSum) .sapUiTableCell").parent().outerHeight();
+		var iRowHeight = $this.find("tr:not(.sapUiAnalyticalTableSum) > td").outerHeight();
 
 		// No rows displayed when visible row count == 0, no row height can be determined, therefore we set standard row height
 		if (!iRowHeight) {
@@ -5278,6 +5293,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		var $cols = $this.find('td[headers=\"' + this.getId() + '_col' + iColIndex + '\"]').children("div");
 		var oColumns = this.getColumns();
 		var oCol = oColumns[iColIndex];
+		if (!oCol) {
+			return null;
+		}
 		var aHeaderSpan = oCol.getHeaderSpan();
 		var oColLabel = oCol.getLabel();
 		var that = this;
@@ -5446,6 +5464,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		} else {
 			this.setBusy(false);
 		}
+	};
+
+	Table.prototype.setColumnHeaderVisible = function(bColumnHeaderVisible) {
+		this.setProperty("columnHeaderVisible", bColumnHeaderVisible);
+		// Adapt the item navigation. Since the HeaderRowCount changed, also the lastSelectedDataRow changes.
+		this._iLastSelectedDataRow = this._getHeaderRowCount();
+
 	};
 
 	return Table;
