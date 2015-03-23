@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @class
 	 * The Table control provides a set of sophisticated and comfort functions for table design. For example, you can make settings for the number of visible rows. The first visible row can be explicitly set. For the selection of rows, a Multi, a Single, and a None mode are available.
 	 * @extends sap.ui.core.Control
-	 * @version 1.26.8
+	 * @version 1.26.9
 	 *
 	 * @constructor
 	 * @public
@@ -682,6 +682,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 				var $row = oRow.$();
 				var $fixedRow = oRow.$("fixed");
 				var $rowHdr = that.$().find("div[data-sap-ui-rowindex='" + $row.attr("data-sap-ui-rowindex") + "']");
+
+				// update row header tooltip
+				if (oRow.getBindingContext()) {
+					$rowHdr.attr("title", that._oResBundle.getText("TBL_ROW_SELECT"));
+				} else {
+					$rowHdr.attr("title", "");
+				}
 
 				if (iFixedTopRows > 0) {
 					var bIsTopRow = iIndex < iFixedTopRows;
