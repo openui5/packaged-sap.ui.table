@@ -748,7 +748,6 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
   border-bottom: 0.188rem solid #ffffff;
 }
 .sapUiTableColHdrCnt > .sapUiTableSelAllEnabled,
-.sapUiTableColHdrScr > .sapUiTableColHdr > .sapUiTableCol,
 .sapUiTableCell > .sapUiTv,
 .sapUiTableCell .sapUiTfComboIcon,
 .sapUiTableCell > .sapUiTfStd,
@@ -1008,7 +1007,10 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
   font-size: 14px;
   color: #ffffff;
 }
-.sapUiTableTr > td:focus {
+.sapUiTableTr > td:focus,
+.sapUiTableRowHdrScr > .sapUiTableRowHdr:focus,
+.sapUiTableColHdr *:focus,
+.sapUiTableColRowHdr:focus {
   outline: 0.125rem dotted #ffffff;
   outline-offset: -0.125rem;
 }
