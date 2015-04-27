@@ -431,7 +431,7 @@ html[data-sap-ui-browser="ie8"] .sapUiTable {
   display: block;
 }
 /* Cozy Mode when sap.m. library is loaded */
-.sapUiTableM.sapUiTableCozy {
+.sapUiSizeCozy .sapUiTable {
   /* Header */
   /* Footer */
   /* Row */
@@ -439,19 +439,19 @@ html[data-sap-ui-browser="ie8"] .sapUiTable {
   /* Group Header Adjustments */
   /* Footer Adjustments */
 }
-.sapUiTableM.sapUiTableCozy > .sapUiTableCnt > .sapUiTableColHdrCnt {
+.sapUiSizeCozy .sapUiTable > .sapUiTableCnt > .sapUiTableColHdrCnt {
   min-height: 3rem;
 }
-.sapUiTableM.sapUiTableCozy > .sapUiTableFtr {
+.sapUiSizeCozy .sapUiTable > .sapUiTableFtr {
   height: 3rem;
   line-height: 3rem;
   padding-top: 0;
 }
-.sapUiTableM.sapUiTableCozy .sapUiTableCtrl tr {
+.sapUiSizeCozy .sapUiTable .sapUiTableCtrl tr {
   height: 3rem;
 }
-.sapUiTableM.sapUiTableCozy .sapUiTableColCell,
-.sapUiTableM.sapUiTableCozy .sapUiTableColRowHdrIco {
+.sapUiSizeCozy .sapUiTable .sapUiTableColCell,
+.sapUiSizeCozy .sapUiTable .sapUiTableColRowHdrIco {
   position: absolute;
   display: block;
   left: 0;
@@ -461,15 +461,15 @@ html[data-sap-ui-browser="ie8"] .sapUiTable {
   -webkit-transform: translateY(-50%);
   -ms-transform: translateY(-50%);
 }
-.sapUiTableM.sapUiTableCozy .sapUiTableColIcons {
+.sapUiSizeCozy .sapUiTable .sapUiTableColIcons {
   padding-top: 0px;
 }
-.sapUiTableM.sapUiTableCozy div.sapUiTableGroupHeader div.sapUiTableGroupIcon {
+.sapUiSizeCozy .sapUiTable div.sapUiTableGroupHeader div.sapUiTableGroupIcon {
   height: 3rem;
   line-height: 3rem;
   background-color: transparent;
 }
-.sapUiTableM.sapUiTableCozy .sapUiTableFtr > .sapMLabel {
+.sapUiSizeCozy .sapUiTable .sapUiTableFtr > .sapMLabel {
   height: 3rem;
   line-height: 3rem;
 }

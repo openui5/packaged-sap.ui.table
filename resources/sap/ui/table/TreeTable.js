@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable Control.
 	 * @extends sap.ui.table.Table
-	 * @version 1.28.4
+	 * @version 1.28.5
 	 *
 	 * @constructor
 	 * @public
@@ -377,6 +377,10 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 							}
 						});
 						this._aSelectedContexts = undefined;
+					},
+					attachSelectionChanged: function() {
+						// for compatibility reasons (OData Tree Binding)
+						return undefined;
 					},
 					attachSort: function() {},
 					detachSort: function() {}
@@ -821,10 +825,12 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		var oBinding = this.getBinding("rows");
 		if (oBinding.selectAll) {
 			oBinding.selectAll();
+			this.$("selall").attr('title',this._oResBundle.getText("TBL_DESELECT_ALL")).removeClass("sapUiTableSelAll");
 		} else {
 			//otherwise fallback on the tables own function
 			Table.prototype.selectAll.call(this);
 		}
+
 		return this;
 	};
 	
@@ -856,11 +862,13 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 */
 	TreeTable.prototype.clearSelection = function () {
 		var oBinding = this.getBinding("rows");
+		
 		if (oBinding && oBinding.clearSelection) {
 			oBinding.clearSelection();
 		} else {
 			Table.prototype.clearSelection.call(this);
 		}
+		
 		return this;
 	};
 	

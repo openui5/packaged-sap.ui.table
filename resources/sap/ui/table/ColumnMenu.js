@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 	 * @class
 	 * The column menu provides all common actions that can be performed on a column.
 	 * @extends sap.ui.unified.Menu
-	 * @version 1.28.4
+	 * @version 1.28.5
 	 *
 	 * @constructor
 	 * @public
@@ -148,12 +148,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 		// put the focus back into the column header after the 
 		// popup is being closed.
 		var that = this;
-	
+
 		if (!sap.ui.Device.support.touch) {
 			this.getPopup().attachClosed(function(oEvent) {
 				that._iPopupClosedTimeoutId = window.setTimeout(function() {
 					if (that._oColumn) {
-						that._oColumn.focus();
+						if (that._lastFocusedDomRef) {
+							that._lastFocusedDomRef.focus();
+						} else {
+							that._oColumn.focus();
+						}
 					}
 				}, 0);
 			});
@@ -174,6 +178,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 		}
 	
 		if (this.getItems().length > 0) {
+			this._lastFocusedDomRef = arguments[4];
 			Menu.prototype.open.apply(this, arguments);
 		}
 	};

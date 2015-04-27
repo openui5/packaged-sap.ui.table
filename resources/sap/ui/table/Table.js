@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @class
 	 * The Table control provides a set of sophisticated and comfort functions for table design. For example, you can make settings for the number of visible rows. The first visible row can be explicitly set. For the selection of rows, a Multi, a Single, and a None mode are available.
 	 * @extends sap.ui.core.Control
-	 * @version 1.28.4
+	 * @version 1.28.5
 	 *
 	 * @constructor
 	 * @public
@@ -613,13 +613,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		this._bOnAfterRendering = true;
 
 		var $this = this.$();
-
-		if (!$this.closest('.sapUiSizeCompact,.sapUiSizeCondensed').length) {
-			$this.addClass("sapUiTableCozy");
-
-			if (sap.ui.Device.system.tablet) {
-				$this.addClass("sapUiTableTouch");
-			}
+		
+		if (sap.ui.Device.system.tablet) {
+			$this.addClass("sapUiTableTouch");
 		}
 
 		this._renderOverlay();
@@ -948,7 +944,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		if (typeof (vTitle) === "string" || vTitle instanceof String) {
 			oTitle = sap.ui.table.TableHelper.createTextView({
 				text: vTitle,
-				wrapping: false,
 				width: "100%"
 			});
 			oTitle.addStyleClass("sapUiTableHdrTitle");
@@ -966,7 +961,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		if (typeof (vFooter) === "string" || vFooter instanceof String) {
 			oFooter = sap.ui.table.TableHelper.createTextView({
 				text: vFooter,
-				wrapping: false,
 				width: "100%"
 			});
 		}
@@ -1435,11 +1429,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 				contexts: aContexts });
 
 			if (iFixedBottomRowCount > 0 && (iVisibleRowCount - iFixedBottomRowCount) < oBinding.getLength()) {
-				aContexts = aContexts.concat(oBinding.getContexts(oBinding.getLength() - iFixedBottomRowCount, iFixedBottomRowCount, 1));
+				var aFixedBottomContexts = oBinding.getContexts(oBinding.getLength() - iFixedBottomRowCount, iFixedBottomRowCount, 1);
+				aContexts = aContexts.concat(aFixedBottomContexts);
 				this._setBusy({
 					requestedLength: iFixedBottomRowCount,
-					receivedLength: aContexts.length,
-					contexts: aContexts });
+					receivedLength: aFixedBottomContexts.length,
+					contexts: aFixedBottomContexts });
 			}
 		}
 		for (var i = 0; i < iVisibleRowCount; i++) {
@@ -1662,7 +1657,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 					this._setBusy({
 						requestedLength: iFixedRows,
 						receivedLength: aFixedContexts.length,
-						contexts: aContexts });
+						contexts: aFixedContexts });
 
 					aContexts = aFixedContexts.concat(aContexts);
 				}
@@ -1671,7 +1666,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 					this._setBusy({
 						requestedLength: iFixedBottomRows,
 						receivedLength: aFixedBottomContexts.length,
-						contexts: aContexts });
+						contexts: aFixedBottomContexts });
 
 					aContexts = aContexts.concat(aFixedBottomContexts);
 				}
@@ -2585,9 +2580,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		var $Target = jQuery(oEvent.target);
 		var $Header = $Target.closest('.sapUiTableCol');
 		if ($Header.length > 0) {
-			var oColumn = $Header.control(0);
+			var oColumn = sap.ui.getCore().byId($Header.attr("data-sap-ui-colid"));
 			if (oColumn) {
-				oColumn._openMenu();
+				oColumn._openMenu($Header[0]);
 			}
 			oEvent.preventDefault();
 		} else {
@@ -2768,7 +2763,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		if (this._bShowMenu && $col.length === 1) {
 			var iIndex = parseInt($col.attr("data-sap-ui-colindex"), 10);
 			var oColumn = this.getColumns()[iIndex];
-			this._onColumnSelect(oColumn);
+			this._onColumnSelect(oColumn, $col[0]);
 			return;
 		}
 
@@ -2897,7 +2892,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * column select event => opens the column menu
 	 * @private
 	 */
-	Table.prototype._onColumnSelect = function(oColumn) {
+	Table.prototype._onColumnSelect = function(oColumn, oDomRef) {
 		// forward the event
 		var bExecuteDefault = this.fireColumnSelect({
 			column: oColumn
@@ -2906,7 +2901,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		// if the default behavior should be prevented we suppress to open
 		// the column menu!
 		if (bExecuteDefault) {
-			oColumn._openMenu();
+			oColumn._openMenu(oDomRef);
 		}
 
 	};
@@ -3744,10 +3739,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 */
 	Table.prototype.clearSelection = function() {
 		this._oSelection.clearSelection();
-		var oSelMode = this.getSelectionMode();
-		if (oSelMode == "Multi" || oSelMode == "MultiToggle") {
-			this.$("selall").attr('title',this._oResBundle.getText("TBL_SELECT_ALL")).addClass("sapUiTableSelAll");
-		}
 		return this;
 	};
 
@@ -5155,8 +5146,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		if (!iHeight) {
 			return iMinRowCount;
 		}
+
 		var $this = this.$();
-		var iControlHeight = this.$().outerHeight();
+		if (!$this.get(0)) {
+			return;
+		}
+
+		// usage of getBoundingClientRect() for retrieving subpixel correct value of the height. Necessary for zooming/flickering bugs in Chrome
+		var iControlHeight = $this.get(0).getBoundingClientRect().height;
 		var iContentHeight = $this.find('.sapUiTableCCnt').outerHeight();
 
 		// Determine default row height.
@@ -5172,12 +5169,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		}
 
 		// Maximum height of the table is the height of the window minus two row height, reserved for header and footer.
-		var iMaxHeight = jQuery(window).height() - 2 * iRowHeight;
+		var iMaxHeight = window.innerHeight - 2 * iRowHeight;
 		var iCalculatedSpace = iHeight - (iControlHeight - iContentHeight);
 
 		// Make sure that table does not grow to infinity
 		var iAvailableSpace = Math.min(iCalculatedSpace, iMaxHeight);
-
+		
 		// the last content row height is iRowHeight - 1, therefore + 1 in the formula below:
 		return Math.max(iMinRowCount, Math.floor((iAvailableSpace + 1) / iRowHeight));
 	};
@@ -5419,7 +5416,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @private
 	 */
 	Table.prototype._toggleSelectAll = function() {
-		if (this._getSelectableRowCount() === this.getSelectedIndices().length) {
+		
+		if (!this.$("selall").hasClass("sapUiTableSelAll")) { //this._getSelectableRowCount() === this.getSelectedIndices().length) {
 			this.clearSelection();
 		} else {
 			this.selectAll();
