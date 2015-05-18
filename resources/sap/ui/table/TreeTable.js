@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable Control.
 	 * @extends sap.ui.table.Table
-	 * @version 1.28.5
+	 * @version 1.28.6
 	 *
 	 * @constructor
 	 * @public
@@ -193,7 +193,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		if (sName === "rows") {
 			return true;
 		}
-		return sap.ui.core.Element.prototype.isTreeBinding.apply(this, sName);
+		return sap.ui.core.Element.prototype.isTreeBinding.apply(this, arguments);
 	};
 
 	TreeTable.prototype.getBinding = function(sName) {
