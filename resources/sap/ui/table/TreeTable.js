@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable Control.
 	 * @extends sap.ui.table.Table
-	 * @version 1.28.7
+	 * @version 1.28.8
 	 *
 	 * @constructor
 	 * @public
@@ -330,7 +330,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 					expand: function (iRowIndex) {
 						this.expandContext(this.getContextByIndex(iRowIndex));
 					},
-					collapseContext: function(oContext) {
+					collapseContext: function(oContext, bSupressChanges) {
 						var oContextInfo = this._getContextInfo(oContext);
 						if (oContextInfo && oContextInfo.bExpanded) {
 							this.storeSelection();
@@ -340,12 +340,29 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 								}
 							}
 							oContextInfo.bExpanded = false;
-							this._fireChange();
+							if (!bSupressChanges) {
+								this._fireChange();
+							}
 							this.restoreSelection();
 						}
 					},
 					collapse: function (iRowIndex) {
 						this.collapseContext(this.getContextByIndex(iRowIndex));
+					},
+					collapseToLevel: function (iLevel) {
+						if (!iLevel || iLevel < 0) {
+							iLevel = 0;
+						}
+						
+						var aContextsCopy = this.aContexts.slice();
+						for (var i = aContextsCopy.length - 1; i >= 0; i--) {
+							var iContextLevel = this.getLevel(aContextsCopy[i]);
+							if (iContextLevel != -1 && iContextLevel >= iLevel) {
+								this.collapseContext(aContextsCopy[i], true);
+							}
+						}
+						
+						this._fireChange();
 					},
 					toggleContext: function(oContext) {
 						var oContextInfo = this._getContextInfo(oContext);
