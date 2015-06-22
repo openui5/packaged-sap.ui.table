@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './TreeTable', './Table', './library'],
 	 * @class
 	 * The DataTable control provides a set of sophisticated and comfort functions for table design. For example, you can make settings for the number of visible rows and a number for the displayed rows in the case the user expands the table. The first visible row can be explicitly set. For the selection of columns and rows, a Multi, a Single, a None, and an All mode are available. Setting the Editable property to true lets the user make changes on the table cell entries.
 	 * @extends sap.ui.table.TreeTable
-	 * @version 1.28.9
+	 * @version 1.28.10
 	 *
 	 * @constructor
 	 * @public
@@ -135,7 +135,7 @@ sap.ui.define(['jquery.sap.global', './TreeTable', './Table', './library'],
 	};
 	
 	DataTable.prototype.getContextByIndex = function (iRowIndex) {
-		Table.prototype.getContextByIndex.call(this, iRowIndex);
+		return Table.prototype.getContextByIndex.call(this, iRowIndex);
 	};
 
 	return DataTable;
