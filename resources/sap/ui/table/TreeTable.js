@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable Control.
 	 * @extends sap.ui.table.Table
-	 * @version 1.28.11
+	 * @version 1.28.12
 	 *
 	 * @constructor
 	 * @public
@@ -424,11 +424,16 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		//If group mode is enabled nodes which have children are visualized as if they were group header
 		var oBinding = this.getBinding("rows"),
 			iFirstRow = this.getFirstVisibleRow(),
-			iCount = this.getVisibleRowCount();
+			iCount = this.getVisibleRowCount(),
+			aRows = this.getRows();
 
 		for (var iRow = 0; iRow < iCount; iRow++) {
+			var sFixed = "";
+			if (this.getFixedColumnCount() > 0) {
+				sFixed = "-fixed";
+			}
 			var oContext = this.getContextByIndex(iFirstRow + iRow),
-				$row = this.getRows()[iRow].$(),
+				$row = jQuery.sap.byId(aRows[iRow].getId() + sFixed),
 				$rowHdr = this.$().find("div[data-sap-ui-rowindex='" + $row.attr("data-sap-ui-rowindex") + "']");
 
 			if (oBinding.hasChildren && oBinding.hasChildren(oContext)) {

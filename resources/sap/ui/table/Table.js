@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @class
 	 * The Table control provides a set of sophisticated and comfort functions for table design. For example, you can make settings for the number of visible rows. The first visible row can be explicitly set. For the selection of rows, a Multi, a Single, and a None mode are available.
 	 * @extends sap.ui.core.Control
-	 * @version 1.28.11
+	 * @version 1.28.12
 	 *
 	 * @constructor
 	 * @public
@@ -2553,6 +2553,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		// clean up the timer
 		jQuery.sap.clearDelayedCall(this._sDelayedActionTimer);
 
+		if (oEvent.isMarked()) {
+			// the event was already handled by some other handler, do nothing.
+			return;
+		}
+
 		if (this.$().find(".sapUiTableCtrl td :focus").length > 0) {
 			// when clicking into a focusable control we enter the action mode!
 			this._enterActionMode(this.$().find(".sapUiTableCtrl td :focus"));
@@ -2569,6 +2574,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	Table.prototype.onclick = function(oEvent) {
 		// clean up the timer
 		jQuery.sap.clearDelayedCall(this._sDelayedActionTimer);
+
+		if (oEvent.isMarked()) {
+			// the event was already handled by some other handler, do nothing.
+			return;
+		}
+
 		// forward the event
 		if (!this._findAndfireCellEvent(this.fireCellClick, oEvent)) {
 			this._onSelect(oEvent);
