@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @class
 	 * Table which handles analytical OData backends
 	 * @extends sap.ui.table.Table
-	 * @version 1.30.1
+	 * @version 1.30.2
 	 *
 	 * @constructor
 	 * @public
