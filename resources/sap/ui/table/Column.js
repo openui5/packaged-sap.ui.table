@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/RenderMa
 	 * @class
 	 * The column allows to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.30.0
+	 * @version 1.30.1
 	 *
 	 * @constructor
 	 * @public
@@ -775,7 +775,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/RenderMa
 		var oTable = this.getParent();
 		if (oTable && oTable.getDomRef()) {
 			var sCurrentTheme = sap.ui.getCore().getConfiguration().getTheme();
-			var oImage = sap.ui.getCore().byId(this.getId() + "-filterIcon") || sap.ui.table.TableHelper.createImage(this.getId() + "-filterIcon");
+			var oImage = sap.ui.getCore().byId(this.getId() + "-filterIcon") ||
+				sap.ui.table.TableHelper.createImage({
+					id: this.getId() + "-filterIcon",
+					decorative: false,
+					alt: oTable._oResBundle.getText("TBL_FILTER_ICON_TEXT")
+				});
 			oImage.$().remove();
 			oImage.addStyleClass("sapUiTableColIconsFilter");
 			if (this.getFiltered()) {

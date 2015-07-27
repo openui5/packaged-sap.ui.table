@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 	 * @class
 	 * The row.
 	 * @extends sap.ui.core.Element
-	 * @version 1.30.0
+	 * @version 1.30.1
 	 *
 	 * @constructor
 	 * @public
@@ -85,11 +85,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 	 * @param bJQuery Set to true to get jQuery object instead of DomRef
 	 * @returns {object} contains DomRefs or jQuery objects of the row
 	 */
-	Row.prototype.getDomRefs = function (oTable, bJQuery) {
+	Row.prototype.getDomRefs = function (bJQuery) {
 		var oDomRefs = {};
 		var fnAccess = jQuery.sap.domById;
 		if (bJQuery === true) {
 			fnAccess = jQuery.sap.byId;
+		}
+
+		var oTable = this.getParent();
+		if (oTable) {
+			var iRowIndex = oTable.indexOfRow(this);
+			// row selector domRef
+			oDomRefs.rowSelector = fnAccess(oTable.getId() + "-rowsel" + iRowIndex);
 		}
 
 		// row domRef
@@ -97,12 +104,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 		// row domRef (the fixed part)
 		oDomRefs.rowFixedPart = fnAccess(this.getId() + "-fixed");
 		// row selector domRef
-		oDomRefs.rowSelector = fnAccess(oTable.getId() + "-rowsel" + this.getIndex());
-		// row selector domRef
 		oDomRefs.rowSelectorText = fnAccess(this.getId() + "-rowselecttext");
 
-		if (bJQuery) {
-			oDomRefs.row = oDomRefs.rowScrollPart.add(oDomRefs.rowFixedPart.add(oDomRefs.rowSelector));
+		if (bJQuery === true) {
+			oDomRefs.row = oDomRefs.rowScrollPart;
+			if (oDomRefs.rowSelector) {
+				oDomRefs.row = oDomRefs.row.add(oDomRefs.rowSelector);
+			}
+
+			if (oDomRefs.rowFixedPart) {
+				oDomRefs.row = oDomRefs.row.add(oDomRefs.rowFixedPart);
+			}
 		}
 
 		return oDomRefs;
@@ -123,7 +135,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 	 */
 	Row.prototype._updateSelection = function(oTable, mTooltipTexts, bSelectOnCellsAllowed) {
 		var bIsSelected = oTable.isIndexSelected(this.getIndex());
-		var $DomRefs = this.getDomRefs(oTable, true);
+		var $DomRefs = this.getDomRefs(true);
 
 		var sSelectReference = "rowSelect";
 		if (bIsSelected) {
@@ -131,15 +143,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 			sSelectReference = "rowDeselect";
 		}
 
-		// update visual selection state
-		$DomRefs.row.toggleClass("sapUiTableRowSel", bIsSelected);
-
 		// update tooltips and aria texts
-		$DomRefs.rowSelector.attr("title", mTooltipTexts.mouse[sSelectReference]);
-		$DomRefs.rowSelector.attr("aria-label", mTooltipTexts.keyboard[sSelectReference]);
-		$DomRefs.rowSelectorText.text(mTooltipTexts.keyboard[sSelectReference]);
+		if ($DomRefs.rowSelector) {
+			$DomRefs.rowSelector.attr("title", mTooltipTexts.mouse[sSelectReference]);
+			$DomRefs.rowSelector.attr("aria-label", mTooltipTexts.keyboard[sSelectReference]);
+		}
 
-		var $Row = $DomRefs.rowFixedPart.add($DomRefs.rowScrollPart);
+		if ($DomRefs.rowSelectorText) {
+			$DomRefs.rowSelectorText.text(mTooltipTexts.keyboard[sSelectReference]);
+		}
+
+		var $Row = $DomRefs.rowScrollPart;
+		if ($DomRefs.rowFixedPart) {
+			$Row = $Row.add($DomRefs.rowFixedPart);
+		}
+
 		if (bSelectOnCellsAllowed) {
 			// the row requires a tooltip for selection if the cell selection is allowed
 			$Row.attr("title", mTooltipTexts.mouse[sSelectReference]);
@@ -150,7 +168,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 		}
 
 		// update aria-selected state, do at the very end since this forces the screen reader to read the aria texts again
-		$DomRefs.row.children("td").add($DomRefs.row).attr("aria-selected", bIsSelected.toString());
+		if ($DomRefs.row) {
+			// update visual selection state
+			$DomRefs.row.toggleClass("sapUiTableRowSel", bIsSelected);
+			$DomRefs.row.children("td").add($DomRefs.row).attr("aria-selected", bIsSelected.toString());
+		}
 	};
 
 	return Row;

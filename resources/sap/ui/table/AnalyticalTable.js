@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @class
 	 * Table which handles analytical OData backends
 	 * @extends sap.ui.table.Table
-	 * @version 1.30.0
+	 * @version 1.30.1
 	 *
 	 * @constructor
 	 * @public
@@ -399,7 +399,12 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 			
 			var iLevel = oContextInfo ? oContextInfo.level : 0;
 
-			var $FirstCellLabel = $row.find(".sapUiTableTdFirst .sapUiTableCell > *");
+			var $FirstCellLabel;
+			if (this.getFixedColumnCount() > 0) {
+				$FirstCellLabel = $fixedRow.find(".sapUiTableTdFirst .sapUiTableCell > *");
+			} else {
+				$FirstCellLabel = $row.find(".sapUiTableTdFirst .sapUiTableCell > *");
+			}
 			$FirstCellLabel.width('auto');
 			// 40 is standard space between the group header content and the sum label
 			iFirstLabelWidth = $FirstCellLabel.outerWidth() + 40;
@@ -474,6 +479,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 
 				if (oContextInfo.nodeState.expanded && !this.getSumOnTop()) {
 					$row.addClass("sapUiTableRowHidden");
+					$fixedRow.addClass("sapUiTableRowHidden");
 					$rowHdr.addClass("sapUiTableRowHidden");
 				}
 				
@@ -484,6 +490,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 				$rowHdr.html("<div class=\"sapUiTableGroupIcon " + sClass + "\" tabindex=\"-1\" title=\"" + sGroupHeaderText + "\">" + sGroupHeaderText + "</div>" + sGroupHeaderMenuButton);
 				
 				$row.removeClass("sapUiAnalyticalTableSum sapUiAnalyticalTableDummy");
+				$fixedRow.removeClass("sapUiAnalyticalTableSum sapUiAnalyticalTableDummy");
 				$rowHdr.removeClass("sapUiAnalyticalTableSum sapUiAnalyticalTableDummy");
 				$rowHdr.addClass("sapUiTableGroupHeader").removeAttr("title");
 			} else {
@@ -491,13 +498,14 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 				$row.removeClass("sapUiTableGroupHeader sapUiTableRowHidden sapUiAnalyticalTableSum sapUiAnalyticalTableDummy");
 
 				$fixedRow.attr('aria-expanded', false);
-				$fixedRow.removeClass("sapUiTableGroupHeader");
+				$fixedRow.removeClass("sapUiTableGroupHeader sapUiTableRowHidden sapUiAnalyticalTableSum");
 
 				$rowHdr.html("");
 				$rowHdr.removeClass("sapUiTableGroupHeader sapUiAnalyticalTableDummy sapUiAnalyticalTableSum");
 
 				if (oContextInfo.nodeState.sum && oContextInfo.context && oContextInfo.context.getObject()) {
 					$row.addClass("sapUiAnalyticalTableSum");
+					$fixedRow.addClass("sapUiAnalyticalTableSum");
 					$rowHdr.addClass("sapUiAnalyticalTableSum");
 				}
 			}
