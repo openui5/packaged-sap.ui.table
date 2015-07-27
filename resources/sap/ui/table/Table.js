@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.30.3
+	 * @version 1.30.4
 	 *
 	 * @constructor
 	 * @public
@@ -2214,7 +2214,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		var iInvisibleColWidth = 0;
 		
 		var bRtl = this._bRtlMode;
-		var iLeftAway = bRtl ? "99000px" : "-99000px";
+		var iLeftAway = bRtl ? 99000 : -99000;
 		
 		// Select only table headers (identified by data-sap-ui-headcolindex attribute). Not the row header.
 		var $colHeaderContainer = $this.find(".sapUiTableColHdr");
@@ -2314,6 +2314,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			if (!iResizerPositionLeft || iResizerPositionLeft <= 0 || iResizerPositionLeft >= iTableWidth) {
 				iResizerPositionLeft = iLeftAway;
 			}
+
 			mHeader.domRefColumnResizerPosition = iResizerPositionLeft;
 		});
 
@@ -2615,6 +2616,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		// clean up the timer
 		jQuery.sap.clearDelayedCall(this._sDelayedActionTimer);
 
+		if (oEvent.isMarked()) {
+			// the event was already handled by some other handler, do nothing.
+			return;
+		}
+
 		if (this.$().find(".sapUiTableCtrl td :focus").length > 0) {
 			// when clicking into a focusable control we enter the action mode!
 			this._enterActionMode(this.$().find(".sapUiTableCtrl td :focus"));
@@ -2631,6 +2637,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	Table.prototype.onclick = function(oEvent) {
 		// clean up the timer
 		jQuery.sap.clearDelayedCall(this._sDelayedActionTimer);
+
+		if (oEvent.isMarked()) {
+			// the event was already handled by some other handler, do nothing.
+			return;
+		}
+
 		// forward the event
 		if (!this._findAndfireCellEvent(this.fireCellClick, oEvent)) {
 			this._onSelect(oEvent);

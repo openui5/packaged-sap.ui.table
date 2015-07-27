@@ -579,8 +579,6 @@ html[dir=rtl] .sapUiTableColRsz {
   background-position: 50% 50%;
   background-repeat: no-repeat;
   float: right;
-  /* height: @sapUiTableRowHeight; */
-  padding-top: 8px;
 }
 .sapUiSizeCompact .sapUiTableTreeIcon {
   background-image: none;
@@ -594,6 +592,7 @@ html[dir=rtl] .sapUiTableColRsz {
   /* height: @sapUiTableRowHeight; */
   padding-right: 20px;
   margin-right: 2px;
+  font-size: 12px;
   cursor: pointer;
 }
 .sapUiSizeCompact .sapUiTableGroupIcon,
@@ -630,6 +629,12 @@ html[dir=rtl] .sapUiTableColRsz {
 .sapUiSizeCozy .sapUiTableRowHdr.sapUiTableGroupHeader > .sapUiTableGroupIcon {
   right: 0;
 }
+html[dir=rtl] .sapUiSizeCompact .sapUiTableGroupIcon.sapUiTableGroupIconClosed::before,
+html[dir=rtl] .sapUiSizeCozy .sapUiTableGroupIcon.sapUiTableGroupIconClosed::before,
+html[dir=rtl] .sapUiSizeCompact .sapUiTableTreeIconNodeClosed::before,
+html[dir=rtl] .sapUiSizeCozy .sapUiTableTreeIconNodeClosed::before {
+  content: '\e067';
+}
 .sapUiTableGroupIcon {
   line-height: 23px;
 }
@@ -651,7 +656,7 @@ html[dir=rtl] .sapUiTableColRsz {
   color: #000000;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 60px;
+  min-width: 48px;
 }
 .sapUiSizeCompact .sapUiTableTr > td {
   padding-top: 0px;

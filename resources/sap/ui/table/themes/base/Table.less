@@ -610,8 +610,6 @@ html[dir=rtl] .sapUiTableColRsz {
 	background-position: 50% 50%;
 	background-repeat: no-repeat;
 	float: left;
-	/* height: @sapUiTableRowHeight; */
-	padding-top: 8px;
 }
 
 .sapUiSizeCompact .sapUiTableTreeIcon {
@@ -627,6 +625,7 @@ html[dir=rtl] .sapUiTableColRsz {
 	/* height: @sapUiTableRowHeight; */
 	padding-left: 20px;
 	margin-left: 2px;
+	font-size: 12px;
 	cursor: pointer;
 }
 
@@ -667,6 +666,16 @@ html[dir=rtl] .sapUiTableColRsz {
 	}
 }
 
+// Mirror arrow of closed tree node
+html[dir=rtl] {
+	.sapUiSizeCompact, .sapUiSizeCozy {
+		.sapUiTableGroupIcon.sapUiTableGroupIconClosed::before,
+		.sapUiTableTreeIconNodeClosed::before {
+			content: '\e067';
+		}
+	}
+}
+
 .sapUiTableGroupIcon {
 	line-height: @sapUiTableRowHeight;
 }
@@ -693,7 +702,7 @@ html[dir=rtl] .sapUiTableColRsz {
 	color: @sapUiBaseText;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	min-width: 60px;
+	min-width: 48px;
 }
 
 .sapUiSizeCompact .sapUiTableTr > td {

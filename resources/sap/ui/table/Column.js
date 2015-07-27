@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/RenderMa
 	 * @class
 	 * The column allows to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.30.3
+	 * @version 1.30.4
 	 *
 	 * @constructor
 	 * @public
@@ -722,6 +722,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/RenderMa
 
 				this.setProperty("filtered", !!sValue, true);
 				this.setProperty("filterValue", sValue, true);
+				if (this.getMenu()) {
+					// update column menu input field
+					this.getMenu()._setFilterValue(sValue);
+				}
 
 				var aFilters = [];
 				var aCols = oTable.getColumns();
