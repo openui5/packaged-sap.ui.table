@@ -1,5 +1,5 @@
 /*!
- * SAP UI development toolkit for HTML5 (SAPUI5/OpenUI5)
+ * UI development toolkit for HTML5 (OpenUI5)
  * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @class
 	 * Table which handles analytical OData backends
 	 * @extends sap.ui.table.Table
-	 * @version 1.30.4
+	 * @version 1.30.5
 	 *
 	 * @constructor
 	 * @public
@@ -218,21 +218,6 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 		}
 		// set selection mode independet from clearing the selection
 		this.setProperty("selectionMode", sSelectionMode);
-		return this;
-	};
-	
-	/**
-	 * Removes complete selection.
-	 *
-	 * @type sap.ui.table.Table
-	 * @public
-	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
-	 */
-	AnalyticalTable.prototype.clearSelection = function() {
-		var oBinding = this.getBinding("rows");
-		if (oBinding && oBinding.clearSelection) {
-			oBinding.clearSelection();
-		}
 		return this;
 	};
 	
@@ -438,7 +423,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 				}
 				
 				var sGroupHeaderMenuButton = "";
-				if (sap.ui.Device.system.tablet) {
+				if ('ontouchstart' in document) {
 					sGroupHeaderMenuButton = "<div class='sapUiTableGroupMenuButton'></div>";
 				}
 				$rowHdr.html("<div id=\"" + oRow.getId() + "-groupHeader\" class=\"sapUiTableGroupIcon " + sClass + "\" tabindex=\"-1\" title=\"" + sGroupHeaderText + "\">" + sGroupHeaderText + "</div>" + sGroupHeaderMenuButton);
@@ -505,7 +490,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 			$fixedRow.data("sap-ui-level", iLevel);
 			$rowHdr.data("sap-ui-level", iLevel);
 			
-			if (sap.ui.Device.system.tablet) {
+			if ('ontouchstart' in document) {
 				var $GroupHeaderMenuButton = $rowHdr.find(".sapUiTableGroupMenuButton");
 				
 				if (this._bRtlMode) {

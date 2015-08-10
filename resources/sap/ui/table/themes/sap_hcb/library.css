@@ -1,10 +1,10 @@
 /*!
- * SAP UI development toolkit for HTML5 (SAPUI5/OpenUI5)
+ * UI development toolkit for HTML5 (OpenUI5)
  * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*!
- * SAP UI development toolkit for HTML5 (SAPUI5/OpenUI5)
+ * UI development toolkit for HTML5 (OpenUI5)
  * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
@@ -849,9 +849,6 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 .sapUiTableRowHdr.sapUiTableRowSel.sapUiTableRowHvr {
   border-bottom-color: #999999;
   background-color: #7a5100;
-}
-.sapUiTableTreeIcon {
-  padding-top: 4px;
 }
 .sapUiTable > .sapUiTableFtr:last-child {
   border-top: 0.185rem solid #ffffff;
