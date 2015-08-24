@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.30.6
+	 * @version 1.30.7
 	 *
 	 * @constructor
 	 * @public
@@ -464,7 +464,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			 * This event is triggered when the custom filter item of the column menu is pressed. The column on which the event was triggered is passed as parameter.
 			 * @since 1.23.0
 			 */
-			customFilter : {}
+			customFilter : {
+				/**
+				 * The column instance on which the custom filter button was pressed.
+				 */
+				column : {type : "sap.ui.table.Column"},
+
+				/**
+				 * Filter value.
+				 */
+				value : {type : "string"}
+			}
 		}
 	}});
 
@@ -714,34 +724,36 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		var iFixedBottomRows = this.getFixedBottomRowCount();
 		var iVisibleRowCount = this.getVisibleRowCount();
 
-		if (oBinding) {
-			jQuery.each(this.getRows(), function(iIndex, oRow) {
-				var $rowDomRefs = oRow.getDomRefs(true);
-				
-				// update row header tooltip
-				if (oRow.getBindingContext()) {
-					$rowDomRefs.rowSelector.attr("title", this._oResBundle.getText("TBL_ROW_SELECT"));
-				} else {
-					$rowDomRefs.rowSelector.attr("title", "");
-				}
-				
-				if (iFixedTopRows > 0) {
-					$rowDomRefs.row.toggleClass("sapUiTableFixedTopRow", iIndex < iFixedTopRows);
-					$rowDomRefs.row.toggleClass("sapUiTableFixedLastTopRow", iIndex == iFixedTopRows - 1);
-				}
 
-				if (iFixedBottomRows > 0) {
-					var bIsPreBottomRow;
+		jQuery.each(this.getRows(), function(iIndex, oRow) {
+			var $rowDomRefs = oRow.getDomRefs(true);
+
+			// update row header tooltip
+			if (oRow.getBindingContext() && this._isRowSelectable(oRow.getIndex())) {
+				$rowDomRefs.rowSelector.attr("title", this._oResBundle.getText("TBL_ROW_SELECT"));
+			} else {
+				$rowDomRefs.rowSelector.attr("title", "");
+			}
+
+			if (iFixedTopRows > 0) {
+				$rowDomRefs.row.toggleClass("sapUiTableFixedTopRow", iIndex < iFixedTopRows);
+				$rowDomRefs.row.toggleClass("sapUiTableFixedLastTopRow", iIndex == iFixedTopRows - 1);
+			}
+
+			if (iFixedBottomRows > 0) {
+				var bIsPreBottomRow = false;
+				if (oBinding) {
 					if (oBinding.getLength() >= iVisibleRowCount) {
 						bIsPreBottomRow = (iIndex == iVisibleRowCount - iFixedBottomRows - 1);
 					} else {
 						bIsPreBottomRow = (this.getFirstVisibleRow() + iIndex) == (oBinding.getLength() - iFixedBottomRows - 1) && (this.getFirstVisibleRow() + iIndex) < oBinding.getLength();
 					}
-
-					$rowDomRefs.row.toggleClass("sapUiTableFixedPreBottomRow", bIsPreBottomRow);
 				}
-			}.bind(this));
-		}
+
+				$rowDomRefs.row.toggleClass("sapUiTableFixedPreBottomRow", bIsPreBottomRow);
+			}
+		}.bind(this));
+
 
 		// update the row header (sync row heights)
 		this._updateRowHeader();
@@ -2701,7 +2713,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 					select: [function() {
 						var oContext = this.getContextByIndex(mParams.rowIndex);
 						var sValue = oContext.getProperty(sProperty);
-						this.filter(oColumn, sValue);
+						if (this.getEnableCustomFilter()) {
+							// only fire custom filter event
+							this.fireCustomFilter({
+								column: oColumn,
+								value: sValue
+							});
+						} else {
+							this.filter(oColumn, sValue);
+						}
+
 					}, this]
 				}));
 
@@ -3985,7 +4006,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		}
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
-			this._oSelection.setSelectionInterval(0, (oBinding.getLength() || 0) - 1);
+			// first give the higher number. The toIndex will be used as leadIndex. It more likely that
+			// in oData case the index 0 is already loaded than that the last index is loaded. The leadIndex will
+			// be used to determine the leadContext in the selectionChange event. If not yet loaded it would need to
+			// be request. To avoid unnecessary roundtrips the lead index is set to 0.
+			this._oSelection.setSelectionInterval((oBinding.getLength() || 0) - 1, 0);
 			this.$("selall").attr('title',this._oResBundle.getText("TBL_DESELECT_ALL")).removeClass("sapUiTableSelAll");
 		}
 		return this;
@@ -5761,8 +5786,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 				this.setBusy(true);
 			}
 
-			if (bSetBusy || (oBinding.isInitial() || oBinding._bInitial) || (mParameters.receivedLength === 0 && this._iDataRequestedCounter !== 0) ||
-				(mParameters.receivedLength < mParameters.requestedLength && mParameters.receivedLength !== oBinding.getLength())) {
+			var iLength = oBinding.getLength();
+			if (bSetBusy || (oBinding.isInitial()) || (mParameters.receivedLength === 0 && this._iDataRequestedCounter !== 0) ||
+				(mParameters.receivedLength < mParameters.requestedLength && mParameters.receivedLength !== iLength &&
+				 mParameters.receivedLength !== iLength - this.getFirstVisibleRow())) {
 				this.setBusy(true);
 			}
 		}
