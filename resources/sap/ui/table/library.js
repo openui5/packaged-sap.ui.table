@@ -1,5 +1,5 @@
 /*!
- * SAP UI development toolkit for HTML5 (SAPUI5/OpenUI5)
+ * UI development toolkit for HTML5 (OpenUI5)
  * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
@@ -20,14 +20,14 @@ sap.ui.define(['jquery.sap.global',
 	 * @namespace
 	 * @name sap.ui.table
 	 * @author SAP SE
-	 * @version 1.26.11
+	 * @version 1.26.13
 	 * @public
 	 */
 	
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.table",
-		version: "1.26.11",
+		version: "1.26.13",
 		dependencies : ["sap.ui.core","sap.ui.unified"],
 		types: [
 			"sap.ui.table.NavigationMode",
@@ -56,7 +56,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Navigation mode of the table
 	 *
-	 * @version 1.26.11
+	 * @version 1.26.13
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -81,7 +81,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Selection behavior of the table
 	 *
-	 * @version 1.26.11
+	 * @version 1.26.13
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -112,7 +112,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Selection mode of the table
 	 *
-	 * @version 1.26.11
+	 * @version 1.26.13
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -149,7 +149,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Sort order of a column
 	 *
-	 * @version 1.26.11
+	 * @version 1.26.13
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -174,7 +174,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * VisibleRowCountMode of the table
 	 *
-	 * @version 1.26.11
+	 * @version 1.26.13
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
