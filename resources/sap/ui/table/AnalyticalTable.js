@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @class
 	 * Table which handles analytical OData backends
 	 * @extends sap.ui.table.Table
-	 * @version 1.30.7
+	 * @version 1.30.8
 	 *
 	 * @constructor
 	 * @public
@@ -110,9 +110,6 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 
 			// defaulting the rowHeight -> is set via CSS
 		}
-		
-		this._bBindingAttachedListener = false;
-
 	};
 
 	AnalyticalTable.prototype.setFixedRowCount = function() {
@@ -173,9 +170,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 		this._bSupressRefresh = true;
 		this._updateColumns();
 		this._bSupressRefresh = false;
-		
-		this._bBindingAttachedListener = false;
-		
+
 		return vReturn;
 	};
 
@@ -282,16 +277,12 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	};
 
 	AnalyticalTable.prototype._attachBindingListener = function() {
-		if (!this._bBindingAttachedListener) {
-			this._bBindingAttachedListener = true;
+		var oBinding = this.getBinding("rows");
 
-			var oBinding = this.getBinding("rows");
-			
-			// The selectionchanged event is also a special AnalyticalTreeBindingAdapter event.
-			// The event interface is the same as in sap.ui.model.SelectionModel, due to compatibility with the sap.ui.table.Table
-			if (oBinding && !oBinding.hasListeners("selectionChanged")){
-				oBinding.attachSelectionChanged(this._onSelectionChanged, this);
-			}
+		// The selectionChanged event is also a special AnalyticalTreeBindingAdapter event.
+		// The event interface is the same as in sap.ui.model.SelectionModel, due to compatibility with the sap.ui.table.Table
+		if (oBinding && !oBinding.hasListeners("selectionChanged")){
+			oBinding.attachSelectionChanged(this._onSelectionChanged, this);
 		}
 
 		Table.prototype._attachDataRequestedListeners.apply(this);

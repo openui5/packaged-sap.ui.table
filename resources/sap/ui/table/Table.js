@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.30.7
+	 * @version 1.30.8
 	 *
 	 * @constructor
 	 * @public
@@ -1074,7 +1074,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		
 		// re-initialize the selection model, might be necessary in case the table gets "rebound"
 		this._initSelectionModel(sap.ui.model.SelectionModel.MULTI_SELECTION);
-		
+
+		// currently only required for TreeBindings, will be relevant for ListBindings later
+		if (oBinding && this.isTreeBinding("rows") && !oBinding.hasListeners("selectionChanged")) {
+			oBinding.attachSelectionChanged(this._onSelectionChanged, this);
+		}
 		return this;
 	};
 
@@ -2878,7 +2882,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	// SELECTION HANDLING
 	// =============================================================================
 
-	/**
+		/**
 	 * handles the row selection and the column header menu
 	 * @private
 	 */
@@ -2921,7 +2925,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		}
 
 		// table control? (only if the selection behavior is set to row)
-		if (/*!this._bActionMode && */ (
+		var oClosestTd;
+		if (oEvent.target) {
+			var $ClosestTd = jQuery(oEvent.target).closest("td");
+			if ($ClosestTd.length > 0) {
+				oClosestTd = $ClosestTd[0];
+			}
+		}
+
+		if (oClosestTd && oClosestTd.getAttribute("role") == "gridcell" && (
 		    this.getSelectionBehavior() === sap.ui.table.SelectionBehavior.Row ||
 		    this.getSelectionBehavior() === sap.ui.table.SelectionBehavior.RowOnly)) {
 			var $row = $target.closest(".sapUiTableCtrl > tbody > tr");
@@ -4344,12 +4356,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		this._bEventSapSelect = true;
 	};
 
+	Table.prototype.onsapspace = function(oEvent) {
+		var $target = jQuery(oEvent.target);
+		if (((this.getSelectionBehavior() == sap.ui.table.SelectionBehavior.Row || this.getSelectionBehavior() == sap.ui.table.SelectionBehavior.RowOnly) && oEvent.srcControl instanceof sap.ui.table.Row) ||
+			$target.hasClass("sapUiTableRowHdr") || $target.hasClass("sapUiTableColRowHdr") || $target.hasClass("sapUiTableCol")) {
+			oEvent.preventDefault();
+		}
+	};
+
 	/**
 	 * handle the row selection via SPACE or ENTER key
 	 * @private
 	 */
 	Table.prototype.onkeydown = function(oEvent) {
 		var $this = this.$();
+
 		if (!this._bActionMode &&
 			oEvent.keyCode == jQuery.sap.KeyCodes.F2 ||
 			oEvent.keyCode == jQuery.sap.KeyCodes.ENTER) {
