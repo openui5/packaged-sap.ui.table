@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 	 * @class
 	 * Table which handles analytical OData backends
 	 * @extends sap.ui.table.Table
-	 * @version 1.28.18
+	 * @version 1.28.19
 	 *
 	 * @constructor
 	 * @public
@@ -774,10 +774,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 
 	AnalyticalTable.prototype.removeColumn = function(vColumn, bSuppressInvalidate) {
 		var oColumn = Table.prototype.removeColumn.apply(this, arguments);
-		if (oColumn) {
-			this._aGroupedColumns = jQuery.grep(this._aGroupedColumns, function(value) {
-				return value != oColumn.getId();
-			});
+		// only remove from grouped columns if not caused by column move. If this._iNewColPos
+		// is set, the column was moved by user.
+		if (!this._iNewColPos) {
+			if (oColumn) {
+				this._aGroupedColumns = jQuery.grep(this._aGroupedColumns, function (value) {
+					return value != oColumn.getId();
+				});
+			}
 		}
 		return oColumn;
 	};

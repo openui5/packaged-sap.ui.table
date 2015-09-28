@@ -5,7 +5,7 @@
  */
 
 // Provides control sap.ui.table.Table.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IntervalTrigger', 'sap/ui/core/ScrollBar', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/theming/Parameters', 'sap/ui/model/SelectionModel', './Row', './library'],
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IntervalTrigger', 'sap/ui/core/ScrollBar', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/theming/Parameters', 'sap/ui/model/SelectionModel', './Row', './library', 'jquery.sap.dom'],
 	function(jQuery, Control, IntervalTrigger, ScrollBar, ItemNavigation, Parameters, SelectionModel, Row, library) {
 	"use strict";
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @class
 	 * The Table control provides a set of sophisticated and comfort functions for table design. For example, you can make settings for the number of visible rows. The first visible row can be explicitly set. For the selection of rows, a Multi, a Single, and a None mode are available.
 	 * @extends sap.ui.core.Control
-	 * @version 1.28.18
+	 * @version 1.28.19
 	 *
 	 * @constructor
 	 * @public
@@ -1593,6 +1593,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 				// TODO: in case of bForceUpdateVSb the scrolling doesn't work anymore
 				//       height changes of the scrollbar should not require a re-rendering!
 				this._sScrollBarTimer = jQuery.sap.delayedCall(bOnAfterRendering ? 0 : 250, this, function() {
+					// When the scrollbar timer is planned iSteps might be 0 because the binding might not have data yet.
+					// This can even happen with JSON ListBinding if setProperty is called on a collection
+					// Make sure to get the current length from the binding.
+					var iSteps = 0;
+					if (oBinding) {
+						// the binding might have changed by the time the function gets called
+						iSteps = Math.max(0, (oBinding.getLength() || 0) - this.getVisibleRowCount());
+					}
 
 					this._oVSb.setSteps(iSteps);
 					if (this._oVSb.getDomRef()) {
@@ -5173,7 +5181,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		var iContentHeight = $this.find('.sapUiTableCCnt').outerHeight();
 
 		// Determine default row height.
-		var iRowHeight = $this.find("tr:not(.sapUiAnalyticalTableSum) > td").outerHeight();
+		var iRowHeight = $this.find(".sapUiTableCtrl tr:not(.sapUiAnalyticalTableSum) > td").outerHeight();
 
 		// No rows displayed when visible row count == 0, no row height can be determined, therefore we set standard row height
 		if (!iRowHeight) {
