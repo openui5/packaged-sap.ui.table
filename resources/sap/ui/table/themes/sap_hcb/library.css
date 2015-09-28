@@ -986,7 +986,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 ******************************************************************************/
 /* Table Cells */
 .sapUiTableCell {
-  padding: 0 10px;
+  padding: 0 0.5rem;
 }
 .sapUiTableCell > .sapUiTv {
   font-weight: normal;
@@ -1037,17 +1037,17 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
   color: #ffffff;
 }
 .sapUiTableColCell {
-  padding: 0 10px;
+  padding: 0 0.5rem;
 }
 .sapUiSizeCondensed .sapUiTableColCell {
-  padding: 0 8px;
+  padding: 0 0.5rem;
 }
 .sapUiSizeCompact .sapUiTableColCell > .sapUiLbl,
 .sapUiSizeCompact .sapUiTableColCell > .sapMLabel,
 .sapUiSizeCompact .sapUiTableCell > .sapMLabel,
 .sapUiTableColCell > .sapUiLbl {
   font-weight: normal;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #ffffff;
 }
 .sapUiTableTr > td:focus,
