@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', './Table', './library'],
 	 * @class
 	 * The TreeTable Control.
 	 * @extends sap.ui.table.Table
-	 * @version 1.26.13
+	 * @version 1.26.14
 	 *
 	 * @constructor
 	 * @public
