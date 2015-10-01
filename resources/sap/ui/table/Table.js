@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.32.2
+	 * @version 1.32.3
 	 *
 	 * @constructor
 	 * @public
@@ -148,6 +148,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			 * the property minAutoRowCount (default value : 5) In manual mode the user can change
 			 * the visibleRowCount interactively.
 			 * @since 1.9.2
+			 * @see sap.ui.table.VisibleRowCountMode
 			 */
 			visibleRowCountMode : {type : "sap.ui.table.VisibleRowCountMode", group : "Appearance", defaultValue : sap.ui.table.VisibleRowCountMode.Fixed},
 
@@ -613,6 +614,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 
 		// vertical scrollbar
 		this._oVSb = new ScrollBar(this.getId() + "-vsb", {size: "100%"});
+
+		//
+		// Optimization for large tables: scroll event is fired only by mouse up.
+		//
+		// TODO: decide if to switch this dynamically or via API
+		this._oVSb._bLargeDataScrolling = false;
+
 		this._oVSb.attachScroll(this.onvscroll, this);
 		this._oVSb.addDelegate(fnFocusIndex);
 
@@ -6162,6 +6170,22 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 */
 	Table.prototype._attachBindingListener = function() {
 		this._attachDataRequestedListeners();
+	};
+
+	/**
+	 * Lets you control in which situation the <code>ScrollBar</code> fires scroll events.
+	 *
+	 * @param {boolean} bLargeDataScrolling Set to true to let the <code>ScrollBar</code> only fires scroll events when
+	 * the scroll handle is released. No matter what the setting is, the <code>ScrollBar</code> keeps on fireing scroll events
+	 * when the user scroll with the mousewheel or using touch
+	 * @private
+	 */
+	Table.prototype._setLargeDataScrolling = function(bLargeDataScrolling) {
+		if (this._oVSb) {
+			this._oVSb._bLargeDataScrolling = !!bLargeDataScrolling;
+		} else {
+			jQuery.sap.log.error("Vertical Scrollbar wasn't initialized yet.");
+		}
 	};
 
 	return Table;
