@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/RenderMa
 	 * @class
 	 * The column allows to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.30.8
+	 * @version 1.30.9
 	 *
 	 * @constructor
 	 * @public
@@ -32,7 +32,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/RenderMa
 		properties : {
 
 			/**
-			 * Width of the column.
+			 * Width of the column. Works only with px/em/rem values. Em will handled like rem values.
 			 */
 			width : {type : "sap.ui.core.CSSSize", group : "Dimension", defaultValue : null},
 
@@ -373,7 +373,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/RenderMa
 	 */
 	Column.prototype._createMenu = function() {
 		jQuery.sap.require("sap.ui.table.ColumnMenu");
-		return new sap.ui.table.ColumnMenu(this.getId() + "-menu", {ariaLabelledBy: this});
+
+		if (!this._defaultMenu) {
+			this._defaultMenu =  new sap.ui.table.ColumnMenu(this.getId() + "-menu", {ariaLabelledBy: this});
+		}
+
+		return this._defaultMenu;
 	};
 
 

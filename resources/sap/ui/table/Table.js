@@ -5,7 +5,7 @@
  */
 
 // Provides control sap.ui.table.Table.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IntervalTrigger', 'sap/ui/core/ScrollBar', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/theming/Parameters', 'sap/ui/model/SelectionModel', './Row', './library', 'sap/ui/core/IconPool'],
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IntervalTrigger', 'sap/ui/core/ScrollBar', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/theming/Parameters', 'sap/ui/model/SelectionModel', './Row', './library', 'sap/ui/core/IconPool', 'jquery.sap.dom'],
 	function(jQuery, Control, IntervalTrigger, ScrollBar, ItemNavigation, Parameters, SelectionModel, Row, library, IconPool) {
 	"use strict";
 
@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.30.8
+	 * @version 1.30.9
 	 *
 	 * @constructor
 	 * @public
@@ -1620,11 +1620,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 				bForceUpdateVSb = true;
 			}
 
-			var iSteps = Math.max(0, (oBinding.getLength() || 0) - this.getVisibleRowCount());
+			var iLength = oBinding.getLength();
+			var iSteps = Math.max(0, (iLength || 0) - this.getVisibleRowCount());
 			// check for paging mode or scrollbar mode
 			if (this._oPaginator && this.getNavigationMode() === sap.ui.table.NavigationMode.Paginator) {
 				// update the paginator (set the first visible row property)
-				var iNumberOfPages = Math.ceil((oBinding.getLength() || 0) / this.getVisibleRowCount());
+				var iNumberOfPages = Math.ceil((iLength || 0) / this.getVisibleRowCount());
 				this._oPaginator.setNumberOfPages(iNumberOfPages);
 				var iPage = Math.min(iNumberOfPages, Math.ceil((this.getFirstVisibleRow() + 1) / this.getVisibleRowCount()));
 				this.setProperty("firstVisibleRow", (Math.max(iPage,1) - 1) * this.getVisibleRowCount(), true);
@@ -1645,8 +1646,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 					}
 				} else {
 					//scroll to top when the scrollbar vanishes -> the binding length is smaller than the number of visible rows
-					this.setFirstVisibleRow(0);
-					
+					if (iLength > 0) {
+						// only set the scroll position to 0 if there is some data which can be shown.
+						// this allows the application to set a scroll position even though the data was not yet loaded.
+						this.setFirstVisibleRow(0);
+					}
+
 					if ($this.hasClass("sapUiTableVScr")) {
 						$this.removeClass("sapUiTableVScr");
 						bDoResize = true;
@@ -1660,6 +1665,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 				// TODO: in case of bForceUpdateVSb the scrolling doesn't work anymore
 				//       height changes of the scrollbar should not require a re-rendering!
 				this._sScrollBarTimer = jQuery.sap.delayedCall(bOnAfterRendering ? 0 : 250, this, function() {
+					// When the scrollbar timer is planned iSteps might be 0 because the binding might not have data yet.
+					// This can even happen with JSON ListBinding if setProperty is called on a collection
+					// Make sure to get the current length from the binding.
+					var iSteps = 0;
+					if (oBinding) {
+						// the binding might have changed by the time the function gets called
+						iSteps = Math.max(0, (oBinding.getLength() || 0) - this.getVisibleRowCount());
+					}
 
 					this._oVSb.setSteps(iSteps);
 					if (this._oVSb.getDomRef()) {
@@ -2082,8 +2095,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 
 
 	/**
-	 * returns the min width of all columns
+	 * Returns the summed width of all rendered columns
 	 * @private
+	 * @param {Number} iStartColumn starting column for calculating the width
+	 * @param {Number} iEndColumn ending column for calculating the width
+	 * @returns {Number} the summed column width
 	 */
 	Table.prototype._getColumnsWidth = function(iStartColumn, iEndColumn) {
 		// first calculate the min width of the table for all columns
@@ -2097,15 +2113,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			iEndColumn = aCols.length;
 		}
 
+		var iBaseFontSize = parseFloat(jQuery("body").css("font-size"));
 		for (var i = iStartColumn, l = iEndColumn; i < l; i++) {
 			if (aCols[i] && aCols[i].shouldRender()) {
 				var sWidth = aCols[i].getWidth();
-				var iWidth = parseInt(sWidth, 10);
 				if (jQuery.sap.endsWith(sWidth, "px")) {
-					iColsWidth += iWidth;
+					iColsWidth += parseInt(sWidth, 10);
+				} else if (jQuery.sap.endsWith(sWidth, "em") || jQuery.sap.endsWith(sWidth, "rem")) {
+					iColsWidth += parseInt(sWidth, 10) * iBaseFontSize;
 				} else {
 					// for unknown width we use the min width
-					iColsWidth += /* aCols[i].getMinWidth() || */ this._iColMinWidth;
+					iColsWidth += this._iColMinWidth;
 				}
 			}
 		}
@@ -2227,6 +2245,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		var oRectTable = this.getDomRef().getBoundingClientRect();
 		var iTableWidth = oRectTable.right - oRectTable.left;
 		var aVisibleColumns = this._getVisibleColumns();
+		if (aVisibleColumns.length == 0) {
+			return;
+		}
 		var iInvisibleColWidth = 0;
 		
 		var bRtl = this._bRtlMode;
@@ -2246,7 +2267,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		// Create map with source table headers and their corresponding resizers.
 		var mHeaders = {};
 		
-		// Traverse the source table headers, which are needed for determine to column head width
+		// Traverse the source table headers, which are needed to determine the column head width
 		$tableHeaders.each(function(iIndex, oElement) {
 			var iHeadColIndex = oElement.getAttribute("data-sap-ui-headcolindex");
 			var oRect = oElement.getBoundingClientRect();
@@ -2257,7 +2278,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			if (oVisibleColumn) {
 				iTargetWidth = oRect.right - oRect.left;
 			}
-			
+
 			//for the first column also calculate the width of the hidden column
 			if (iIndex == 0) {
 				iTargetWidth += iInvisibleColWidth;
@@ -3448,7 +3469,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			var iColSpan = $Column.attr("data-sap-ui-colspan");
 			
 			var sResizerId = this._getResizerIdForColumn(iColIndex, iColSpan);
-			this._$colResize = jQuery("#" + sResizerId);
+			this._$colResize = jQuery.sap.byId(sResizerId);
 			
 			jQuery(document.body).bind("touchmove", jQuery.proxy(this._onColumnResize, this));
 			jQuery(document.body).bind("touchend", jQuery.proxy(this._onColumnResized, this));
@@ -3685,7 +3706,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 
 			jQuery.each(aVisibleColumns, function(iIndex, oCurrentColumn) {
 				//Check columns if they are fixed = they have a pixel width
-				if (!jQuery.sap.endsWith(oCurrentColumn.getWidth(), "px")) {
+				if (!jQuery.sap.endsWith(oCurrentColumn.getWidth(), "px")
+					&& !jQuery.sap.endsWith(oCurrentColumn.getWidth(), "em")
+					&& !jQuery.sap.endsWith(oCurrentColumn.getWidth(), "rem")) {
 					iNonFixedColumns++;
 					return false;
 				}
@@ -3723,7 +3746,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		var sColumnWidth = oColumn.getWidth();
 		var iColumnPercentage = parseInt(oColumn.getWidth(),10);
 		var iTotalWidth = this.$().find(".sapUiTableCtrl").width();
-		if (jQuery.sap.endsWith(sColumnWidth, "px")) {
+		if (jQuery.sap.endsWith(sColumnWidth, "px") || jQuery.sap.endsWith(sColumnWidth, "em") || jQuery.sap.endsWith(sColumnWidth, "rem")) {
 			iColumnPercentage = Math.round(100 / iTotalWidth * iColumnPercentage);
 		} else if (!jQuery.sap.endsWith(sColumnWidth, "%")) {
 			iColumnPercentage = Math.round(100 / iTotalWidth * oColumn.$().width());
@@ -5499,7 +5522,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		var iContentHeight = $this.find('.sapUiTableCCnt').outerHeight();
 
 		// Determine default row height.
-		var iRowHeight = $this.find("tr:not(.sapUiAnalyticalTableSum) > td").outerHeight();
+		var iRowHeight = $this.find(".sapUiTableCtrl tr:not(.sapUiAnalyticalTableSum) > td").outerHeight();
 
 		// No rows displayed when visible row count == 0, no row height can be determined, therefore we set standard row height
 		if (!iRowHeight) {
