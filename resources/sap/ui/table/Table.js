@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.table.Table.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IntervalTrigger', 'sap/ui/core/ScrollBar', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/theming/Parameters', 'sap/ui/model/SelectionModel', './Row', './library', 'sap/ui/core/IconPool', 'jquery.sap.dom'],
-	function(jQuery, Control, IntervalTrigger, ScrollBar, ItemNavigation, Parameters, SelectionModel, Row, library, IconPool) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/IntervalTrigger', 'sap/ui/core/ScrollBar', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/theming/Parameters', 'sap/ui/model/SelectionModel', 'sap/ui/model/ChangeReason', './Row', './library', 'sap/ui/core/IconPool', 'jquery.sap.dom'],
+	function(jQuery, Control, IntervalTrigger, ScrollBar, ItemNavigation, Parameters, SelectionModel, ChangeReason, Row, library, IconPool) {
 	"use strict";
 
 
@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.32.5
+	 * @version 1.32.6
 	 *
 	 * @constructor
 	 * @public
@@ -1281,7 +1281,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		if (this.getDomRef()) {
 			// update the bindings by using a delayed mechanism to avoid to many update
 			// requests: by using the mechanism below it will trigger an update each 50ms
-			this._sBindingTimer = this._sBindingTimer || jQuery.sap.delayedCall(50, this, function() {
+			// except if the reason is coming from the binding with reason "change" then
+			// we do an immediate update instead of a delayed one
+			var iDelay = (sReason == ChangeReason.Change ? 0 : 50);
+			this._sBindingTimer = this._sBindingTimer || jQuery.sap.delayedCall(iDelay, this, function() {
 				// update only if control not marked as destroyed (could happen because updateRows is called during destroying the table)
 				if (!this.bIsDestroyed) {
 					this._determineVisibleCols();
@@ -2843,7 +2846,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		if ($Header.length > 0) {
 			var oColumn = sap.ui.getCore().byId($Header.attr("data-sap-ui-colid"));
 			if (oColumn) {
-				oColumn._openMenu($Header[0]);
+				oColumn._openMenu($Header[0], false);
 			}
 			oEvent.preventDefault();
 		} else {
@@ -3081,10 +3084,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 				});
 
 				if (bExecuteDefault) {
-					oColumn._openMenu($col[0]);
+					oColumn._openMenu($col[0], oEvent.type == "keyup");
 				}
 			} else {
-				this._onColumnSelect(oColumn, $col[0], this._isTouchMode(oEvent));
+				this._onColumnSelect(oColumn, $col[0], this._isTouchMode(oEvent), oEvent.type == "keyup");
 			}
 			
 			return;
@@ -3229,7 +3232,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * column select event => opens the column menu
 	 * @private
 	 */
-	Table.prototype._onColumnSelect = function(oColumn, oDomRef, bIsTouchMode) {
+	Table.prototype._onColumnSelect = function(oColumn, oDomRef, bIsTouchMode, bWithKeyboard) {
 		// On tablet open special column header menu
 		if (bIsTouchMode) {
 			var $ColumnHeader = jQuery(oDomRef);
@@ -3277,7 +3280,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		// if the default behavior should be prevented we suppress to open
 		// the column menu!
 		if (bExecuteDefault) {
-			oColumn._openMenu(oDomRef);
+			oColumn._openMenu(oDomRef, bWithKeyboard);
 		}
 
 	};
@@ -6134,7 +6137,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 						break;
 					}
 				}
-			} else if (mParameters.changeReason === sap.ui.model.ChangeReason.Expand) {
+			} else if (mParameters.changeReason === ChangeReason.Expand) {
 				this.setBusy(true);
 			}
 
