@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,17 +10,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 	"use strict";
 
 
-	
+
 	/**
 	 * Constructor for a new Row.
 	 *
-	 * @param {string} [sId] id for the new control, generated automatically if no id is given 
+	 * @param {string} [sId] id for the new control, generated automatically if no id is given
 	 * @param {object} [mSettings] initial settings for the new control
 	 *
 	 * @class
 	 * The row.
 	 * @extends sap.ui.core.Element
-	 * @version 1.34.1
+	 * @version 1.34.2
 	 *
 	 * @constructor
 	 * @public
@@ -28,19 +28,19 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var Row = Element.extend("sap.ui.table.Row", /** @lends sap.ui.table.Row.prototype */ { metadata : {
-	
+
 		library : "sap.ui.table",
 		defaultAggregation : "cells",
 		aggregations : {
-	
+
 			/**
 			 * The controls for the cells.
 			 */
 			cells : {type : "sap.ui.core.Control", multiple : true, singularName : "cell"}
 		}
 	}});
-	
-	
+
+
 	/**
 	 * Returns the index of the row in the table or -1 if not added to a table. This
 	 * function considers the scroll position of the table and also takes fixed rows and

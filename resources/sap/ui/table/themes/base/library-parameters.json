@@ -337,5 +337,7 @@
     "sapUiTableRowHeight": "23px",
     "sapUiTableColHdrHeight": "23px",
     "sapUiTableRowHdrWidth": "22px",
-    "sapUiTableToolbarDesign": "Transparent"
+    "sapUiTableToolbarDesign": "Transparent",
+    "sapUiTableCozyRowHdrWidth": "3rem",
+    "sapUiTableCozyRowHdrHeight": "3rem"
 }

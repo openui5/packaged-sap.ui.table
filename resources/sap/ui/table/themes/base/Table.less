@@ -6,6 +6,8 @@
 @sapUiTableColHdrHeight: 23px;
 @sapUiTableRowHdrWidth: 22px;
 @sapUiTableToolbarDesign: ~"Transparent"; /* should be one of the sap.m.ToolbarDesign enumeration */
+@sapUiTableCozyRowHdrWidth: 3rem;
+@sapUiTableCozyRowHdrHeight: 3rem;
 
 /*
  * BEHAVIOR CLASSES:
@@ -205,6 +207,13 @@
 	display: block;
 }
 
+.sapUiSizeCozy {
+	.sapUiTableColRowHdr.sapUiTableSelAllEnabled,
+	.sapUiTableRowHdr {
+		width: @sapUiTableCozyRowHdrWidth;
+	}
+}
+
 .sapUiTableAriaRowSel {
 	font-size: 0;
 }
@@ -364,11 +373,11 @@
 
 	.sapUiTableCCnt, .sapUiTableColRsz {
 		pointer-events: none;
-	} 
+	}
 
 	.sapUiTableCol {
 		cursor: move;
-		
+
 		* {
 			cursor: move;
 		}
@@ -452,32 +461,32 @@ html[dir=rtl] .sapUiTableColRsz {
 	.sapUiTableCtrl tr {
 		height: 3rem;
 	}
-	
+
 	/* Header */
 	.sapUiTableCol, .sapUiTableColRowHdr {
 		padding-top: 0;
 		padding-bottom: 0;
 	}
-	
+
 	.sapUiTableColRowHdr {
 		margin-top: -1px;
 	}
-	
+
 	.sapUiTableColCell {
 		height: 3rem;
 	}
-	
+
 	.sapUiTableColCell > * {
 		height: 100%;
 		line-height: 3rem;
 	}
-	
+
 	.sapUiTableColRowHdrIco {
 		height:100%;
 	}
 
 	/* Cell Adjustments */
-	
+
 	.sapUiTableColIcons {
 		padding-top: 0;
 	}
@@ -607,11 +616,14 @@ html[dir=rtl] .sapUiTableColRsz {
 	float: left;
 }
 
-.sapUiSizeCompact .sapUiTableTreeIcon {
-	background-image: none;
-	width: 25px;
-	margin-right: 5px;
-	padding: 0;
+.sapUiSizeCompact, .sapUiSizeCozy {
+	// Hide plus/minus
+	.sapUiTableTreeIcon {
+		background-image: none;
+		width: 25px;
+		margin-right: 5px;
+		padding: 0;
+	}
 }
 
 .sapUiTableGroupIcon {
@@ -643,19 +655,19 @@ html[dir=rtl] .sapUiTableColRsz {
 		text-align: center;
 		vertical-align: middle;
 	}
-	
+
 	// Show arrow
 	.sapUiTableGroupIcon.sapUiTableGroupIconOpen::before,
 	.sapUiTableTreeIconNodeOpen::before {
 		content: '\e1e2';
 	}
-	
+
 	// Show arrow
 	.sapUiTableGroupIcon.sapUiTableGroupIconClosed::before,
 	.sapUiTableTreeIconNodeClosed::before {
 		content: '\e066';
 	}
-	
+
 	.sapUiTableRowHdr.sapUiTableGroupHeader > .sapUiTableGroupIcon {
 		left: 0;
 	}
@@ -683,14 +695,14 @@ html[dir=rtl] {
 .sapUiTableRowHdr.sapUiTableGroupHeader > .sapUiTableGroupIcon {
 	position: absolute;
 	left: 3px;
-	
+
 	// vertical centering
 	top: 50%;
 	-moz-transform: translatey(-50%);
 	-ms-transform: translatey(-50%);
 	-webkit-transform: translatey(-50%);
 	transform: translatey(-50%);
-	
+
 	white-space: nowrap;
 	z-index: 1;
 	font-weight: normal;

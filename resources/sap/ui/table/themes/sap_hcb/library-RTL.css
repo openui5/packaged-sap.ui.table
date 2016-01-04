@@ -1,11 +1,11 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /* =========================== */
@@ -18,11 +18,11 @@
 /* TMP during LESS convertion ---- to be deleted */
 /* may be required by SubstitutionRulesManager.css in inbox lib */
 /* ---------------------------------------------------------------------------------------- */
-/** 
+/**
   * This parameter is used in the Shell control to calculate the size when it grows.
-  * !!! ONLY PX-VALUES ARE ALLOWED HERE. 
+  * !!! ONLY PX-VALUES ARE ALLOWED HERE.
   */
-/** 
+/**
   * This parameter is used in the Shell control to calculate the size of the margin when showing
   * an overflow button in the right pane. As of 1.18.0 this value contains the _maximum_ height
   * of the overflow button, if the text inside the button is smaller, the button shrinks with it.
@@ -39,20 +39,20 @@
 /*make small margin themable*/
 /*make medium margin themable*/
 /*make large margin themable*/
-/* 
+/*
  * This is a mixin for creating the predefined container content padding
  * classes:
  * sapUiNoContainerContentPadding
  * sapUiContainerContentPadding
  * sapUiResponsiveContainerContentPadding
- * These classes can be set on many UI5 containers and will 
- * add padding inside the container's content padding based 
+ * These classes can be set on many UI5 containers and will
+ * add padding inside the container's content padding based
  * on the selectors that are arguments for this mixin.
  *
  * Arguments to this function-like mixin are the rootClass selector and
  * the content selector where the padding should be applied.
  */
-/* 
+/*
   * the sapLess-parser has problems with an escaped string as default value for the parameterized mixin
   * therefore we need to temporarily use a parameter assigning the default value
   */
@@ -74,6 +74,14 @@
 }
 .sapUiAnalyticalTable .sapUiAnalyticalTableLoading {
   margin-right: 40px;
+}
+.sapUiAnalyticalTable .sapUiTableRowHdr.sapUiAnalyticalTableSum {
+  border-right: 0;
+  border-left: 0;
+}
+.sapUiAnalyticalTable .sapUiTableTr.sapUiAnalyticalTableSum td {
+  border-right: 0;
+  border-left: 0;
 }
 /*******************************************************************************
  * CHILD CONTROL STYLES
@@ -250,6 +258,10 @@
 }
 .sapUiTableRSel .sapUiTableColRowHdr {
   display: block;
+}
+.sapUiSizeCozy .sapUiTableColRowHdr.sapUiTableSelAllEnabled,
+.sapUiSizeCozy .sapUiTableRowHdr {
+  width: 3rem;
 }
 .sapUiTableAriaRowSel {
   font-size: 0;
@@ -587,7 +599,8 @@ html[dir=rtl] .sapUiTableColRsz {
   background-repeat: no-repeat;
   float: right;
 }
-.sapUiSizeCompact .sapUiTableTreeIcon {
+.sapUiSizeCompact .sapUiTableTreeIcon,
+.sapUiSizeCozy .sapUiTableTreeIcon {
   background-image: none;
   width: 25px;
   margin-left: 5px;
@@ -938,7 +951,9 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 /* Table Row Checkbox */
 /* REQUIRES ICON FONTS */
 .sapUiSizeCompact .sapUiTableSelModeMultiToggle .sapUiTableColRowHdr.sapUiTableSelAllEnabled::after,
-.sapUiSizeCompact .sapUiTableSelModeMultiToggle .sapUiTableRowHdr::after {
+.sapUiSizeCozy .sapUiTableSelModeMultiToggle .sapUiTableColRowHdr.sapUiTableSelAllEnabled::after,
+.sapUiSizeCompact .sapUiTableSelModeMultiToggle .sapUiTableRowHdr::after,
+.sapUiSizeCozy .sapUiTableSelModeMultiToggle .sapUiTableRowHdr::after {
   content: '';
   display: block;
   position: absolute;
@@ -957,6 +972,18 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
   right: 0;
   bottom: 0;
   left: 0;
+}
+.sapUiSizeCompact .sapUiTableSelModeMultiToggle :not(.sapUiTableSelAll).sapUiTableSelAllEnabled.sapUiTableColRowHdr::after,
+.sapUiSizeCozy .sapUiTableSelModeMultiToggle :not(.sapUiTableSelAll).sapUiTableSelAllEnabled.sapUiTableColRowHdr::after,
+.sapUiSizeCompact .sapUiTableSelModeMultiToggle .sapUiTableRowHdr.sapUiTableRowSel::after,
+.sapUiSizeCozy .sapUiTableSelModeMultiToggle .sapUiTableRowHdr.sapUiTableRowSel::after {
+  content: '\e05b';
+}
+.sapUiSizeCompact .sapUiTableSelModeMultiToggle .sapUiTableColRowHdr .sapUiTableColRowHdrIco,
+.sapUiSizeCozy .sapUiTableSelModeMultiToggle .sapUiTableColRowHdr .sapUiTableColRowHdrIco,
+.sapUiSizeCompact .sapUiTableSelModeMultiToggle .sapUiTableColRowHdr:hover .sapUiTableColRowHdrIco,
+.sapUiSizeCozy .sapUiTableSelModeMultiToggle .sapUiTableColRowHdr:hover .sapUiTableColRowHdrIco {
+  display: none;
 }
 .sapUiSizeCondensed .sapUiTableSelModeMultiToggle .sapUiTableColRowHdr.sapUiTableSelAllEnabled::after {
   margin-top: 2px;
@@ -978,10 +1005,6 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 .sapUiSizeCompact .sapUiTableSelModeMultiToggle :not(.sapUiTableSelAll).sapUiTableSelAllEnabled.sapUiTableColRowHdr::after,
 .sapUiSizeCompact .sapUiTableSelModeMultiToggle .sapUiTableRowHdr.sapUiTableRowSel::after {
   content: '\e05b';
-}
-.sapUiSizeCompact .sapUiTableSelModeMultiToggle .sapUiTableColRowHdr .sapUiTableColRowHdrIco,
-.sapUiSizeCompact .sapUiTableSelModeMultiToggle .sapUiTableColRowHdr:hover .sapUiTableColRowHdrIco {
-  display: none;
 }
 /*******************************************************************************
 * TABLE ADOPTIONS BY UX
@@ -1065,6 +1088,12 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
 .sapUiTableRSel .sapUiTableCtrlScrFixed {
   margin-right: 25px;
 }
+.sapUiSizeCozy .sapUiTableRSel .sapUiTableColHdrScr,
+.sapUiSizeCozy .sapUiTableRSel .sapUiTableColHdrFixed,
+.sapUiSizeCozy .sapUiTableRSel .sapUiTableCtrlScr,
+.sapUiSizeCozy .sapUiTableRSel .sapUiTableCtrlScrFixed {
+  margin-right: 3rem;
+}
 .sapUiSizeCompact .sapUiTableRSel .sapUiTableColHdrScr,
 .sapUiSizeCompact .sapUiTableRSel .sapUiTableColHdrFixed,
 .sapUiSizeCompact .sapUiTableRSel .sapUiTableCtrlScr,
@@ -1082,6 +1111,12 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
 .sapUiSizeCompact .sapUiTableRowHdrScr,
 .sapUiSizeCompact .sapUiTableColRowHdr {
   width: 32px;
+  min-height: 32px;
+}
+.sapUiSizeCozy .sapUiTableRowHdrScr,
+.sapUiSizeCozy .sapUiTableColRowHdr {
+  width: 3rem;
+  min-height: 3rem;
 }
 /* Table Column Resizer */
 .sapUiTableColRsz:hover {
@@ -1151,8 +1186,10 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
 .sapUiTableColHdrFixed .sapUiTableColLastFixed {
   border-left: 0.188rem solid #ffffff;
 }
-.sapUiTableFixedPreBottomRow > td,
-.sapUiTableRowHdr.sapUiTableFixedPreBottomRow {
+.sapUiSizeCompact .sapUiTableFixedPreBottomRow > td,
+.sapUiSizeCozy .sapUiTableFixedPreBottomRow > td,
+.sapUiSizeCompact .sapUiTableRowHdr.sapUiTableFixedPreBottomRow,
+.sapUiSizeCozy .sapUiTableRowHdr.sapUiTableFixedPreBottomRow {
   border-bottom: 0.188rem solid #ffffff;
 }
 .sapUiTableRowHdr:last-child,
@@ -1165,4 +1202,15 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
 }
 .sapUiTableTouch .sapUiScrollBar ::-webkit-scrollbar {
   background-color: #000000;
+}
+/* ======================================================== */
+/* CSS for control sap.ui.analytics/AnalyticalTable.control */
+/* ======================================================== */
+.sapUiSizeCompact .sapUiAnalyticalTable .sapUiTableRowHdrScr .sapUiTableRowHdr.sapUiTableGroupHeader::after,
+.sapUiSizeCozy .sapUiAnalyticalTable .sapUiTableRowHdrScr .sapUiTableRowHdr.sapUiTableGroupHeader::after,
+.sapUiSizeCompact .sapUiAnalyticalTable .sapUiTableRowHdrScr .sapUiTableRowHdr.sapUiTableRowHidden::after,
+.sapUiSizeCozy .sapUiAnalyticalTable .sapUiTableRowHdrScr .sapUiTableRowHdr.sapUiTableRowHidden::after,
+.sapUiSizeCompact .sapUiAnalyticalTable.sapUiTableSelModeMultiToggle .sapUiTableRowHdr.sapUiAnalyticalTableSum::after,
+.sapUiSizeCozy .sapUiAnalyticalTable.sapUiTableSelModeMultiToggle .sapUiTableRowHdr.sapUiAnalyticalTableSum::after {
+  display: none;
 }
