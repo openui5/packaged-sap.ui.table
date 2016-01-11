@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -913,14 +913,14 @@ sap.ui.define(['jquery.sap.global'],
 			rm.writeClasses();
 			rm.write("><div");
 			rm.addClass("sapUiTableCell");
-			
+
 			rm.writeClasses();
-			
+
 			if (oTable.getRowHeight() && oTable.getVisibleRowCountMode() == sap.ui.table.VisibleRowCountMode.Auto) {
 				rm.addStyle("max-height", oTable.getRowHeight() + "px");
 			}
 			rm.writeStyles();
-			
+
 			rm.write(">");
 			this.renderTableCellControl(rm, oTable, oCell, iCellIndex);
 			rm.write("</div></td>");

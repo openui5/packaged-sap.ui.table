@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @class
 	 * The Table control provides a set of sophisticated and comfort functions for table design. For example, you can make settings for the number of visible rows. The first visible row can be explicitly set. For the selection of rows, a Multi, a Single, and a None mode are available.
 	 * @extends sap.ui.core.Control
-	 * @version 1.28.25
+	 * @version 1.28.26
 	 *
 	 * @constructor
 	 * @public
@@ -613,7 +613,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		this._bOnAfterRendering = true;
 
 		var $this = this.$();
-		
+
 		if (sap.ui.Device.system.tablet) {
 			$this.addClass("sapUiTableTouch");
 		}
@@ -765,9 +765,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			var that = this;
 			var oBindingInfo = this.mBindingInfos["rows"];
 			jQuery.each(this.getRows(), function(iIndex, oRow) {
-				
+
 				var iAbsoluteRowIndex = that.getFirstVisibleRow() + iIndex; //get the aboslute row index
-				
+
 				jQuery.each(oRow.getCells(), function(iIndex, oCell) {
 					if (oCell._updateTableCell) {
 						oCell._updateTableCell(oCell /* cell control */,
@@ -1507,7 +1507,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			} else {
 				$sapUiTableHSb.css('padding-left', iScrollPadding + 'px');
 			}
-			
+
 			// When table has no fixed width, the scrollbar is not allowed to increase the width of the table.
 			// We define the max-width of the scrollbar to be limited by its parent width.
 			var iMaximumScrollBarWidth = $sapUiTableHSb.parent().width();
@@ -2946,7 +2946,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 */
 	Table.prototype._onColumnMoveStart = function(oColumn) {
 		this.$().addClass("sapUiTableDragDrop");
-		
+
 		this._disableTextSelection();
 
 		var $col = oColumn.$();
@@ -3302,7 +3302,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			if (this.getFixedColumnCount() > 0 && iColIndex >= this.getFixedColumnCount()) {
 				var iFixedColumnsWidth = $this.find(".sapUiTableColHdrFixed").width();
 				iColLeft = iColLeft + iFixedColumnsWidth;
-				
+
 				// Consider scroll offset of non fixed area.
 				iColLeft = iColLeft - $this.find(".sapUiTableCtrlScr").scrollLeft();
 			}
@@ -4176,11 +4176,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			// CTRL + A handling
 			var oIN = this._oItemNavigation;
 			var iFocusedIndex = oIN.getFocusedIndex();
-			
+
 			this._toggleSelectAll();
 
 			oIN.focusItem(iFocusedIndex, oEvent);
-			
+
 			oEvent.preventDefault();
 			oEvent.stopImmediatePropagation(true);
 		} else if (oEvent.keyCode === jQuery.sap.KeyCodes.F10 && (oEvent.shiftKey)) {
@@ -4311,7 +4311,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		if (oEvent.shiftKey) {
 			var iFocusedRow = this._getFocusedRowIndex();
 			var bIsFocusedRowSelected = this._isFocusedRowSelected();
-			
+
 			if (bIsFocusedRowSelected === true) {
 				this.addSelectionInterval(iFocusedRow - 1, iFocusedRow - 1);
 			} else if (bIsFocusedRowSelected === false) {
@@ -4677,8 +4677,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	Table.prototype.onsapright = function(oEvent) {
 		this._expandGroupHeader(oEvent);
 	};
-	
-	
+
+
 	/**
 	 * If focus is on group header, open/close the group header, depending on the expand state.
 	 * @private
@@ -5208,7 +5208,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 
 		// Make sure that table does not grow to infinity
 		var iAvailableSpace = Math.min(iCalculatedSpace, iMaxHeight);
-		
+
 		// the last content row height is iRowHeight - 1, therefore + 1 in the formula below:
 		return Math.max(iMinRowCount, Math.floor((iAvailableSpace + 1) / iRowHeight));
 	};
@@ -5450,7 +5450,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @private
 	 */
 	Table.prototype._toggleSelectAll = function() {
-		
+
 		if (!this.$("selall").hasClass("sapUiTableSelAll")) { //this._getSelectableRowCount() === this.getSelectedIndices().length) {
 			this.clearSelection();
 		} else {
