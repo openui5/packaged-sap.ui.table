@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,7 +24,7 @@ sap.ui.define(['jquery.sap.global'],
 			 * @public
 			 */
 			Sequential: "Sequential",
-	
+
 			/**
 			 * If supported by a backend provider with analytical capabilities, the requests needed for an automatic node expansion are bundled.
 			 * @public

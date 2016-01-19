@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/RenderMa
 	 * @class
 	 * The column allows to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.32.9
+	 * @version 1.32.10
 	 *
 	 * @constructor
 	 * @public
@@ -166,10 +166,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/RenderMa
 	}});
 
 
-	
 
 
-	
+
+
 
 
 	/** default filter type for the columns */
@@ -572,18 +572,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/core/RenderMa
 				// reset the sorting status of all columns
 				var aSorters = [];
 				var aSortedCols = oTable._aSortedColumns;
-				
+
 				var aCols = oTable.getColumns();
-				
+
 				for (var i = 0, l = aCols.length; i < l; i++) {
-					
+
 					aCols[i].setProperty("sorted", false, true);
 					aCols[i].setProperty("sortOrder", sap.ui.table.SortOrder.Ascending, true);
 					aCols[i]._renderSortIcon();
 					if (jQuery.inArray(aCols[i], aSortedCols) < 0) {
 						delete aCols[i]._oSorter;
 					}
-						
+
 				}
 
 				for (var i = 0, l = aSortedCols.length; i < l; i++) {
