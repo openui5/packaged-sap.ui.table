@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		 *
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.34.3
+		 * @version 1.34.4
 		 *
 		 * @constructor
 		 * @public

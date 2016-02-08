@@ -366,7 +366,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/theming/Parameters'],
 							if (jQuery.isArray(aHeaderSpan)) {
 								iSpan = aCols[i].getHeaderSpan()[h] + 1;
 							} else {
-								iSpan = aCols[i].getHeaderSpan() + 1;
+								iSpan = parseInt(aCols[i].getHeaderSpan(), 10) + 1;
 							}
 						} else {
 							//Render column header but this is invisible because of the span
@@ -418,7 +418,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/theming/Parameters'],
 						if (jQuery.isArray(aHeaderSpan)) {
 							iSpan = aCols[i].getHeaderSpan()[h] + 1;
 						} else {
-							iSpan = aCols[i].getHeaderSpan() + 1;
+							iSpan = parseInt(aCols[i].getHeaderSpan(), 10) + 1;
 						}
 					} else {
 						//Render column header but this is invisible because of the span
@@ -974,7 +974,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/theming/Parameters'],
 			this.renderTableCell(rm, oTable, oRow, aCells[cell], cell, bFixedTable, iStartColumn, iEndColumn, aVisibleColumns);
 		}
 		if (!bFixedTable && bHasOnlyFixedColumns && aCells.length > 0) {
-			rm.write("<td></td>");
+			rm.write("<td");
+			rm.addClass("sapUiTableTDDummy");
+			rm.writeClasses();
+			rm.write(">");
+			rm.write("</td>");
 		}
 		rm.write("</tr>");
 

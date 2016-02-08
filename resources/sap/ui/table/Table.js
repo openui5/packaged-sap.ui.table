@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.34.3
+	 * @version 1.34.4
 	 *
 	 * @constructor
 	 * @public
@@ -795,10 +795,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			var $rowDomRefs = oRow.getDomRefs(true);
 
 			// update row header tooltip
-			if (oRow.getBindingContext() && this._isRowSelectable(oRow.getIndex())) {
-				$rowDomRefs.rowSelector.attr("title", this._oResBundle.getText("TBL_ROW_SELECT"));
-			} else {
-				$rowDomRefs.rowSelector.attr("title", "");
+			if ($rowDomRefs.rowSelector) {
+				if (oRow.getBindingContext() && this._isRowSelectable(oRow.getIndex())) {
+					$rowDomRefs.rowSelector.attr("title", this._oResBundle.getText("TBL_ROW_SELECT"));
+				} else {
+					$rowDomRefs.rowSelector.attr("title", "");
+				}
 			}
 
 			if (iFixedTopRows > 0) {
@@ -1213,7 +1215,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			return this;
 		}
 
-		if (iVisibleRowCount <= (this.getFixedRowCount() + this.getFixedBottomRowCount())) {
+		var iFixedRowsCount = this.getFixedRowCount() + this.getFixedBottomRowCount();
+		if (iVisibleRowCount <= iFixedRowsCount && iFixedRowsCount > 0) {
 			jQuery.sap.log.error("Table: " + this.getId() + " visibleRowCount('" + iVisibleRowCount + "') must be bigger than number of fixed rows('" + (this.getFixedRowCount() + this.getFixedBottomRowCount()) + "')");
 			return this;
 		}
@@ -1250,12 +1253,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * refresh rows
 	 * @private
 	 */
-	Table.prototype.refreshRows = function(sReason) {
-		this._attachBindingListener();
+	Table.prototype.refreshRows = function(vEvent) {
+		var sReason = typeof (vEvent) === "object" ? vEvent.getParameter("reason") : vEvent;
+		if (sReason == sap.ui.model.ChangeReason.Refresh) {
+			this._attachBindingListener();
+		}
 		this._bBusyIndicatorAllowed = true;
 		//needs to be called here to reset the firstVisible row so that the correct data is fetched
 		this._bRefreshing = true;
-		this._onBindingChange(sReason);
+		this._onBindingChange(vEvent);
 		this._updateBindingContexts(true);
 		this._bRefreshing = false;
 	};
@@ -2475,7 +2481,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 					vHeaderSpan = [vHeaderSpan];
 				}
 				jQuery.each(vHeaderSpan, function(iSpanIndex, iSpan) {
-					vHeaderSpan[iSpanIndex] = Math.max((iSpan + iIndex > aVisibleColumns.length) ? Math.min(iSpan, aVisibleColumns.length - iIndex) : iSpan, 1);
+					vHeaderSpan[iSpanIndex] = Math.max(iSpan, 1);
 				});
 
 				aSpans = vHeaderSpan;
@@ -3144,7 +3150,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			}
 		}
 
-		if (oClosestTd && oClosestTd.getAttribute("role") == "gridcell" && (
+		if (oClosestTd && (oClosestTd.getAttribute("role") == "gridcell" || jQuery(oClosestTd).hasClass("sapUiTableTDDummy")) && (
 		    this.getSelectionBehavior() === sap.ui.table.SelectionBehavior.Row ||
 		    this.getSelectionBehavior() === sap.ui.table.SelectionBehavior.RowOnly)) {
 			var $row = $target.closest(".sapUiTableCtrl > tbody > tr");
@@ -6226,10 +6232,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	Table.prototype._attachDataRequestedListeners = function () {
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
-			this._iDataRequestedCounter = 0;
 			oBinding.detachDataRequested(this._onBindingDataRequestedListener, this);
 			oBinding.detachDataReceived(this._onBindingDataReceivedListener, this);
-
+			this._iDataRequestedCounter = 0;
 			oBinding.attachDataRequested(this._onBindingDataRequestedListener, this);
 			oBinding.attachDataReceived(this._onBindingDataReceivedListener, this);
 		}
@@ -6239,16 +6244,20 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 * @private
 	 */
-	Table.prototype._onBindingDataRequestedListener = function () {
-		this._iDataRequestedCounter++;
+	Table.prototype._onBindingDataRequestedListener = function (oEvent) {
+		if (oEvent.getSource() == this.getBinding("rows")) {
+			this._iDataRequestedCounter++;
+		}
 	};
 
 	/**
 	 *
 	 * @private
 	 */
-	Table.prototype._onBindingDataReceivedListener = function () {
-		this._iDataRequestedCounter--;
+	Table.prototype._onBindingDataReceivedListener = function (oEvent) {
+		if (oEvent.getSource() == this.getBinding("rows")) {
+			this._iDataRequestedCounter--;
+		}
 	};
 
 	/**
