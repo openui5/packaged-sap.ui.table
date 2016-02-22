@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable Control.
 	 * @extends sap.ui.table.Table
-	 * @version 1.34.6
+	 * @version 1.34.7
 	 *
 	 * @constructor
 	 * @public
