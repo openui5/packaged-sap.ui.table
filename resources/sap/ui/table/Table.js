@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.32.12
+	 * @version 1.32.13
 	 *
 	 * @constructor
 	 * @public
@@ -1230,12 +1230,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * refresh rows
 	 * @private
 	 */
-	Table.prototype.refreshRows = function(sReason) {
-		this._attachBindingListener();
+	Table.prototype.refreshRows = function(vEvent) {
+		var sReason = typeof (vEvent) === "object" ? vEvent.getParameter("reason") : vEvent;
+		if (sReason == sap.ui.model.ChangeReason.Refresh) {
+			this._attachBindingListener();
+		}
 		this._bBusyIndicatorAllowed = true;
 		//needs to be called here to reset the firstVisible row so that the correct data is fetched
 		this._bRefreshing = true;
-		this._onBindingChange(sReason);
+		this._onBindingChange(vEvent);
 		this._updateBindingContexts(true);
 		this._bRefreshing = false;
 	};
@@ -5522,25 +5525,33 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 						sKey = sNewKey;
 					}
 					if (sKey !== sNewKey) {
-						aContexts.splice(i + 1, 0, {
+						var oGroupContext = aContexts[i + 1].getModel().getContext("/sap.ui.table.GroupInfo" + i);
+						oGroupContext.__groupInfo = {
 							oContext: aContexts[i + 1],
 							name: sKey,
 							count: iCounter,
 							groupHeader: true,
 							expanded: true
-						});
+						};
+						aContexts.splice(i + 1, 0,
+							oGroupContext
+						);
 						sKey = sNewKey;
 						iCounter = 0;
 					}
 					iCounter++;
 				}
-				aContexts.splice(0, 0, {
+				var oGroupContext = aContexts[0].getModel().getContext("/sap.ui.table.GroupInfo");
+				oGroupContext.__groupInfo =	{
 					oContext: aContexts[0],
 					name: sKey,
 					count: iCounter,
 					groupHeader: true,
 					expanded: true
-				});
+				};
+				aContexts.splice(0, 0,
+					oGroupContext
+				);
 
 				// extend the binding and hook into the relevant functions to provide
 				// access to the grouping information for the _modifyRow function
@@ -5553,29 +5564,30 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 					},
 					isGroupHeader: function(iIndex) {
 						var oContext = aContexts[iIndex];
-						return oContext && !(oContext instanceof sap.ui.model.Context);
+						return oContext && oContext.__groupInfo && oContext.__groupInfo.groupHeader;
 					},
 					getTitle: function(iIndex) {
 						var oContext = aContexts[iIndex];
-						return oContext && !(oContext instanceof sap.ui.model.Context) && (oContext["name"] + " - " + oContext["count"]);
+						return oContext && oContext.__groupInfo && oContext.__groupInfo.name + " - " + oContext.__groupInfo.count;
 					},
 					isExpanded: function(iIndex) {
-						return this.isGroupHeader(iIndex) && aContexts[iIndex].expanded;
+						var oContext = aContexts[iIndex];
+						return this.isGroupHeader(iIndex) && oContext.__groupInfo && oContext.__groupInfo.expanded;
 					},
 					expand: function(iIndex) {
-						if (this.isGroupHeader(iIndex) && !aContexts[iIndex].expanded) {
-							for (var i = 0; i < aContexts[iIndex].childs.length; i++) {
-								aContexts.splice(iIndex + 1 + i, 0, aContexts[iIndex].childs[i]);
+						if (this.isGroupHeader(iIndex) && !aContexts[iIndex].__groupInfo.expanded) {
+							for (var i = 0; i < aContexts[iIndex].__childs.length; i++) {
+								aContexts.splice(iIndex + 1 + i, 0, aContexts[iIndex].__childs[i]);
 							}
-							delete aContexts[iIndex].childs;
-							aContexts[iIndex].expanded = true;
+							delete aContexts[iIndex].__childs;
+							aContexts[iIndex].__groupInfo.expanded = true;
 							this._fireChange();
 						}
 					},
 					collapse: function(iIndex) {
-						if (this.isGroupHeader(iIndex) && aContexts[iIndex].expanded) {
-							aContexts[iIndex].childs = aContexts.splice(iIndex + 1, aContexts[iIndex].count);
-							aContexts[iIndex].expanded = false;
+						if (this.isGroupHeader(iIndex) && aContexts[iIndex].__groupInfo.expanded) {
+							aContexts[iIndex].__childs = aContexts.splice(iIndex + 1, aContexts[iIndex].__groupInfo.count);
+							aContexts[iIndex].__groupInfo.expanded = false;
 							this._fireChange();
 						}
 					}
@@ -6187,10 +6199,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	Table.prototype._attachDataRequestedListeners = function () {
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
-			this._iDataRequestedCounter = 0;
 			oBinding.detachDataRequested(this._onBindingDataRequestedListener, this);
 			oBinding.detachDataReceived(this._onBindingDataReceivedListener, this);
-
+			this._iDataRequestedCounter = 0;
 			oBinding.attachDataRequested(this._onBindingDataRequestedListener, this);
 			oBinding.attachDataReceived(this._onBindingDataReceivedListener, this);
 		}
@@ -6200,16 +6211,20 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 * @private
 	 */
-	Table.prototype._onBindingDataRequestedListener = function () {
-		this._iDataRequestedCounter++;
+	Table.prototype._onBindingDataRequestedListener = function (oEvent) {
+		if (oEvent.getSource() == this.getBinding("rows")) {
+			this._iDataRequestedCounter++;
+		}
 	};
 
 	/**
 	 *
 	 * @private
 	 */
-	Table.prototype._onBindingDataReceivedListener = function () {
-		this._iDataRequestedCounter--;
+	Table.prototype._onBindingDataReceivedListener = function (oEvent) {
+		if (oEvent.getSource() == this.getBinding("rows")) {
+			this._iDataRequestedCounter--;
+		}
 	};
 
 	/**
