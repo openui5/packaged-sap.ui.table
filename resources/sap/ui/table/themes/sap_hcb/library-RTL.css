@@ -296,6 +296,11 @@
 .sapUiTableRSel .sapUiTableCtrlScrFixed {
   margin-right: 25px;
 }
+.sapUiTableCtrlScrFixed,
+.sapUiTableColHdrFixed {
+  max-width: 100%;
+  overflow: hidden;
+}
 .sapUiTableVScr .sapUiTableCtrlScr {
   margin-left: 16px;
 }
