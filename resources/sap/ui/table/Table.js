@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.36.6
+	 * @version 1.36.7
 	 *
 	 * @constructor
 	 * @public
@@ -301,7 +301,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 					/**
 					 * array of row indices which selection has been changed (either selected or deselected)
 					 */
-					rowIndices : {type : "int[]"}
+					rowIndices : {type : "int[]"},
+
+					/**
+					 * indicates that the event was fired due to an explicit user interaction like clicking the row header
+					 * or using the keyboard (SPACE or ENTER) to select a row or a range of rows.
+					 */
+					userInteraction: {type: "boolean"}
 				}
 			},
 
@@ -3025,6 +3031,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		return bCancel;
 	};
 
+	Table.prototype.getFocusDomRef = function() {
+		if (!this._oItemNavigation) {
+			this._initItemNavigation();
+		}
+		// focus is handled by item navigation. It's  not the root element of the table which may get the focus but
+		// the last focused column header or cell.
+		return this._oItemNavigation.getFocusedDomRef() || Control.prototype.getFocusDomRef.apply(this, arguments);
+	};
+
 	/**
 	 * handles the focus in to reposition the focus or prevent default handling for
 	 * column resizing
@@ -4226,10 +4241,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 		if (oSelMode === "Multi" || oSelMode === "MultiToggle") {
 			this.$("selall").attr('title',this._oResBundle.getText("TBL_SELECT_ALL")).addClass("sapUiTableSelAll");
 		}
+
 		this.fireRowSelectionChange({
 			rowIndex: iRowIndex,
 			rowContext: this.getContextByIndex(iRowIndex),
-			rowIndices: aRowIndices
+			rowIndices: aRowIndices,
+			userInteraction: this._iSourceRowIndex !== undefined
 		});
 	};
 
@@ -6158,15 +6175,19 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 * @private
 	 */
 	Table.prototype._toggleSelectAll = function() {
-
+		// in order to fire the rowSelectionChanged event, the SourceRowIndex mus be set to -1
+		// to indicate that the selection was changed by user interaction
 		if (!this.$("selall").hasClass("sapUiTableSelAll")) {
+			this._iSourceRowIndex = -1;
 			this.clearSelection();
 		} else {
+			this._iSourceRowIndex = 0;
 			this.selectAll();
 		}
 		if (!!sap.ui.Device.browser.internet_explorer) {
 			this.$("selall").focus();
 		}
+		this._iSourceRowIndex = undefined;
 	};
 
 	/**
