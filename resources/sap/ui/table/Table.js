@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.32.14
+	 * @version 1.32.15
 	 *
 	 * @constructor
 	 * @public
@@ -2995,6 +2995,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			}
 		}
 		return bCancel;
+	};
+
+	Table.prototype.getFocusDomRef = function() {
+		if (!this._oItemNavigation) {
+			this._initItemNavigation();
+		}
+		// focus is handled by item navigation. It's  not the root element of the table which may get the focus but
+		// the last focused column header or cell.
+		return this._oItemNavigation.getFocusedDomRef() || Control.prototype.getFocusDomRef.apply(this, arguments);
 	};
 
 	/**
