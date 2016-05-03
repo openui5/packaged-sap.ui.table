@@ -148,7 +148,7 @@
 .sapUiTableHdrTitle {
   font-size: 13px;
   font-weight: bold;
-  color: #000000;
+  color: #ffffff;
 }
 .sapUiTableTbr {
   height: 25px;
@@ -174,8 +174,6 @@
 .sapUiTableCCnt {
   position: relative;
   overflow: hidden;
-  display: -webkit-flex;
-  display: flex;
   border-bottom: 1px solid #ffffff;
 }
 .sapUiTableOverlay {
@@ -339,11 +337,11 @@
   text-align: center;
   vertical-align: middle;
 }
-html[data-sap-ui-browser^="ie9"] .sapUiTableCtrlScrFixed {
+.sapUiTableCtrlScrFixed {
   float: right;
 }
-html[data-sap-ui-browser^="ie9"] .sapUiTableCtrlScrFixed,
-html[data-sap-ui-browser^="ie9"] .sapUiTableColHdrFixed {
+.sapUiTableCtrlScrFixed,
+.sapUiTableColHdrFixed {
   max-width: 100%;
   overflow: hidden;
 }
@@ -439,7 +437,7 @@ html[data-sap-ui-browser^="ie9"] .sapUiTableColHdrFixed {
   cursor: pointer;
   padding: 0 8px;
   background-color: #000000;
-  border: 1px solid #cc8700;
+  border: 1px solid #7a5100;
   opacity: 0.5;
 }
 .sapUiTableColRsz {
@@ -564,15 +562,15 @@ html[data-sap-ui-browser^="ie"] .sapUiTableHSb {
 }
 .sapUiTableCell > .sapUiTf.sapUiTfErr.sapUiTfStd,
 .sapUiTableCell > .sapUiTfCombo.sapUiTfErr.sapUiTfStd {
-  background-color: #aa0000;
+  background-color: #7a5100;
 }
 .sapUiTableCell > .sapUiTf.sapUiTfWarn.sapUiTfStd,
 .sapUiTableCell > .sapUiTfCombo.sapUiTfWarn.sapUiTfStd {
-  background-color: #ccaa00;
+  background-color: #000000;
 }
 .sapUiTableCell > .sapUiTf.sapUiTfSucc.sapUiTfStd,
 .sapUiTableCell > .sapUiTfCombo.sapUiTfSucc.sapUiTfStd {
-  background-color: #00aa00;
+  background-color: #000000;
 }
 .sapUiTableCell > .sapUiTfCombo {
   padding: 0 0 0 8px;
@@ -604,14 +602,14 @@ html[data-sap-ui-browser^="ie"] .sapUiTableHSb {
  ******************************************************************************/
 .sapUiTableGroupIconOpen,
 .sapUiTableTreeIconNodeOpen {
-  background-image: url(img-RTL/ico12_open_minus.gif);
+  background-image: url(../base/img-RTL/ico12_open_minus.gif);
 }
 .sapUiTableGroupIconClosed,
 .sapUiTableTreeIconNodeClosed {
-  background-image: url(img-RTL/ico12_closed_plus.gif);
+  background-image: url(../base/img-RTL/ico12_closed_plus.gif);
 }
 .sapUiTableTreeIconLeaf {
-  background-image: url(img-RTL/ico12_leaf.gif);
+  background-image: url(../base/img-RTL/ico12_leaf.gif);
 }
 .sapUiTableTreeIcon {
   display: inline-block;
@@ -706,7 +704,7 @@ html[dir=rtl] .sapUiSizeCozy .sapUiTableTreeIconNodeClosed::before {
   padding-left: 18px;
 }
 .sapUiTableHeightResizer {
-  background-image: url(img-RTL/splitter_horiz_grip.gif);
+  background-image: url(../base/img-RTL/splitter_horiz_grip.gif);
   background-position: center center;
   background-repeat: no-repeat;
   background-color: #dbe5ec;
@@ -778,50 +776,9 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 .sapMNavItemFlipping .sapUiTable {
   opacity: 0;
 }
+/* ============================== */
 /* Global CSS for 'sap_hcb' theme */
-/* Background Colors */
-/* Foreground Colors */
-/* Semantic Colors */
-/* Shadow Color */
-/* StandardListItem */
-/* ==================================== */
-/* Font styling                         */
-/* ==================================== */
-/* ==================================== */
-/* Chart Colors                         */
-/* ==================================== */
-/* Semantic Chart Colors */
-/* Note Explicit UX decision not to derive from @sapUiCritical, ... */
-/* Accent Chart Colors */
-/* Sequential Chart Colors */
-/* Derived Chart Colors */
-/* Shell */
-/* NotificationBar */
-/* ToolPopup */
-/* RatingIndicator */
-/* DateTimeInput Custom Picker JavaScript	  */
-/* mixed, scroller, clickpick */
-/* mixed, scroller, clickpick */
-/* modal, bubble, bottom, top */
-/* modal, bubble, bottom, top */
-/* Toolbar Separator */
-/* ------------------------------------------------------------------- */
-/* Generic Mapping: not for usage in standard control development !!!! */
-/* ------------------------------------------------------------------- */
-/* Semantic Text Colors */
-/* Semantic Element Colors */
-/* Semantic Backgrounds */
-/* Background Brand */
-/* Text Colors */
-/* Border Colors */
-/* @sapUiLightBorder: @sapHCStandardFG; */
-/* @sapUiExtraLightBorder: @sapHCStandardFG; */
-/* Accent */
-/* Backgrounds Header/Footer */
-/* Background */
-/* SAP.ME */
-/* OverlapCalendar Event Type */
-/* Calendar Legend */
+/* ============================== */
 /* ============================================ */
 /* CSS for control sap.ui.commons/Table.control */
 /* SAP-HCB Theme                                */
@@ -842,13 +799,6 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
   background-color: #000000;
   color: #ffffff;
   border-bottom: 3px solid #ffffff;
-}
-.sapUiTableColHdrCnt > .sapUiTableSelAllEnabled,
-.sapUiTableCell > .sapUiTv,
-.sapUiTableCell .sapUiTfComboIcon,
-.sapUiTableCell > .sapUiTfStd,
-.sapUiTableTr .sapUiTableCell {
-  outline-width: 0px;
 }
 /*******************************************************************************
  * TABLE CONTROL
@@ -873,9 +823,6 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 .sapUiTableTr > td,
 .sapUiTableRowHdr {
   border-bottom: 0.0625rem solid #999999;
-}
-.sapUiTableRowHdrScr > .sapUiTableRowHdr {
-  outline-width: 0px;
 }
 .sapUiTableColRowHdr:hover,
 .sapUiTableCol:hover,
@@ -1102,12 +1049,31 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
   font-size: 0.875rem;
   color: #ffffff;
 }
-.sapUiTableTr > td:focus,
-.sapUiTableRowHdrScr > .sapUiTableRowHdr:focus,
-.sapUiTableColHdr *:focus,
-.sapUiTableColRowHdr:focus {
-  outline: 0.125rem dotted #ffffff;
-  outline-offset: -0.125rem;
+/*
+ * Focus Outline for Table Cells
+ *
+ * IE, Edge : use native outline rendering. It has correct contrast and offset.
+ * Any attempt to specify another outline in CSS breaks it.
+ *
+ * Other browsers see below:
+ */
+/* WebKit */
+.sapUiTableTr > td:focus:not(*:root),
+.sapUiTableCol:focus:not(*:root),
+.sapUiTableRowHdr:focus:not(*:root),
+.sapUiTableColRowHdr:focus:not(*:root) {
+  outline-offset: -3px;
+  outline: 2px dotted #ffffff;
+}
+/* Firefox */
+@supports (-moz-appearance:meterbar) {
+  .sapUiTableTr > td:focus,
+  .sapUiTableCol:focus,
+  .sapUiTableRowHdr:focus,
+  .sapUiTableColRowHdr:focus {
+    outline-offset: -3px;
+    outline: 2px dotted #ffffff;
+  }
 }
 .sapUiTableRSel .sapUiTableCtrlScr,
 .sapUiTableRSel .sapUiTableCtrlScrFixed {
@@ -1235,20 +1201,20 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
 .sapUiTableTouch .sapUiScrollBar ::-webkit-scrollbar {
   background-color: #000000;
 }
-.sap-desktop .sapUiTableVSb::-webkit-scrollbar-thumb {
+html.sap-desktop .sapUiTableVSb::-webkit-scrollbar-thumb {
   border-left: 4px solid #000000;
   border-top: 2px solid #000000;
   border-bottom: 2px solid #000000;
   box-shadow: none;
 }
-.sap-desktop .sapUiTableHSb::-webkit-scrollbar-thumb {
+html.sap-desktop .sapUiTableHSb::-webkit-scrollbar-thumb {
   border-bottom: 4px solid #000000;
   box-shadow: none;
 }
-.sap-desktop .sapUiTableHSb::-webkit-scrollbar,
-.sap-desktop .sapUiTableHSb::-webkit-scrollbar-thumb,
-.sap-desktop .sapUiTableVSb::-webkit-scrollbar,
-.sap-desktop .sapUiTableVSb::-webkit-scrollbar-thumb {
+html.sap-desktop .sapUiTableHSb::-webkit-scrollbar,
+html.sap-desktop .sapUiTableHSb::-webkit-scrollbar-thumb,
+html.sap-desktop .sapUiTableVSb::-webkit-scrollbar,
+html.sap-desktop .sapUiTableVSb::-webkit-scrollbar-thumb {
   border-right: none;
 }
 .sapUiTableVSbContent {

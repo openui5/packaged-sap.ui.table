@@ -19,7 +19,7 @@ function(jQuery, Element, RenderManager, Filter, Sorter, Type, String, library) 
 	 * @class
 	 * The column allows you to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.38.0
+	 * @version 1.38.1
 	 *
 	 * @constructor
 	 * @public

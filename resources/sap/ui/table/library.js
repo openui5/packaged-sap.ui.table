@@ -20,21 +20,22 @@ sap.ui.define(['jquery.sap.global',
 	 * @namespace
 	 * @name sap.ui.table
 	 * @author SAP SE
-	 * @version 1.38.0
+	 * @version 1.38.1
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.table",
-		version: "1.38.0",
+		version: "1.38.1",
 		dependencies : ["sap.ui.core","sap.ui.unified"],
 		types: [
 			"sap.ui.table.NavigationMode",
 			"sap.ui.table.SelectionBehavior",
 			"sap.ui.table.SelectionMode",
 			"sap.ui.table.SortOrder",
-			"sap.ui.table.VisibleRowCountMode"
+			"sap.ui.table.VisibleRowCountMode",
+			"sap.ui.table.SharedDomRef"
 		],
 		interfaces: [],
 		controls: [
@@ -68,7 +69,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Navigation mode of the table
 	 *
-	 * @version 1.38.0
+	 * @version 1.38.1
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -93,7 +94,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Selection behavior of the table
 	 *
-	 * @version 1.38.0
+	 * @version 1.38.1
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -124,7 +125,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Selection mode of the table
 	 *
-	 * @version 1.38.0
+	 * @version 1.38.1
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -161,7 +162,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Sort order of a column
 	 *
-	 * @version 1.38.0
+	 * @version 1.38.1
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -186,7 +187,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * VisibleRowCountMode of the table
 	 *
-	 * @version 1.38.0
+	 * @version 1.38.1
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -215,6 +216,30 @@ sap.ui.define(['jquery.sap.global',
 		 */
 		Auto : "Auto"
 
+	};
+
+	/**
+	 * Shared DOM Reference IDs of the table.
+	 *
+	 * Contains IDs of shared DOM references, which should be accessible to inheriting controls via getDomRef() function.
+	 *
+	 * @version 1.38.1
+	 * @enum {string}
+	 * @public
+	 */
+	sap.ui.table.SharedDomRef = {
+
+		/**
+		 * The element id of the Horizontal Scroll Bar of the sap.ui.table.Table.
+		 * @public
+		 */
+		HorizontalScrollBar : "hsb",
+
+		/**
+		 * The element id of the Vertical Scroll Bar of the sap.ui.table.Table.
+		 * @public
+		 */
+		VerticalScrollBar : "vsb"
 	};
 
 	/**

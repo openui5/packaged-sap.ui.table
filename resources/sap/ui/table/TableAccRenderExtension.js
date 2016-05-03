@@ -36,7 +36,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension'],
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.38.0
+	 * @version 1.38.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccRenderExtension
@@ -62,7 +62,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension'],
 			var oBundle = oTable._oResBundle,
 				sTableId = oTable.getId();
 
-			oRm.write("<div class='sapUiTableHiddenTexts' style='display:none;'>");
+			oRm.write("<div class='sapUiTableHiddenTexts' style='display:none;' aria-hidden='true'>");
 
 			// aria description for the table
 			var sDesc = oTable.getTitle() && oTable.getTitle().getText && oTable.getTitle().getText() != "" ?
