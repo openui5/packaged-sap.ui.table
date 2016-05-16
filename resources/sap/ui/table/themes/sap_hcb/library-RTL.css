@@ -230,15 +230,15 @@
   vertical-align: top;
   white-space: nowrap;
 }
-.sapUiTableVScr .sapUiTableColHdrScr {
-  margin-left: 16px;
-}
 .sapUiTableColHdrFixed {
   display: inline-block;
   vertical-align: top;
 }
 .sapUiTableVScr .sapUiTableCtrlScr {
   margin-left: 16px;
+}
+html[data-sap-ui-browser^="ed"] .sapUiTableVScr .sapUiTableCtrlScr {
+  margin-left: 12px;
 }
 .sapUiTable:not(.sapUiTableVScr) .sapUiTableColHdr .sapUiTableCol:last-child {
   border-left: none;
@@ -536,8 +536,8 @@ html[data-sap-ui-browser^="ie"] .sapUiTableVSb {
 html[data-sap-ui-browser^="ie"] .sapUiTableHSb {
   height: 18px;
 }
-.sapUiTableRSel .sapUiTableHSb {
-  padding-right: 25px;
+html[data-sap-ui-browser^="ed"] .sapUiTableHSb {
+  height: 12px;
 }
 .sapUiTableHScr .sapUiTableHSb {
   display: block;
@@ -545,6 +545,9 @@ html[data-sap-ui-browser^="ie"] .sapUiTableHSb {
 .sapUiTableVScr .sapUiTableHSb {
   margin-left: 16px;
   /* 17px */
+}
+html[data-sap-ui-browser^="ed"] .sapUiTableVScr .sapUiTableHSb {
+  margin-left: 12px;
 }
 /*******************************************************************************
  * CHILD CONTROL STYLES

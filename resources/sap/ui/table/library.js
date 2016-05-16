@@ -20,14 +20,14 @@ sap.ui.define(['jquery.sap.global',
 	 * @namespace
 	 * @name sap.ui.table
 	 * @author SAP SE
-	 * @version 1.38.1
+	 * @version 1.38.2
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.table",
-		version: "1.38.1",
+		version: "1.38.2",
 		dependencies : ["sap.ui.core","sap.ui.unified"],
 		types: [
 			"sap.ui.table.NavigationMode",
@@ -69,7 +69,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Navigation mode of the table
 	 *
-	 * @version 1.38.1
+	 * @version 1.38.2
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -94,7 +94,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Selection behavior of the table
 	 *
-	 * @version 1.38.1
+	 * @version 1.38.2
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -125,7 +125,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Selection mode of the table
 	 *
-	 * @version 1.38.1
+	 * @version 1.38.2
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -162,7 +162,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * Sort order of a column
 	 *
-	 * @version 1.38.1
+	 * @version 1.38.2
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -187,7 +187,7 @@ sap.ui.define(['jquery.sap.global',
 	/**
 	 * VisibleRowCountMode of the table
 	 *
-	 * @version 1.38.1
+	 * @version 1.38.2
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -223,7 +223,7 @@ sap.ui.define(['jquery.sap.global',
 	 *
 	 * Contains IDs of shared DOM references, which should be accessible to inheriting controls via getDomRef() function.
 	 *
-	 * @version 1.38.1
+	 * @version 1.38.2
 	 * @enum {string}
 	 * @public
 	 */
