@@ -37,7 +37,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.36.9
+	 * @version 1.36.10
 	 *
 	 * @constructor
 	 * @public
@@ -801,10 +801,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/Interval
 			var $rowDomRefs = oRow.getDomRefs(true);
 
 			// update row header tooltip
-			if (oRow.getBindingContext() && this._isRowSelectable(oRow.getIndex())) {
-				$rowDomRefs.rowSelector.attr("title", this._oResBundle.getText("TBL_ROW_SELECT"));
-			} else {
-				$rowDomRefs.rowSelector.attr("title", "");
+			if ($rowDomRefs.rowSelector) {
+				if (oRow.getBindingContext() && this._isRowSelectable(oRow.getIndex())) {
+					$rowDomRefs.rowSelector.attr("title", this._oResBundle.getText("TBL_ROW_SELECT"));
+				} else {
+					$rowDomRefs.rowSelector.attr("title", "");
+				}
 			}
 
 			if (iFixedTopRows > 0) {
