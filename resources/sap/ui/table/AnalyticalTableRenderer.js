@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './TableRenderer'],
-	function(jQuery, Renderer, TableRenderer) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/IconPool', 'sap/ui/core/Renderer', './TableRenderer'],
+	function(jQuery, IconPool, Renderer, TableRenderer) {
 	"use strict";
 
 
@@ -25,7 +25,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Renderer', './TableRenderer'],
 		rm.write("></div>");
 
 		if ('ontouchstart' in document) {
-			var oIconInfo = sap.ui.core.IconPool.getIconInfo("sap-icon://drop-down-list");
+			var oIconInfo = IconPool.getIconInfo("sap-icon://drop-down-list");
 			rm.write("<div class='sapUiTableGroupMenuButton'>");
 			rm.writeEscaped(oIconInfo.content);
 			rm.write("</div>");

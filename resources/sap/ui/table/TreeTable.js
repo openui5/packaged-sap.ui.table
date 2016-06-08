@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.table.TreeTable.
-sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBindingAdapter', 'sap/ui/model/ClientTreeBindingAdapter', 'sap/ui/model/TreeBindingCompatibilityAdapter', './library'],
-	function(jQuery, Table, ODataTreeBindingAdapter, ClientTreeBindingAdapter, TreeBindingCompatibilityAdapter, library) {
+sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBindingAdapter', 'sap/ui/model/ClientTreeBindingAdapter', 'sap/ui/model/TreeBindingCompatibilityAdapter', './library', 'sap/ui/core/Element'],
+	function(jQuery, Table, ODataTreeBindingAdapter, ClientTreeBindingAdapter, TreeBindingCompatibilityAdapter, library, Element) {
 	"use strict";
 
 	/**
@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.38.2
+	 * @version 1.38.3
 	 *
 	 * @constructor
 	 * @public
@@ -179,21 +179,26 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		if (sName === "rows") {
 			return true;
 		}
-		return sap.ui.core.Element.prototype.isTreeBinding.apply(this, arguments);
+		return Element.prototype.isTreeBinding.apply(this, arguments);
 	};
 
 	TreeTable.prototype.getBinding = function(sName) {
 		sName = sName || "rows";
-		var oBinding = sap.ui.core.Element.prototype.getBinding.call(this, sName);
+		var oBinding = Element.prototype.getBinding.call(this, sName);
 
 		if (oBinding && sName === "rows" && !oBinding.getLength) {
-			if (sap.ui.model.odata.ODataTreeBinding && oBinding instanceof sap.ui.model.odata.ODataTreeBinding) {
+			// try to resolve optional dependencies
+			// TODO this doesn't help anything as the adapters are not loaded lazily and they reference the corresponding bindings directly
+			var ODataTreeBinding = sap.ui.require("sap/ui/model/odata/ODataTreeBinding");
+			var V2ODataTreeBinding = sap.ui.require("sap/ui/model/odata/v2/ODataTreeBinding");
+			var ClientTreeBinding = sap.ui.require("sap/ui/model/ClientTreeBinding");
+			if (ODataTreeBinding && oBinding instanceof ODataTreeBinding) {
+
 				// use legacy tree binding adapter
 				TreeBindingCompatibilityAdapter(oBinding, this);
-			} else if (sap.ui.model.odata.v2.ODataTreeBinding && oBinding instanceof sap.ui.model.odata.v2.ODataTreeBinding) {
-				//ODataTreeBindingAdapter.apply(oBinding);
-				oBinding.applyAdapter();
-			} else if (sap.ui.model.ClientTreeBinding && oBinding instanceof sap.ui.model.ClientTreeBinding) {
+			} else if (V2ODataTreeBinding && oBinding instanceof V2ODataTreeBinding) {
+				oBinding.applyAdapterInterface();
+			} else if (ClientTreeBinding && oBinding instanceof ClientTreeBinding) {
 				ClientTreeBindingAdapter.apply(oBinding);
 				//TreeBindingCompatibilityAdapter(oBinding, this);
 			} else {
@@ -661,23 +666,6 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		return this;
 	};
 
-	TreeTable.prototype._enterActionMode = function($Tabbable) {
-		var $domRef = $Tabbable.eq(0);
-
-		Table.prototype._enterActionMode.apply(this, arguments);
-		if ($Tabbable.length > 0 && $domRef.hasClass("sapUiTableTreeIcon") && !$domRef.hasClass("sapUiTableTreeIconLeaf")) {
-			//Set tabindex to 0 to have make node icon accessible
-			$domRef.attr("tabindex", 0).focus();
-			//set action mode to true so that _leaveActionMode is called to remove the tabindex again
-			this._bActionMode = true;
-		}
-	};
-
-	TreeTable.prototype._leaveActionMode = function(oEvent) {
-		Table.prototype._leaveActionMode.apply(this, arguments);
-		this.$().find(".sapUiTableTreeIcon").attr("tabindex", -1);
-	};
-
 	TreeTable.prototype.getContextByIndex = function (iRowIndex) {
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
@@ -747,4 +735,4 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 
 	return TreeTable;
 
-}, /* bExport= */ true);
+});
