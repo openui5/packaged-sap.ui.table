@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', './library'],
 	 * @class
 	 * The row.
 	 * @extends sap.ui.core.Element
-	 * @version 1.36.12
+	 * @version 1.36.13
 	 *
 	 * @constructor
 	 * @public
