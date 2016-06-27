@@ -14,20 +14,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core',
 
 	"use strict";
 
-	/**
-	 * Table-like controls, mainly for desktop scenarios.
-	 *
-	 * @namespace
-	 * @name sap.ui.table
-	 * @author SAP SE
-	 * @version 1.38.3
-	 * @public
-	 */
-
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.table",
-		version: "1.38.3",
+		version: "1.38.4",
 		dependencies : ["sap.ui.core","sap.ui.unified"],
 		types: [
 			"sap.ui.table.NavigationMode",
@@ -66,13 +56,22 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core',
 	});
 
 	/* eslint-disable no-undef */
+	/**
+	 * Table-like controls, mainly for desktop scenarios.
+	 *
+	 * @namespace
+	 * @alias sap.ui.table
+	 * @author SAP SE
+	 * @version 1.38.4
+	 * @public
+	 */
 	var thisLib = sap.ui.table;
 	/* eslint-enable no-undef */
 
 	/**
 	 * Navigation mode of the table
 	 *
-	 * @version 1.38.3
+	 * @version 1.38.4
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -87,7 +86,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core',
 
 		/**
 		 * Uses the paginator control.
+		 * This option must no longer be used. Using a scrollbar is the only navigation mode which is supported by
+		 * the <code>sap.ui.table</code> library. The <code>navigationMode</code> property has always been a visual representation. No matter which navigation mode
+		 * is used, data fetched from an OData service is loaded page-wise.
 		 * @public
+		 * @deprecated As of version 1.38, replaced by {@link sap.ui.table.NavigationMode.Scrollbar}
 		 */
 		Paginator : "Paginator"
 
@@ -97,7 +100,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core',
 	/**
 	 * Selection behavior of the table
 	 *
-	 * @version 1.38.3
+	 * @version 1.38.4
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -128,7 +131,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core',
 	/**
 	 * Selection mode of the table
 	 *
-	 * @version 1.38.3
+	 * @version 1.38.4
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -144,6 +147,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core',
 		/**
 		 * Select multiple rows at a time.
 		 * @public
+		 * @deprecated As of version 1.38, replaced by {@link sap.ui.table.SelectionMode.MultiToggle}
 		 */
 		Multi : "Multi",
 
@@ -165,7 +169,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core',
 	/**
 	 * Sort order of a column
 	 *
-	 * @version 1.38.3
+	 * @version 1.38.4
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -190,7 +194,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core',
 	/**
 	 * VisibleRowCountMode of the table
 	 *
-	 * @version 1.38.3
+	 * @version 1.38.4
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
@@ -226,7 +230,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Core',
 	 *
 	 * Contains IDs of shared DOM references, which should be accessible to inheriting controls via getDomRef() function.
 	 *
-	 * @version 1.38.3
+	 * @version 1.38.4
 	 * @enum {string}
 	 * @public
 	 */

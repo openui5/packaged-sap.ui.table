@@ -23,7 +23,7 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 	 * @class
 	 * The column allows you to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.38.3
+	 * @version 1.38.4
 	 *
 	 * @constructor
 	 * @public
@@ -220,7 +220,12 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 			template : {type : "sap.ui.core.Control", multiple : false},
 
 			/**
-			 * The menu used by the column. By default the {@see sap.ui.table.ColumnMenu} is used.
+			 * The menu used by the column. By default the {@link sap.ui.table.ColumnMenu} is used.
+			 *
+			 * <b>Note:</b> Applications must not use or change the default <code>sap.ui.table.ColumnMenu</code> of
+			 * a column in any way or create own instances of <code>sap.ui.table.ColumnMenu</code>.
+			 * To add a custom menu to a column, use the aggregation <code>menu</code> with a new instance of
+			 * <code>sap.ui.unified.Menu</code>.
 			 */
 			menu : {type : "sap.ui.unified.Menu", multiple : false}
 		},
@@ -256,25 +261,6 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 
 		// Skip proppagation of databinding properties to the template
 		this.mSkipPropagation = {template: true};
-
-	};
-
-	/**
-	 * called when the column is destroyed
-	 */
-	Column.prototype.exit = function() {
-
-		// destroy the sort image
-		var oSortImage = sap.ui.getCore().byId(this.getId() + "-sortIcon");
-		if (oSortImage) {
-			oSortImage.destroy();
-		}
-
-		// destroy the filter image
-		var oFilterImage = sap.ui.getCore().byId(this.getId() + "-filterIcon");
-		if (oFilterImage) {
-			oFilterImage.destroy();
-		}
 
 	};
 
@@ -506,8 +492,7 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 			this.setProperty("filtered", this._appDefaults.filtered, true);
 			this.setProperty("filterValue", this._appDefaults.filterValue, true);
 			this.setProperty("filterOperator", this._appDefaults.filterOperator, true);
-			this._renderSortIcon();
-			this._renderFilterIcon();
+			this._updateIcons();
 		}
 	};
 
@@ -517,7 +502,7 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 	Column.prototype.setSorted = function(bFlag) {
 		this.setProperty("sorted", bFlag, true);
 		this._setAppDefault("sorted", bFlag);
-		this._renderSortIcon();
+		this._updateIcons();
 		return this;
 	};
 
@@ -527,7 +512,7 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 	Column.prototype.setSortOrder = function(tSortOrder) {
 		this.setProperty("sortOrder", tSortOrder, true);
 		this._setAppDefault("sortOrder", tSortOrder);
-		this._renderSortIcon();
+		this._updateIcons();
 		return this;
 	};
 
@@ -537,7 +522,7 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 	Column.prototype.setFiltered = function(bFlag) {
 		this.setProperty("filtered", bFlag, true);
 		this._setAppDefault("filtered", bFlag);
-		this._renderFilterIcon();
+		this._updateIcons();
 		return this;
 	};
 
@@ -668,7 +653,7 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 						// column is not sorted anymore -> reset default and remove sorter
 						aColumns[i].setProperty("sorted", false, true);
 						aColumns[i].setProperty("sortOrder", SortOrder.Ascending, true);
-						aColumns[i]._renderSortIcon();
+						aColumns[i]._updateIcons();
 						delete aColumns[i]._oSorter;
 					}
 				}
@@ -681,7 +666,7 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 				// add sorters of all sorted columns to one sorter-array and update sort icon rendering for sorted columns
 				var aSorters = [];
 				for (var i = 0, l = aSortedCols.length; i < l; i++) {
-					aSortedCols[i]._renderSortIcon();
+					aSortedCols[i]._updateIcons();
 					aSorters.push(aSortedCols[i]._oSorter);
 				}
 
@@ -698,45 +683,25 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 		return this;
 	};
 
-	function getHTML(oImage) {
-		var oRenderManager = sap.ui.getCore().createRenderManager(),
-			sHTML = oRenderManager.getHTML(oImage);
-		oRenderManager.destroy();
-		return sHTML;
-	}
+	Column.prototype._updateIcons = function() {
+		var oTable = this.getParent(),
+			bSorted = this.getSorted(),
+			bFiltered = this.getFiltered();
 
-	Column.prototype._renderSortIcon = function() {
-
-		var oTable = this.getParent();
-		if (oTable && oTable.getDomRef()) {
-			if (this.getSorted()) {
-
-				// create the image for the sort order visualization
-				var sCurrentTheme = sap.ui.getCore().getConfiguration().getTheme();
-				var oImage = sap.ui.getCore().byId(this.getId() + "-sortIcon") || library.TableHelper.createImage(this.getId() + "-sortIcon");
-				oImage.addStyleClass("sapUiTableColIconsOrder");
-				if (this.getSortOrder() === SortOrder.Ascending) {
-					oImage.setSrc(sap.ui.resource("sap.ui.table", "themes/" + sCurrentTheme + "/img/ico12_sort_asc.gif"));
-				} else {
-					oImage.setSrc(sap.ui.resource("sap.ui.table", "themes/" + sCurrentTheme + "/img/ico12_sort_desc.gif"));
-				}
-
-				// apply the image to the column
-				var htmlImage = getHTML(oImage);
-				this.$().find(".sapUiTableColIconsOrder").remove();
-				jQuery(htmlImage).prependTo(this.getDomRef("icons"));
-				this.$().find(".sapUiTableColCell").addClass("sapUiTableColSorted");
-
-			} else {
-
-				// remove the sort indicators
-				this.$().find(".sapUiTableColIconsOrder").remove();
-				this.$().find(".sapUiTableColCell").removeClass("sapUiTableColSorted");
-
-			}
-			oTable._getAccExtension().updateAriaStateOfColumn(this);
+		if (!oTable || !oTable.getDomRef()) {
+			return;
 		}
 
+		this.$().find(".sapUiTableColCell")
+			.toggleClass("sapUiTableColSF", bSorted || bFiltered)
+			.toggleClass("sapUiTableColFiltered", bFiltered)
+			.toggleClass("sapUiTableColSorted", bSorted)
+			.toggleClass("sapUiTableColSortedD", bSorted && this.getSortOrder() === SortOrder.Descending);
+		oTable._getAccExtension().updateAriaStateOfColumn(this);
+	};
+
+	Column.prototype._renderSortIcon = function() {
+		this._updateIcons();
 	};
 
 	Column.prototype._getFilter = function() {
@@ -872,7 +837,7 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 				}
 				oTable.getBinding("rows").filter(aFilters, FilterType.Control);
 
-				this._renderFilterIcon();
+				this._updateIcons();
 
 			}
 
@@ -896,40 +861,8 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 		return sValue;
 	};
 
-	Column.prototype._renderFilterIcon = function() {
-		var oTable = this.getParent();
-		if (oTable && oTable.getDomRef()) {
-			var sCurrentTheme = sap.ui.getCore().getConfiguration().getTheme();
-			var oImage = sap.ui.getCore().byId(this.getId() + "-filterIcon") ||
-				library.TableHelper.createImage({
-					id: this.getId() + "-filterIcon",
-					decorative: false,
-					alt: oTable._oResBundle.getText("TBL_FILTER_ICON_TEXT")
-				});
-			oImage.$().remove();
-			oImage.addStyleClass("sapUiTableColIconsFilter");
-			if (this.getFiltered()) {
-				oImage.setSrc(sap.ui.resource("sap.ui.table", "themes/" + sCurrentTheme + "/img/ico12_filter.gif"));
-				var htmlImage = getHTML(oImage);
-				jQuery(htmlImage).prependTo(this.getDomRef("icons"));
-				this.$().find(".sapUiTableColCell").addClass("sapUiTableColFiltered");
-			} else {
-				this.$().find(".sapUiTableColCell").removeClass("sapUiTableColFiltered");
-			}
-			oTable._getAccExtension().updateAriaStateOfColumn(this);
-		}
-	};
-
 	Column.prototype._restoreIcons = function() {
-
-		if (this.getSorted()) {
-			this._renderSortIcon();
-		}
-
-		if (this.getFiltered()) {
-			this._renderFilterIcon();
-		}
-
+		this._updateIcons();
 	};
 
 	/**

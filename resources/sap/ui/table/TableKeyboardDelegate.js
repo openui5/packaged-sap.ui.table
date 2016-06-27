@@ -10,8 +10,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	"use strict";
 
 	// shortcuts
-	var NavigationMode = library.NavigationMode,
-		SelectionBehavior = library.SelectionBehavior;
+	var SelectionBehavior = library.SelectionBehavior;
 
 	/**
 	 * Delegate for keyboard events of sap.ui.table.Table controls.
@@ -20,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.38.3
+	 * @version 1.38.4
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate
@@ -107,6 +106,41 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 		var oInfo = TableUtils.getFocusedItemInfo(oTable);
 		var oLastInfo = oTable._getKeyboardExtension()._getLastFocusedCellInfo();
 		TableUtils.focusItem(oTable, oInfo.cellInRow + (oInfo.columnCount * oLastInfo.row), oEvent);
+	};
+
+	/*
+	 * Return the currently focused row index.
+	 */
+	TableKeyboardDelegate._getFocusedRowIndex = function(oTable) {
+		var oInfo = TableUtils.getFocusedItemInfo(oTable);
+		var iFocusedIndex = oInfo.cell;
+		var iColumns = oInfo.columnCount;
+		var iSelectedCellInRow = oInfo.cellInRow;
+		var iSelectedRow = oTable.getFirstVisibleRow() + (iFocusedIndex - iSelectedCellInRow) / iColumns;
+
+		if (!oTable.getColumnHeaderVisible()) {
+			iSelectedRow++;
+		}
+		return iSelectedRow - 1;
+	};
+
+	/*
+	 * Checks whether the row of the currently focused cell is selected or not.
+	 */
+	TableKeyboardDelegate._isFocusedRowSelected = function(oTable) {
+		var iSelectedRow = TableKeyboardDelegate._getFocusedRowIndex(oTable);
+		var bIsFocusedRowSelected = oTable.isIndexSelected(iSelectedRow);
+
+		var bIsCellRowHeader = TableUtils.getFocusedItemInfo(oTable).columnCount == 0;
+		if (bIsCellRowHeader) {
+			return bIsFocusedRowSelected;
+		} else {
+			if (TableUtils.hasRowHeader(oTable)) {
+				return null;
+			} else {
+				return bIsFocusedRowSelected;
+			}
+		}
 	};
 
 
@@ -221,33 +255,31 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 		}
 
 		var $target = jQuery(oEvent.target);
-		var bNoData = TableUtils.isNoDataVisible(this);
-		var bControlBefore = $target.hasClass("sapUiTableCtrlBefore");
 
-		if (bControlBefore || $target.hasClass("sapUiTableCtrlAfter")) {
-			// when entering the before or after helper DOM elements we put the
-			// focus on the current focus element of the item navigation and we
-			// leave the action mode!
+		if ($target.hasClass("sapUiTableOuterBefore") || $target.hasClass("sapUiTableOuterAfter")
+				|| (oEvent.target != this.getDomRef("overlay") && this.getShowOverlay())) {
 			this._getKeyboardExtension().setActionMode(false);
-			if (jQuery.contains(this.$().find('.sapUiTableColHdrCnt')[0], oEvent.target)) {
-				var oIN = this._getItemNavigation();
-				jQuery(oIN.getFocusedDomRef() || oIN.getRootDomRef()).focus();
-			} else {
-				if (bControlBefore) {
-					if (bNoData) {
-						this._getKeyboardExtension()._setSilentFocus(this.$("noDataCnt"));
-					} else {
-						var oInfo = TableUtils.getFocusedItemInfo(this);
-						TableUtils.focusItem(this, oInfo.cellInRow, oEvent);
-					}
-				} else {
-					TableKeyboardDelegate._restoreFocusOnLastFocusedDataCell(this, oEvent);
-				}
+			this.$("overlay").focus();
+			return;
+		} else if ($target.hasClass("sapUiTableCtrlBefore")) {
+			this._getKeyboardExtension().setActionMode(false);
+			var bNoData = TableUtils.isNoDataVisible(this);
+
+			if (!bNoData || (bNoData && oEvent.isMarked("sapUiTableInitItemNavigation") && this.getColumnHeaderVisible())) {
+				// Special handling for nodata case when the item navigation is initialized with this focus events (also adds additional
+				// tabindex attributes) -> later with next entry into the table tabindices are already set up properly
+				var oInfo = TableUtils.getFocusedItemInfo(this);
+				TableUtils.focusItem(this, oInfo.cellInRow, oEvent);
+			} else if (bNoData) {
+				this._getKeyboardExtension()._setSilentFocus(this.$("noDataCnt"));
 			}
 
 			if (!bNoData) {
 				oEvent.preventDefault();
 			}
+		} else if ($target.hasClass("sapUiTableCtrlAfter")) {
+			this._getKeyboardExtension().setActionMode(false);
+			TableKeyboardDelegate._restoreFocusOnLastFocusedDataCell(this, oEvent);
 		}
 	};
 
@@ -402,6 +434,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 			this._getKeyboardExtension().setActionMode(false);
 			oEvent.preventDefault();
 		} else {
+			if (oEvent.target === this.getDomRef("overlay")) {
+				this._getKeyboardExtension()._setSilentFocus($this.find(".sapUiTableOuterBefore"));
+				return;
+			}
+
 			var oInfo = TableUtils.getFocusedItemInfo(this);
 			var bNoData = TableUtils.isNoDataVisible(this);
 			var oSapUiTableCCnt = $this.find('.sapUiTableCCnt')[0];
@@ -440,6 +477,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 			this._getKeyboardExtension().setActionMode(false);
 			oEvent.preventDefault();
 		} else {
+			if (oEvent.target === this.getDomRef("overlay")) {
+				this._getKeyboardExtension()._setSilentFocus($this.find(".sapUiTableOuterAfter"));
+				return;
+			}
+
 			var oInfo = TableUtils.getFocusedItemInfo(this);
 			var bContainsColHdrCnt = jQuery.contains($this.find('.sapUiTableColHdrCnt')[0], oEvent.target);
 			var bNoData = TableUtils.isNoDataVisible(this);
@@ -457,14 +499,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	 * dynamic scrolling when reaching the bottom row with the ARROW DOWN key
 	 */
 	TableKeyboardDelegate.prototype.onsapdown = function(oEvent) {
-		if (!this._getKeyboardExtension().isInActionMode() && this._isBottomRow(oEvent)) {
+		if (!this._getKeyboardExtension().isInActionMode() && TableUtils.isLastScrollableRow(this, oEvent.target)) {
 			if (this.getFirstVisibleRow() != this._getRowCount() - this.getVisibleRowCount()) {
 				oEvent.stopImmediatePropagation(true);
-				if (this.getNavigationMode() === NavigationMode.Scrollbar) {
-					this._scrollNext();
-				} else {
-					this._scrollPageDown();
-				}
+				TableUtils.scroll(this, true, false);
 			}
 		}
 		oEvent.preventDefault();
@@ -486,16 +524,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	 */
 	TableKeyboardDelegate.prototype.onsapdownmodifiers = function(oEvent) {
 		if (oEvent.shiftKey) {
-			var iFocusedRow = this._getFocusedRowIndex();
-			var bIsFocusedRowSelected = this._isFocusedRowSelected();
+			var iFocusedRow = TableKeyboardDelegate._getFocusedRowIndex(this);
+			var bIsFocusedRowSelected = TableKeyboardDelegate._isFocusedRowSelected(this);
 			if (bIsFocusedRowSelected === true) {
 				this.addSelectionInterval(iFocusedRow + 1, iFocusedRow + 1);
 			} else if (bIsFocusedRowSelected === false) {
 				this.removeSelectionInterval(iFocusedRow + 1, iFocusedRow + 1);
 			}
 
-			if (this._isBottomRow(oEvent)) {
-				this._scrollNext();
+			if (TableUtils.isLastScrollableRow(this, oEvent.target)) {
+				TableUtils.scroll(this, true, false);
 			}
 		} else if (oEvent.altKey) {
 			// Toggle group header on ALT + DOWN.
@@ -508,8 +546,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	 */
 	TableKeyboardDelegate.prototype.onsapupmodifiers = function(oEvent) {
 		if (oEvent.shiftKey) {
-			var iFocusedRow = this._getFocusedRowIndex();
-			var bIsFocusedRowSelected = this._isFocusedRowSelected();
+			var iFocusedRow = TableKeyboardDelegate._getFocusedRowIndex(this);
+			var bIsFocusedRowSelected = TableKeyboardDelegate._isFocusedRowSelected(this);
 
 			if (bIsFocusedRowSelected === true) {
 				this.addSelectionInterval(iFocusedRow - 1, iFocusedRow - 1);
@@ -517,12 +555,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 				this.removeSelectionInterval(iFocusedRow - 1, iFocusedRow - 1);
 			}
 
-			if (this._isTopRow(oEvent)) {
+			if (TableUtils.isFirstScrollableRow(this, oEvent.target)) {
 				// Prevent that focus jumps to header in this case.
 				if (this.getFirstVisibleRow() != 0) {
 					oEvent.stopImmediatePropagation(true);
 				}
-				this._scrollPrevious();
+				TableUtils.scroll(this, false, false);
 			}
 		} else if (oEvent.altKey) {
 			// Toggle group header on ALT + UP.
@@ -534,15 +572,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	 * dynamic scrolling when reaching the top row with the ARROW UP key
 	 */
 	TableKeyboardDelegate.prototype.onsapup = function(oEvent) {
-		if (!this._getKeyboardExtension().isInActionMode() && this._isTopRow(oEvent)) {
+		if (!this._getKeyboardExtension().isInActionMode() && TableUtils.isFirstScrollableRow(this, oEvent.target)) {
 			if (this.getFirstVisibleRow() != 0) {
 				oEvent.stopImmediatePropagation(true);
 			}
-			if (this.getNavigationMode() === NavigationMode.Scrollbar) {
-				this._scrollPrevious();
-			} else {
-				this._scrollPageUp();
-			}
+			TableUtils.scroll(this, false, false);
 		}
 		oEvent.preventDefault();
 	};
@@ -577,8 +611,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 
 				oEvent.stopImmediatePropagation(true);
 			} else {
-				if (this._isBottomRow(oEvent)) {
-					this._scrollPageDown();
+				if (TableUtils.isLastScrollableRow(this, oEvent.target)) {
+					TableUtils.scroll(this, true, true);
 				}
 
 				var iFixedBottomRowsOffset = this.getFixedBottomRowCount();
@@ -649,7 +683,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 				oEvent.stopImmediatePropagation(true);
 			} else {
 				// focus is on content area
-				if (this.getColumnHeaderVisible() && this.getFirstVisibleRow() == 0 && this._isTopRow(oEvent)) {
+				if (this.getColumnHeaderVisible() && this.getFirstVisibleRow() == 0 && TableUtils.isFirstScrollableRow(this, oEvent.target)) {
 					// focus is on first row, move to last header row, same column
 					if (bRowHeader && iCol === 0) {
 						TableUtils.focusItem(this, iCol, oEvent);
@@ -662,8 +696,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 					TableUtils.focusItem(this, iIndex + iCol, oEvent);
 					oEvent.stopImmediatePropagation(true);
 
-					if (this._isTopRow(oEvent)) {
-						this._scrollPageUp();
+					if (TableUtils.isFirstScrollableRow(this, oEvent.target)) {
+						TableUtils.scroll(this, false, true);
 					}
 				}
 			}
