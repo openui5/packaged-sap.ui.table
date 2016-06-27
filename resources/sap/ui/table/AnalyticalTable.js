@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @see http://scn.sap.com/docs/DOC-44986
 	 *
 	 * @extends sap.ui.table.Table
-	 * @version 1.36.13
+	 * @version 1.36.15
 	 *
 	 * @constructor
 	 * @public
