@@ -23,7 +23,7 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 	 * @class
 	 * The column allows you to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.40.0
+	 * @version 1.40.1
 	 *
 	 * @constructor
 	 * @public
@@ -220,7 +220,12 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 			template : {type : "sap.ui.core.Control", multiple : false},
 
 			/**
-			 * The menu used by the column. By default the {@see sap.ui.table.ColumnMenu} is used.
+			 * The menu used by the column. By default the {@link sap.ui.table.ColumnMenu} is used.
+			 *
+			 * <b>Note:</b> Applications must not use or change the default <code>sap.ui.table.ColumnMenu</code> of
+			 * a column in any way or create own instances of <code>sap.ui.table.ColumnMenu</code>.
+			 * To add a custom menu to a column, use the aggregation <code>menu</code> with a new instance of
+			 * <code>sap.ui.unified.Menu</code>.
 			 */
 			menu : {type : "sap.ui.unified.Menu", multiple : false}
 		},

@@ -25,7 +25,7 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 	 * @extends sap.ui.table.Column
 	 *
 	 * @author SAP SE
-	 * @version 1.40.0
+	 * @version 1.40.1
 	 *
 	 * @constructor
 	 * @public
