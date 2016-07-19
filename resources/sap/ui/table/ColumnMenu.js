@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.table.ColumnMenu.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 'sap/ui/unified/Menu', 'sap/ui/unified/MenuItem', 'sap/ui/Device'],
-	function(jQuery, RenderManager, library, Menu, MenuItem, Device) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 'sap/ui/unified/Menu', 'sap/ui/unified/MenuItem', 'sap/ui/Device', './TableUtils'],
+	function(jQuery, RenderManager, library, Menu, MenuItem, Device, TableUtils) {
 	"use strict";
 
 	/**
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 	 * @class
 	 * The column menu provides all common actions that can be performed on a column.
 	 * @extends sap.ui.unified.Menu
-	 * @version 1.40.1
+	 * @version 1.40.2
 	 *
 	 * @constructor
 	 * @public
@@ -391,7 +391,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 			select: jQuery.proxy(function(oEvent) {
 				var oMenuItem = oEvent.getSource();
 				var bVisible = !oColumn.getVisible();
-				if (bVisible || this._oTable._getVisibleColumnCount() > 1) {
+				if (bVisible || TableUtils.getVisibleColumnCount(this._oTable) > 1) {
 					var oTable = oColumn.getParent();
 					var bExecuteDefault = true;
 					if (oTable && lazyInstanceof(oTable, "sap/ui/table/Table")) {

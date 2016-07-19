@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @see http://scn.sap.com/docs/DOC-44986
 	 *
 	 * @extends sap.ui.table.Table
-	 * @version 1.40.1
+	 * @version 1.40.2
 	 *
 	 * @constructor
 	 * @public
@@ -482,9 +482,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 
 	AnalyticalTable.prototype.onclick = function(oEvent) {
 		var $EventTarget = jQuery(oEvent.target);
-		if ($EventTarget.hasClass("sapUiTableGroupIcon")) {
-			this._onNodeSelect(oEvent);
-		} else if ($EventTarget.hasClass("sapUiAnalyticalTableSum")) {
+		if ($EventTarget.hasClass("sapUiAnalyticalTableSum")) {
 			// Sums cannot be selected
 			oEvent.preventDefault();
 			return;
@@ -497,20 +495,6 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 				Table.prototype.onclick.apply(this, arguments);
 			}
 		}
-	};
-
-	AnalyticalTable.prototype._onNodeSelect = function(oEvent) {
-
-		var $parent = jQuery(oEvent.target).parent();
-		if ($parent.length > 0) {
-			var iRowIndex = this.getFirstVisibleRow() + parseInt($parent.attr("data-sap-ui-rowindex"), 10);
-			var oBinding = this.getBinding("rows");
-			oBinding.toggleIndex(iRowIndex);
-		}
-
-		oEvent.preventDefault();
-		oEvent.stopPropagation();
-
 	};
 
 	AnalyticalTable.prototype._onContextMenu = function(oEvent) {
@@ -1064,17 +1048,6 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 			return oBinding.getTotalSize();
 		}
 		return 0;
-	};
-
-	AnalyticalTable.prototype._hasData = function() {
-		var oBinding = this.getBinding("rows"),
-			iLength = oBinding && (oBinding.getLength() || 0),
-			bHasTotal = oBinding && oBinding.providesGrandTotal() && oBinding.hasTotaledMeasures();
-
-		if (!oBinding || (bHasTotal && iLength < 2) || (!bHasTotal && iLength === 0)) {
-			return false;
-		}
-		return true;
 	};
 
 	AnalyticalTable.prototype._onPersoApplied = function() {

@@ -57,6 +57,9 @@
 .sapUiSizeCompact .sapUiAnalyticalTable .sapUiTableGroupIcon::before {
   line-height: 28px;
 }
+.sapUiSizeCondensed .sapUiAnalyticalTable .sapUiTableGroupIcon::before {
+  line-height: 22px;
+}
 /*******************************************************************************
  * TABLE PARAMETERS
  ******************************************************************************/
@@ -732,7 +735,7 @@ html[data-sap-ui-browser^="ed"] .sapUiTableVScr .sapUiTableHSb {
 }
 .sapUiSizeCompact .sapUiTableRowHdr.sapUiTableGroupHeader > .sapUiTableGroupIcon,
 .sapUiSizeCozy .sapUiTableRowHdr.sapUiTableGroupHeader > .sapUiTableGroupIcon {
-  left: 0;
+  left: 1px;
 }
 html[dir=rtl] .sapUiSizeCompact .sapUiTableGroupIcon.sapUiTableGroupIconClosed::before,
 html[dir=rtl] .sapUiSizeCozy .sapUiTableGroupIcon.sapUiTableGroupIconClosed::before,
@@ -1128,6 +1131,9 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
   outline-offset: -3px;
   outline: 2px dotted #ffffff;
 }
+.sapUiTableRowHdr.sapUiTableGroupHeader:focus:not(*:root) {
+  outline: 0px;
+}
 /* Firefox */
 @supports (-moz-appearance:meterbar) {
   .sapUiTableTr > td:focus,
@@ -1137,6 +1143,15 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
     outline-offset: -3px;
     outline: 2px dotted #ffffff;
   }
+}
+.sapUiTableRowHdr.sapUiTableGroupHeader:focus .sapUiTableGroupIcon {
+  outline-width: 2px;
+  outline-style: dotted;
+  outline-offset: 0px;
+  outline-color: #ffffff;
+}
+.sapUiTableRowHdr.sapUiTableGroupHeader {
+  outline: 0px;
 }
 .sapUiTableRSel .sapUiTableCtrlScr,
 .sapUiTableRSel .sapUiTableCtrlScrFixed {
@@ -1202,6 +1217,12 @@ tr.sapUiTableRowHvr .sapUiLnk:hover,
 }
 .sapUiSizeCompact .sapUiTableGroupIcon {
   font-size: 0.875rem;
+  line-height: 26px;
+  height: 26px;
+}
+.sapUiSizeCondensed .sapUiTableGroupIcon {
+  height: 19px;
+  line-height: 19px;
 }
 .sapUiTableHSb,
 .sapUiTableCCnt,
