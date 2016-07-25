@@ -26,7 +26,7 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 	 * @extends sap.ui.table.Column
 	 *
 	 * @author SAP SE
-	 * @version 1.40.2
+	 * @version 1.40.3
 	 *
 	 * @constructor
 	 * @public
@@ -279,14 +279,15 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 	};
 
 	AnalyticalColumn.prototype.getTooltip_AsString = function() {
+		var sTooltip = Element.prototype.getTooltip_AsString.apply(this);
 		var oParent = this.getParent();
-		if (isInstanceOfAnalyticalTable(oParent)) {
+		if (!sTooltip && isInstanceOfAnalyticalTable(oParent)) {
 			var oBinding = oParent.getBinding("rows");
 			if (oBinding && this.getLeadingProperty()) {
-				return oBinding.getPropertyQuickInfo(this.getLeadingProperty());
+				sTooltip = oBinding.getPropertyQuickInfo(this.getLeadingProperty());
 			}
 		}
-		return Element.prototype.getTooltip_AsString.apply(this);
+		return sTooltip;
 	};
 
 	/**
