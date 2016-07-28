@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.38.4
+	 * @version 1.38.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate
@@ -32,21 +32,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 			if (sType === TableExtension.TABLETYPES.ANALYTICAL) {
 
 				this.onsapselect = function(oEvent) {
-					if (jQuery(oEvent.target).hasClass("sapUiTableGroupIcon")) {
-						this._onNodeSelect(oEvent);
-					} else if (jQuery(oEvent.target).hasClass("sapUiAnalyticalTableSum")) {
+					if (jQuery(oEvent.target).hasClass("sapUiAnalyticalTableSum")) {
 						//Summs connot be selected
 						oEvent.preventDefault();
 						return;
 					} else {
-						var $Target = jQuery(oEvent.target),
-							$TargetDIV = $Target.closest('div.sapUiTableRowHdr');
-						if ($TargetDIV.hasClass('sapUiTableGroupHeader') && $TargetDIV.hasClass('sapUiTableRowHdr')) {
-							var iRowIndex = this.getFirstVisibleRow() + parseInt($TargetDIV.attr("data-sap-ui-rowindex"), 10);
-							var oBinding = this.getBinding("rows");
-							oBinding.toggleIndex(iRowIndex);
-							return;
-						}
 						if (TableKeyboardDelegate.prototype.onsapselect) {
 							TableKeyboardDelegate.prototype.onsapselect.apply(this, arguments);
 						}
@@ -54,16 +44,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 				};
 
 			} else if (sType === TableExtension.TABLETYPES.TREE) {
-
-				this.onsapselect = function(oEvent) {
-					if (jQuery(oEvent.target).hasClass("sapUiTableTreeIcon")) {
-						this._onNodeSelect(oEvent);
-					} else {
-						if (TableKeyboardDelegate.prototype.onsapselect) {
-							TableKeyboardDelegate.prototype.onsapselect.apply(this, arguments);
-						}
-					}
-				};
 
 				this.onkeydown = function(oEvent) {
 					TableKeyboardDelegate.prototype.onkeydown.apply(this, arguments);
@@ -303,20 +283,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 			jQuery.inArray(oEvent.srcControl,this.getColumns()) === -1) {
 			return;
 		}
-		var $Parent = jQuery(oEvent.target).closest('.sapUiTableGroupHeader');
-		if ($Parent.length > 0) {
-			var iRowIndex = this.getFirstVisibleRow() + parseInt($Parent.attr("data-sap-ui-rowindex"), 10);
-			var oBinding = this.getBinding("rows");
-			if (oBinding) {
-				if (oBinding.isExpanded(iRowIndex)) {
-					oBinding.collapse(iRowIndex);
-				} else {
-					oBinding.expand(iRowIndex);
-				}
-			}
+
+		if (TableUtils.toggleGroupHeader(this, oEvent.target)) {
 			oEvent.preventDefault();
 			return;
 		}
+
 		this._bShowMenu = true;
 		this._onSelect(oEvent);
 		this._bShowMenu = false;
@@ -403,9 +375,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 			// SHIFT + 10 should open the context menu
 			this.oncontextmenu(oEvent);
 		} else if (oEvent.keyCode === jQuery.sap.KeyCodes.NUMPAD_PLUS) {
-			this._expandGroupHeader(oEvent);
+			TableUtils.toggleGroupHeader(this, oEvent.target, true);
 		} else if (oEvent.keyCode === jQuery.sap.KeyCodes.NUMPAD_MINUS) {
-			this._collapseGroupHeader(oEvent);
+			TableUtils.toggleGroupHeader(this, oEvent.target, false);
 		}
 	};
 
@@ -511,7 +483,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 			var oInfo = TableUtils.getCellInfo(oEvent.target);
 			if (oInfo && (oInfo.type === TableUtils.CELLTYPES.COLUMNHEADER || oInfo.type === TableUtils.CELLTYPES.COLUMNROWHEADER)) {
 				oInfo = TableUtils.getFocusedItemInfo(this);
-				if (oInfo.row - this._getHeaderRowCount() <= 1) { // We are in the last column header row
+				if (oInfo.row - TableUtils.getHeaderRowCount(this) <= 1) { // We are in the last column header row
 					//Just prevent the navigation to the table content
 					oEvent.setMarked("sapUiTableSkipItemNavigation");
 				}
@@ -537,7 +509,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 			}
 		} else if (oEvent.altKey) {
 			// Toggle group header on ALT + DOWN.
-			this._toggleGroupHeader(oEvent);
+			if (TableUtils.toggleGroupHeader(this, oEvent.target)) {
+				oEvent.preventDefault();
+				oEvent.setMarked("sapUiTableSkipItemNavigation");
+			}
 		}
 	};
 
@@ -564,7 +539,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 			}
 		} else if (oEvent.altKey) {
 			// Toggle group header on ALT + UP.
-			this._toggleGroupHeader(oEvent);
+			if (TableUtils.toggleGroupHeader(this, oEvent.target)) {
+				oEvent.preventDefault();
+				oEvent.setMarked("sapUiTableSkipItemNavigation");
+			}
 		}
 	};
 

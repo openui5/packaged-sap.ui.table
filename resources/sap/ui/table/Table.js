@@ -9,12 +9,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		'sap/ui/core/Control', 'sap/ui/core/Element', 'sap/ui/core/IconPool', 'sap/ui/core/IntervalTrigger', 'sap/ui/core/library', 'sap/ui/core/Popup',
 		'sap/ui/core/ResizeHandler', 'sap/ui/core/ScrollBar', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/theming/Parameters',
 		'sap/ui/model/ChangeReason', 'sap/ui/model/Context', 'sap/ui/model/Filter', 'sap/ui/model/SelectionModel', 'sap/ui/model/Sorter',
-		'./Column', './Row', './library', './TableUtils', './TableExtension', './TableAccExtension', './TableKeyboardExtension', 'jquery.sap.dom', 'jquery.sap.trace'],
+		'./Column', './Row', './library', './TableUtils', './TableExtension', './TableAccExtension', './TableKeyboardExtension', './TablePointerExtension', 'jquery.sap.dom', 'jquery.sap.trace'],
 	function(jQuery, Device,
 		Control, Element, IconPool, IntervalTrigger, coreLibrary, Popup,
 		ResizeHandler, ScrollBar, ItemNavigation, Parameters,
 		ChangeReason, Context, Filter, SelectionModel, Sorter,
-		Column, Row, library, TableUtils, TableExtension, TableAccExtension, TableKeyboardExtension /*, jQuerySapPlugin,jQuerySAPTrace */) {
+		Column, Row, library, TableUtils, TableExtension, TableAccExtension, TableKeyboardExtension, TablePointerExtension /*, jQuerySapPlugin,jQuerySAPTrace */) {
 	"use strict";
 
 
@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.38.4
+	 * @version 1.38.5
 	 *
 	 * @constructor
 	 * @public
@@ -752,8 +752,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._attachExtensions = function() {
+		if (this._bExtensionsInitialized) {
+			return;
+		}
+		TableExtension.enrich(this, TablePointerExtension);
 		TableExtension.enrich(this, TableKeyboardExtension);
 		TableExtension.enrich(this, TableAccExtension); //Must be registered after keyboard to reach correct delegate order
+		this._bExtensionsInitialized = true;
 	};
 
 
@@ -785,8 +790,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._detachExtensions = function(){
+		if (!this._bExtensionsInitialized) {
+			return;
+		}
+		this._getPointerExtension().destroy();
 		this._getKeyboardExtension().destroy();
 		this._getAccExtension().destroy();
+		delete this._bExtensionsInitialized;
 	};
 
 
@@ -2452,18 +2462,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * check if data is available in the table
-	 * @private
-	 */
-	Table.prototype._hasData = function() {
-		var oBinding = this.getBinding("rows");
-		if (!oBinding || (oBinding.getLength() || 0) === 0) {
-			return false;
-		}
-		return true;
-	};
-
-	/**
 	 * show or hide the no data container
 	 * @private
 	 */
@@ -2688,46 +2686,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			}
 		}
 		return aColumns;
-	};
-
-	/**
-	 * returns the count of visible columns
-	 * @private
-	 */
-	Table.prototype._getVisibleColumnCount = function() {
-		return this._getVisibleColumns().length;
-	};
-
-	/**
-	 * returns the row count of headers
-	 * @private
-	 */
-	Table.prototype._getHeaderRowCount = function() {
-		if (!this.getColumnHeaderVisible()) {
-			return 0;
-		} else if (!this._useMultiHeader()) {
-			return 1;
-		}
-		var iHeaderRows = 0;
-		jQuery.each(this._getVisibleColumns(), function(iIndex, oColumn) {
-			iHeaderRows = Math.max(iHeaderRows,  oColumn.getMultiLabels().length);
-		});
-		return iHeaderRows;
-	};
-
-	/**
-	 * returns if multi header beahviour is used or not
-	 * @private
-	 */
-	Table.prototype._useMultiHeader = function() {
-		var useMultiLabels = false;
-		jQuery.each(this._getVisibleColumns(), function(iIndex, oColumn) {
-			if (oColumn.getMultiLabels().length > 0) {
-				useMultiLabels = true;
-				return false;
-			}
-		});
-		return useMultiLabels;
 	};
 
 
@@ -2978,7 +2936,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 			var oColHdrCnt = oDomRef.querySelector(".sapUiTableColHdrCnt");
 			if (oColHdrCnt) {
-				oColHdrCnt.style.height = Math.floor(oTableSizes.columnRowHeight * this._getHeaderRowCount()) + "px";
+				oColHdrCnt.style.height = Math.floor(oTableSizes.columnRowHeight * TableUtils.getHeaderRowCount(this)) + "px";
 			}
 		}
 
@@ -3196,9 +3154,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype.onmousedown = function(oEvent) {
-		// check whether item navigation should be reapplied from scratch
-		this._getKeyboardExtension().initItemNavigation();
-
 		// only move on left click!
 		var bLeftButton = oEvent.button === 0;
 		var bIsTouchMode = this._isTouchMode(oEvent);
@@ -3206,41 +3161,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (bLeftButton) {
 			var $target = jQuery(oEvent.target);
 
-			var $splitter = this.$("sb");
-			if (oEvent.target == $splitter[0]) {
-
-				// Fix for IE text selection while dragging
-				jQuery(document.body).bind("selectstart", jQuery.proxy(this._splitterSelectStart, this));
-
-				var offset = $splitter.offset();
-				var height = $splitter.height();
-				var width = $splitter.width();
-
-				jQuery(document.body).append(
-						"<div id=\"" + this.getId() + "-ghost\" class=\"sapUiTableInteractiveResizerGhost\" style =\" height:" + height + "px; width:"
-						+ width + "px; left:" + offset.left + "px; top:" + offset.top + "px\" ></div>");
-
-				// append overlay over splitter to enable correct functionality of moving the splitter
-				$splitter.append(
-						"<div id=\"" + this.getId() + "-overlay\" style =\"left: 0px;" +
-								" right: 0px; bottom: 0px; top: 0px; position:absolute\" ></div>");
-
-				var $Document = jQuery(document);
-				if (bIsTouchMode) {
-					$Document.bind("touchend.sapUiTableInteractiveResize", jQuery.proxy(this._onGhostMouseRelease, this));
-					$Document.bind("touchmove.sapUiTableInteractiveResize", jQuery.proxy(this._onGhostMouseMove, this));
-				} else {
-					$Document.bind("mouseup.sapUiTableInteractiveResize", jQuery.proxy(this._onGhostMouseRelease, this));
-					$Document.bind("mousemove.sapUiTableInteractiveResize", jQuery.proxy(this._onGhostMouseMove, this));
-				}
-
-				this._disableTextSelection();
-
-				return;
-			}
-
 			var $col = $target.closest(".sapUiTableCol");
-			if ($col.length === 1) {
+			if ($col.length === 1 && oEvent.target != this.getDomRef("sb")/*Not the interactive resize bar -> see PointerExtension*/) {
 
 				this._bShowMenu = true;
 				this._mTimeouts.delayedMenuTimer = jQuery.sap.delayedCall(200, this, function() {
@@ -3290,6 +3212,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (oEvent.isMarked()) {
 			// the event was already handled by some other handler, do nothing.
 			return;
+		}
+
+		var $Target = jQuery(oEvent.target);
+
+		if ($Target.hasClass("sapUiTableGroupIcon") || $Target.hasClass("sapUiTableTreeIcon")) {
+			if (TableUtils.toggleGroupHeader(this, oEvent.target)) {
+				return;
+			}
 		}
 
 		// forward the event
@@ -4734,59 +4664,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		return this._oSelection.isSelectedIndex(iIndex);
 	};
 
-	/**
-	 * If focus is on group header, open/close the group header, depending on the expand state.
-	 * @private
-	 */
-	Table.prototype._toggleGroupHeader = function(oEvent) {
-		var $Parent = jQuery(oEvent.target).closest('.sapUiTableGroupHeader');
-		if ($Parent.length > 0) {
-			var iRowIndex = this.getFirstVisibleRow() + parseInt($Parent.attr("data-sap-ui-rowindex"), 10);
-			var oBinding = this.getBinding("rows");
-			if (oBinding && oBinding.isExpanded(iRowIndex)) {
-				oBinding.collapse(iRowIndex);
-			} else {
-				oBinding.expand(iRowIndex);
-			}
-			oEvent.preventDefault();
-			oEvent.stopImmediatePropagation();
-		}
-	};
-
-	/**
-	 * If focus is on group header, close the group header, else do the default behaviour of item navigation
-	 * @private
-	 */
-	Table.prototype._collapseGroupHeader = function(oEvent) {
-		var $Parent = jQuery(oEvent.target).closest('.sapUiTableGroupHeader');
-		if ($Parent.length > 0) {
-			var iRowIndex = this.getFirstVisibleRow() + parseInt($Parent.attr("data-sap-ui-rowindex"), 10);
-			var oBinding = this.getBinding("rows");
-			if (oBinding && oBinding.isExpanded(iRowIndex)) {
-				oBinding.collapse(iRowIndex);
-			}
-			oEvent.preventDefault();
-			oEvent.stopImmediatePropagation();
-		}
-	};
-
-	/**
-	 * If focus is on group header, open the group header, else do the default behaviour of item navigation
-	 * @private
-	 */
-	Table.prototype._expandGroupHeader = function(oEvent) {
-		var $Parent = jQuery(oEvent.target).closest('.sapUiTableGroupHeader');
-		if ($Parent.length > 0) {
-			var iRowIndex = this.getFirstVisibleRow() + parseInt($Parent.attr("data-sap-ui-rowindex"), 10);
-			var oBinding = this.getBinding("rows");
-			if (oBinding && !oBinding.isExpanded(iRowIndex)) {
-				oBinding.expand(iRowIndex);
-			}
-			oEvent.preventDefault();
-			oEvent.stopImmediatePropagation();
-		}
-	};
-
 	// =============================================================================
 	// GROUPING
 	// =============================================================================
@@ -4904,27 +4781,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 				};
 
-				this.onclick = function(oEvent) {
-					if (jQuery(oEvent.target).hasClass("sapUiTableGroupIcon")) {
-						var $parent = jQuery(oEvent.target).parents("[data-sap-ui-rowindex]");
-						if ($parent.length > 0) {
-							var iRowIndex = this.getFirstVisibleRow() + parseInt($parent.attr("data-sap-ui-rowindex"), 10);
-							var oBinding = this.getBinding("rows");
-							if (oBinding.isExpanded(iRowIndex)) {
-								oBinding.collapse(iRowIndex);
-								jQuery(oEvent.target).removeClass("sapUiTableGroupIconOpen").addClass("sapUiTableGroupIconClosed");
-							} else {
-								oBinding.expand(iRowIndex);
-								jQuery(oEvent.target).removeClass("sapUiTableGroupIconClosed").addClass("sapUiTableGroupIconOpen");
-							}
-						}
-					} else {
-						if (Table.prototype.onclick) {
-							Table.prototype.onclick.apply(this, arguments);
-						}
-					}
-				};
-
 				// we use sorting finally to sort the values and afterwards group them
 				var sPropertyName = oGroupBy.getSortProperty();
 				oBinding.sort(new Sorter(sPropertyName));
@@ -5008,6 +4864,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 							aContexts[iIndex].__groupInfo.expanded = false;
 							this._fireChange();
 						}
+					},
+					toggleIndex: function(iIndex) {
+						if (this.isExpanded(iIndex)) {
+							this.collapse(iIndex);
+						} else {
+							this.expand(iIndex);
+						}
 					}
 
 				});
@@ -5035,7 +4898,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 			// if the grouping is not supported we remove the hacks we did
 			// and simply return the binding finally
-			this.onclick = Table.prototype.onclick;
 			this._modifyRow = undefined;
 
 			// reset the binding
@@ -5198,60 +5060,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 */
 	Table.prototype._isTouchMode = function(oEvent) {
 		return !!oEvent.originalEvent["touches"];
-	};
-
-	/**
-	 * The selectstart event triggered in IE to select the text.
-	 * @private
-	 * @param {event} oEvent The splitterselectstart event
-	 * @return {boolean} false
-	 */
-	Table.prototype._splitterSelectStart = function(oEvent){
-		oEvent.preventDefault();
-		oEvent.stopPropagation();
-		return false;
-	};
-
-	/**
-	 * Drops the previous dragged horizontal splitter bar and recalculates the amount of rows to be displayed.
-	 * @private
-	 */
-	Table.prototype._onGhostMouseRelease = function(oEvent) {
-		var $this = this.$();
-		var $splitterBarGhost = jQuery(this.getDomRef("ghost"));
-		var iLocationY = this._isTouchMode(oEvent) ? oEvent.changedTouches[0].pageY : oEvent.pageY;
-
-		var iNewHeight = iLocationY - $this.find(".sapUiTableCCnt").offset().top - $splitterBarGhost.height() - $this.find(".sapUiTableFtr").height();
-		this._setRowContentHeight(iNewHeight);
-		this._adjustRows(this._calculateRowsToDisplay(iNewHeight));
-
-		$splitterBarGhost.remove();
-		this.$("overlay").remove();
-
-		jQuery(document.body).unbind("selectstart", this._splitterSelectStart);
-
-		var $document = jQuery(document);
-		$document.unbind("touchend.sapUiTableInteractiveResize");
-		$document.unbind("touchmove.sapUiTableInteractiveResize");
-		$document.unbind("mouseup.sapUiTableInteractiveResize");
-		$document.unbind("mousemove.sapUiTableInteractiveResize");
-
-		this._enableTextSelection();
-	};
-
-	/**
-	 * Drags the horizontal splitter bar for visibleRowCountMode "Interactive".
-	 * @param oEvent
-	 * @private
-	 */
-	Table.prototype._onGhostMouseMove = function(oEvent) {
-		var splitterBarGhost = this.getDomRef("ghost");
-
-		var iLocationY = this._isTouchMode(oEvent) ? oEvent.targetTouches[0].pageY : oEvent.pageY;
-		var min = this.$().offset().top;
-		if (iLocationY > min) {
-			jQuery(splitterBarGhost).css("top", iLocationY + "px");
-		}
 	};
 
 	Table.prototype._determineParent = function() {

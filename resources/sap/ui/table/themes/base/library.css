@@ -52,6 +52,9 @@
 .sapUiSizeCompact .sapUiAnalyticalTable .sapUiTableGroupIcon::before {
   line-height: 23px;
 }
+.sapUiSizeCondensed .sapUiAnalyticalTable .sapUiTableGroupIcon::before {
+  line-height: 22px;
+}
 /*******************************************************************************
  * TABLE PARAMETERS
  ******************************************************************************/
@@ -375,7 +378,7 @@ html[data-sap-ui-browser^="ed"] .sapUiTableVScr .sapUiTableCtrlScr {
   font-family: SAP-Icons;
   line-height: 1.75rem;
   font-size: 0.75rem;
-  letter-spacing: 0.375rem;
+  padding-right: 0.375rem;
 }
 .sapUiSizeCozy .sapUiTableColSF::after {
   line-height: 3rem;
@@ -395,10 +398,10 @@ html[data-sap-ui-browser^="ed"] .sapUiTableVScr .sapUiTableCtrlScr {
   content: "\e076";
 }
 .sapUiTableColFiltered.sapUiTableColSorted::after {
-  content: "\e076\e1fd";
+  content: "\e076\00a0\e1fd";
 }
 .sapUiTableColFiltered.sapUiTableColSortedD::after {
-  content: "\e076\e1fc";
+  content: "\e076\00a0\e1fc";
 }
 .sapUiTableColCell.sapUiTableColSorted,
 .sapUiTableColCell.sapUiTableColFiltered {
@@ -727,7 +730,7 @@ html[data-sap-ui-browser^="ed"] .sapUiTableVScr .sapUiTableHSb {
 }
 .sapUiSizeCompact .sapUiTableRowHdr.sapUiTableGroupHeader > .sapUiTableGroupIcon,
 .sapUiSizeCozy .sapUiTableRowHdr.sapUiTableGroupHeader > .sapUiTableGroupIcon {
-  left: 0;
+  left: 1px;
 }
 html[dir=rtl] .sapUiSizeCompact .sapUiTableGroupIcon.sapUiTableGroupIconClosed::before,
 html[dir=rtl] .sapUiSizeCozy .sapUiTableGroupIcon.sapUiTableGroupIconClosed::before,
