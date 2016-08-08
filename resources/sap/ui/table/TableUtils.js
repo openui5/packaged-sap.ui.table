@@ -5,8 +5,8 @@
  */
 
 // Provides helper sap.ui.table.TableUtils.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHandler', './library'],
-	function(jQuery, Control, ResizeHandler, library) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHandler', './TableGrouping', './library'],
+	function(jQuery, Control, ResizeHandler, TableGrouping, library) {
 	"use strict";
 
 	// shortcuts
@@ -18,12 +18,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.40.3
+	 * @version 1.40.4
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
 	 */
 	var TableUtils = {
+
+		Grouping: TableGrouping, //Make grouping utils available here
 
 		/*
  		 * Known basic cell types in the table
@@ -42,8 +44,31 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 		 * @private
 		 */
 		hasRowHeader : function(oTable) {
-			return oTable.getSelectionMode() !== SelectionMode.None
-					&& oTable.getSelectionBehavior() !== SelectionBehavior.RowOnly;
+			return (oTable.getSelectionMode() !== SelectionMode.None
+					&& oTable.getSelectionBehavior() !== SelectionBehavior.RowOnly)
+					|| TableGrouping.isGroupMode(oTable);
+		},
+
+		/**
+		 * Returns whether selection is allowed on the cells of a row (not row selector).
+		 * @param {sap.ui.table.Table} oTable Instance of the table
+		 * @return {boolean}
+		 * @private
+		 */
+		isRowSelectionAllowed : function(oTable) {
+			return oTable.getSelectionMode() !== SelectionMode.None &&
+				(oTable.getSelectionBehavior() === SelectionBehavior.Row || oTable.getSelectionBehavior() === SelectionBehavior.RowOnly);
+		},
+
+		/**
+		 * Returns whether selection is allowed via the row selector.
+		 * @param {sap.ui.table.Table} oTable Instance of the table
+		 * @return {boolean}
+		 * @private
+		 */
+		isRowSelectorSelectionAllowed : function(oTable) {
+			// Incl. that RowOnly works like Row
+			return oTable.getSelectionMode() !== SelectionMode.None && TableUtils.hasRowHeader(oTable);
 		},
 
 		/**
@@ -107,21 +132,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 			var oBinding = oTable.getBinding("rows");
 			if ($GroupRef.length > 0 && oBinding) {
 				var iRowIndex = oTable.getFirstVisibleRow() + parseInt($GroupRef.attr("data-sap-ui-rowindex"), 10);
-				var bIsExpanded = oBinding.isExpanded(iRowIndex);
-				if (bExpand === true && !bIsExpanded) { // Force expand
-					oBinding.expand(iRowIndex);
-				} else if (bExpand === false && bIsExpanded) { // Force collapse
-					oBinding.collapse(iRowIndex);
-				} else if (bExpand !== true && bExpand !== false) { // Toggle state
-					oBinding.toggleIndex(iRowIndex);
-				} else {
-					return false;
+				var bIsExpanded = TableGrouping.toggleGroupHeader(oTable, iRowIndex, bExpand);
+				var bChanged = bIsExpanded === true || bIsExpanded === false;
+				if (bChanged && oTable._onGroupHeaderChanged) {
+					oTable._onGroupHeaderChanged(iRowIndex, bIsExpanded);
 				}
-
-				if (oTable._onGroupHeaderChanged) {
-					oTable._onGroupHeaderChanged(iRowIndex, !bIsExpanded);
-				}
-				return true;
+				return bChanged;
 			}
 			return false;
 		},
@@ -672,6 +688,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 			return sContentDensity;
 		}
 	};
+
+	TableGrouping.TableUtils = TableUtils; // Avoid cyclic dependency
 
 	return TableUtils;
 

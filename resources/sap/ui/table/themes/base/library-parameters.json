@@ -54,6 +54,7 @@
     "sapShell_BackgroundImageRepeat": "false",
     "sapShell_BorderColor": "#666666",
     "sapShell_TextColor": "#000000",
+    "sapShell_Favicon": "none",
     "sapButton_BorderWidth": "1px",
     "sapButton_BorderCornerRadius": "0",
     "sapButton_Background": "#ffffff",
@@ -199,6 +200,7 @@
     "sapUiShellBackgroundGradient": "#ffffff",
     "sapUiShellBorderColor": "#666666",
     "sapUiShellTextColor": "#000000",
+    "sapUiShellFavicon": "none",
     "sapUiButtonBackground": "#ffffff",
     "sapUiButtonBorderColor": "#000000",
     "sapUiButtonTextColor": "#000000",
@@ -678,5 +680,12 @@
     "sapUiTableRowHdrWidth": "22px",
     "sapUiTableToolbarDesign": "Transparent",
     "sapUiTableCozyRowHdrWidth": "3rem",
-    "sapUiTableCozyRowHdrHeight": "3rem"
+    "sapUiTableCozyRowHdrHeight": "3rem",
+    "_sapUiTableGroupIconHeightDefault": "32px",
+    "_sapUiTableGroupIconHeightCondensed": "24px",
+    "_sapUiTableGroupIconHeightCozy": "48px",
+    "_sapUiTableGroupHeaderBackground": "#f2f2f2",
+    "_sapUiTableGroupOutlineWidth": "1px",
+    "_sapUiTableGroupIconBorderWidth": "1px",
+    "_sapUiTableGroupIconFontSize": "0.875rem"
 }

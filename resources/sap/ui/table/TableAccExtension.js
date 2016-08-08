@@ -10,8 +10,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 	"use strict";
 
 	// shortcuts
-	var SelectionBehavior = library.SelectionBehavior,
-		SelectionMode = library.SelectionMode;
+	var SelectionMode = library.SelectionMode;
 
 	/*
 	 * Provides utility functions to handle acc info objects.
@@ -147,7 +146,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 		 * Returns whether the given cell is in the tree column of a TreeTable
 		 */
 		isTreeColumnCell : function(oExtension, $Cell) {
-			return oExtension._hasTreeColumn && $Cell.hasClass("sapUiTableTdFirst");
+			return TableUtils.Grouping.isTreeMode(oExtension.getTable()) && $Cell.hasClass("sapUiTableTdFirst");
 		},
 
 		/*
@@ -331,7 +330,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 
 			ExtensionHelper.performCellModifications(this, $Cell, aDefaultLabels, null, aLabels, aDescriptions, sText,
 				function (aLabels, aDescriptions, bRowChange, bColChange, bInitial) {
-					if (!bHidden && oTable._getSelectOnCellsAllowed() && bRowChange) {
+					if (!bHidden && TableUtils.isRowSelectionAllowed(oTable) && bRowChange) {
 						aDescriptions.push(oTableInstances.row.getId() + "-rowselecttext");
 					}
 				}
@@ -455,7 +454,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 
 				case TableAccExtension.ELEMENTTYPES.ROWHEADER:
 					mAttributes["aria-labelledby"] = [sTableId + "-ariarowheaderlabel"];
-					if (!oExtension._treeMode) { // Otherwise there are strange announcements of the whole content in AnlyticalTable
+					if (!TableUtils.Grouping.isTreeMode(oTable)) { // Otherwise there are strange announcements of the whole content in AnlyticalTable
 						mAttributes["role"] = ["rowheader"];
 					}
 					if (oTable.getSelectionMode() !== SelectionMode.None) {
@@ -540,7 +539,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 					}*/
 
 					// Handle expand state for first Column in TreeTable
-					if (oExtension._hasTreeColumn && mParams && mParams.firstCol && mParams.row) {
+					if (TableUtils.Grouping.isTreeMode(oTable) && mParams && mParams.firstCol && mParams.row) {
 						var oBindingInfo = oTable.mBindingInfos["rows"];
 						if (mParams.row.getBindingContext(oBindingInfo && oBindingInfo.model)) {
 							mAttributes["aria-level"] = mParams.row._iLevel + 1;
@@ -553,12 +552,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 					break;
 
 				case TableAccExtension.ELEMENTTYPES.TABLE: //The "real" table element(s)
-					mAttributes["role"] = "presentation";//oExtension._treeMode ? "treegrid" : "grid";
+					mAttributes["role"] = "presentation";
 					addAriaForOverlayOrNoData(oTable, mAttributes, true, true);
 					break;
 
 				case TableAccExtension.ELEMENTTYPES.CONTENT: //The content area of the table which contains all the table elements, rowheaders, columnheaders, etc
-					mAttributes["role"] = oExtension._treeMode ? "treegrid" : "grid";
+					mAttributes["role"] = TableUtils.Grouping.isGroupMode(oTable) || TableUtils.Grouping.isTreeMode(oTable) ? "treegrid" : "grid";
 					mAttributes["aria-labelledby"] = [].concat(oTable.getAriaLabelledBy());
 					if (oTable.getTitle()) {
 						mAttributes["aria-labelledby"].push(oTable.getTitle().getId());
@@ -574,8 +573,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 					break;
 
 				case TableAccExtension.ELEMENTTYPES.COLUMNHEADER_ROW: //The area which contains the column headers (TableUtils.CELLTYPES.COLUMNHEADER)
-					if (oTable.getSelectionMode() === SelectionMode.None ||
-							 oTable.getSelectionBehavior() === SelectionBehavior.RowOnly) {
+					if (!TableUtils.hasRowHeader(oTable)) {
 						mAttributes["role"] = "row";
 					}
 					addAriaForOverlayOrNoData(oTable, mAttributes, true, false);
@@ -619,14 +617,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 						mAttributes["aria-selected"] = "true";
 						bSelected = true;
 					}
-					if (oTable._getSelectOnCellsAllowed()) {
+					if (TableUtils.isRowSelectionAllowed(oTable)) {
 						var mTooltipTexts = oExtension.getAriaTextsForSelectionMode(true);
 						mAttributes["title"] = mTooltipTexts.mouse[bSelected ? "rowDeselect" : "rowSelect"];
 					}
 					break;
 
 				case TableAccExtension.ELEMENTTYPES.TREEICON: //The expand/collapse icon in the TreeTable
-					if (oExtension._hasTreeColumn) {
+					if (TableUtils.Grouping.isTreeMode(oTable)) {
 						mAttributes = {
 							"aria-label" : "",
 							"title" : "",
@@ -680,7 +678,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.40.3
+	 * @version 1.40.4
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension
@@ -692,20 +690,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 		 */
 		_init : function(oTable, sTableType, mSettings) {
 			this._accMode = sap.ui.getCore().getConfiguration().getAccessibility();
-			this._readonly = false;
-			this._treeMode = false;
-			this._hasTreeColumn = false;
-
-			switch (sTableType) {
-				case TableExtension.TABLETYPES.ANALYTICAL:
-					this._readonly = true;
-					this._treeMode = true;
-					break;
-				case TableExtension.TABLETYPES.TREE:
-					this._treeMode = true;
-					this._hasTreeColumn = true;
-					break;
-			}
+			this._readonly = sTableType == TableExtension.TABLETYPES.ANALYTICAL ? true : false;
 
 			oTable.addEventDelegate(this);
 
@@ -722,8 +707,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 			this.getTable().removeEventDelegate(this);
 
 			this._readonly = false;
-			this._treeMode = false;
-			this._hasTreeColumn = false;
 
 			TableExtension.prototype.destroy.apply(this, arguments);
 		},
@@ -899,29 +882,36 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 	};
 
 	/*
-	 * Is called on updates of a row in the AnalyticalTable and updates the corresponding ARIA attributes.
+	 * Updates the expand state and level for accessibility in case of grouping
 	 * @public (Part of the API for Table control only!)
 	 */
-	TableAccExtension.prototype.updateAriaForAnalyticalRow = function(oRow, $Row, $RowHdr, $FixedRow, bGroup, bExpanded, iLevel) {
+	TableAccExtension.prototype.updateAriaExpandAndLevelState = function(oRow, $ScrollRow, $RowHdr, $FixedRow, bGroup, bExpanded, iLevel, $TreeIcon) {
 		if (!this._accMode) {
 			return;
 		}
 
 		var sTitle = null,
 			oTable = this.getTable(),
-			aRefs = [$Row, $Row.children(), $RowHdr, $FixedRow];
+			aRefs = [$ScrollRow, $ScrollRow.children(), $RowHdr, $FixedRow, $FixedRow ? $FixedRow.children() : null],
+			bTreeMode = !!$TreeIcon,
+			oBinding = oTable.getBinding("rows");
 
-		if (!bGroup && $RowHdr) {
+		if (!bGroup && $RowHdr && !bTreeMode) {
 			var iIndex = $RowHdr.attr("data-sap-ui-rowindex");
 			var mAttributes = ExtensionHelper.getAriaAttributesFor(this, TableAccExtension.ELEMENTTYPES.ROWHEADER, {rowSelected: !oRow._bHidden && oTable.isIndexSelected(iIndex)});
 			sTitle = mAttributes["title"] || null;
 		}
 
-		if ($RowHdr) {
+		if ($RowHdr && !bTreeMode) {
 			$RowHdr.attr({
 				"aria-haspopup" : bGroup ? "true" : null,
 				"title" : sTitle
 			});
+		}
+
+		if (oBinding && oBinding.hasTotaledMeasures && iLevel > 0 && (!oBinding.bProvideGrandTotals || !oBinding.hasTotaledMeasures())) {
+			// Summary top-level row is not displayed (always has level 0) -> for aria we can shift all the levels 1 step up;
+			iLevel = iLevel - 1;
 		}
 
 		for (var i = 0; i < aRefs.length; i++) {
@@ -932,31 +922,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 				});
 			}
 		}
-	};
 
-	/*
-	 * Is called in the TreeTable when the expand state changes and updates the corresponding ARIA attributes.
-	 * @public (Part of the API for Table control only!)
-	 */
-	TableAccExtension.prototype.updateAriaExpandState = function(oRow, $Row, $Icon) {
-		if (!this._hasTreeColumn || !this._accMode) {
-			return;
+		if (bTreeMode) {
+			$TreeIcon.attr(ExtensionHelper.getAriaAttributesFor(this, TableAccExtension.ELEMENTTYPES.TREEICON, {row: oRow}));
 		}
-
-		var $FirstTd = $Row.children("td.sapUiTableTdFirst");
-		var oAttr = {
-			"aria-level" : null,
-			"aria-expanded" : null
-		};
-		var oBindingInfo = this.getTable().mBindingInfos["rows"];
-		if (oRow.getBindingContext(oBindingInfo && oBindingInfo.model)) { //see ExtensionHelper.getAriaAttributesFor(DATACELL)
-			oAttr["aria-level"] = oRow._iLevel + 1;
-			if (!$Icon.hasClass("sapUiTableTreeIconLeaf")) {
-				oAttr["aria-expanded"] = "" + oRow._bIsExpanded;
-			}
-		}
-		$FirstTd.attr(oAttr);
-		$Icon.attr(ExtensionHelper.getAriaAttributesFor(this, TableAccExtension.ELEMENTTYPES.TREEICON, {row: oRow}));
 	};
 
 	/*
