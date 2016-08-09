@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @see http://scn.sap.com/docs/DOC-44986
 	 *
 	 * @extends sap.ui.table.Table
-	 * @version 1.38.5
+	 * @version 1.38.6
 	 *
 	 * @constructor
 	 * @public
@@ -476,23 +476,6 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 				} else {
 					$td.removeClass("sapUiTableMeasureCell");
 				}
-			}
-		}
-	};
-
-	AnalyticalTable.prototype.onclick = function(oEvent) {
-		var $EventTarget = jQuery(oEvent.target);
-		if ($EventTarget.hasClass("sapUiAnalyticalTableSum")) {
-			// Sums cannot be selected
-			oEvent.preventDefault();
-			return;
-		} else if ($EventTarget.hasClass("sapUiTableGroupMenuButton")) {
-			this._onContextMenu(oEvent);
-			oEvent.preventDefault();
-			return;
-		} else {
-			if (Table.prototype.onclick) {
-				Table.prototype.onclick.apply(this, arguments);
 			}
 		}
 	};

@@ -16,6 +16,9 @@
 /* ======================================================== */
 /* CSS for control sap.ui.analytics/AnalyticalTable.control */
 /* ======================================================== */
+.sapUiAnalyticalTable .sapUiTableColRsz {
+  z-index: 3;
+}
 .sapUiAnalyticalTable tr.sapUiAnalyticalTableDummy td {
   border-right-width: 0;
 }
@@ -374,9 +377,7 @@ html[data-sap-ui-browser^="ed"] .sapUiTableVScr .sapUiTableCtrlScr {
   content: "";
   position: absolute;
   right: 0;
-  top: 0;
   font-family: SAP-Icons;
-  line-height: 1.75rem;
   font-size: 0.75rem;
   padding-right: 0.375rem;
 }
@@ -520,10 +521,14 @@ html[dir=rtl] .sapUiTableColRsz {
 .sapUiTableHScr .sapUiTableColRsz {
   bottom: 18px;
 }
-.sapUiTableColRszActive,
-.sapUiTableColRsz:hover {
+html.sap-desktop .sapUiTableColRsz:hover {
   background-color: #cc8700;
   opacity: 0.5;
+}
+.sapUiTableColRszActive,
+html.sap-desktop .sapUiTableColRsz.sapUiTableColRszActive:hover {
+  background-color: #cc8700;
+  opacity: 1;
 }
 /*******************************************************************************
  * VERTICAL SCROLLBAR
