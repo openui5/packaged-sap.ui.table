@@ -57,7 +57,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.40.4
+	 * @version 1.40.5
 	 *
 	 * @constructor
 	 * @public
@@ -965,11 +965,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			}
 		}
 
-		var oColumn = oDomRef.querySelector(".sapUiTableCol");
-		if (oColumn) {
-			oSizes.columnRowHeight = oColumn.clientHeight;
-			oSizes.columnRowOuterHeight = oColumn.offsetHeight;
+		function getColumnSize(oColumn) {
+			oSizes.columnRowHeight = Math.max(oColumn.clientHeight || 0, oSizes.columnRowHeight);
+			oSizes.columnRowOuterHeight = Math.max(oColumn.offsetHeight || 0, oSizes.columnRowOuterHeight);
 		}
+		Array.prototype.forEach.call(oDomRef.querySelectorAll(".sapUiTableCol"), getColumnSize);
 
 		if (!aTableRowHeights) {
 			oSizes.tableRowHeights = this._collectRowHeights();
@@ -1334,8 +1334,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 		if (sSelectionMode === SelectionMode.Multi) {
 			sSelectionMode = SelectionMode.MultiToggle;
-			this.setProperty("selectionBehavior", SelectionBehavior.RowOnly);
-			jQuery.sap.log.warning("The selection mode 'Multi' is deprecated and must not be used anymore. Your setting was defaulted to selection mode 'MultiToggle' and selection behavior 'RowOnly'");
+			jQuery.sap.log.warning("The selection mode 'Multi' is deprecated and must not be used anymore. Your setting was defaulted to selection mode 'MultiToggle'");
 		}
 
 		this.setProperty("selectionMode", sSelectionMode);
@@ -2236,6 +2235,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 			this._toggleVSb();
 		}
+		this.getDomRef("vsb").style.maxHeight = (this.getVisibleRowCount() * iDefaultRowHeight) + "px";
 		this.getDomRef("vsb-content").style.height = iVSbHeight + "px";
 
 		if (!TableUtils.isVariableRowHeightEnabled(this)) {
