@@ -463,7 +463,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 		}
 
 		rm.writeClasses();
-		rm.addStyle("width", oColumn.getWidth());
 		if (oTable.getColumnHeaderHeight() > 0) {
 			rm.addStyle("height", oTable.getColumnHeaderHeight() + "px");
 		}

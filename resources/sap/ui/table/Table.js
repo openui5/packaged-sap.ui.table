@@ -9,12 +9,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		'sap/ui/core/Control', 'sap/ui/core/Element', 'sap/ui/core/IconPool', 'sap/ui/core/IntervalTrigger', 'sap/ui/core/library', 'sap/ui/core/Popup',
 		'sap/ui/core/ResizeHandler', 'sap/ui/core/ScrollBar', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/theming/Parameters',
 		'sap/ui/model/ChangeReason', 'sap/ui/model/Context', 'sap/ui/model/Filter', 'sap/ui/model/SelectionModel', 'sap/ui/model/Sorter',
-		'./Column', './Row', './library', './TableUtils', './TableExtension', './TableAccExtension', './TableKeyboardExtension', './TablePointerExtension', 'jquery.sap.dom', 'jquery.sap.trace'],
+		'./Column', './Row', './library', './TableUtils', './TableExtension', './TableAccExtension', './TableKeyboardExtension', './TablePointerExtension',
+		'./TableScrollExtension', 'jquery.sap.dom', 'jquery.sap.trace'],
 	function(jQuery, Device,
 		Control, Element, IconPool, IntervalTrigger, coreLibrary, Popup,
 		ResizeHandler, ScrollBar, ItemNavigation, Parameters,
 		ChangeReason, Context, Filter, SelectionModel, Sorter,
-		Column, Row, library, TableUtils, TableExtension, TableAccExtension, TableKeyboardExtension, TablePointerExtension /*, jQuerySapPlugin,jQuerySAPTrace */) {
+		Column, Row, library, TableUtils, TableExtension, TableAccExtension, TableKeyboardExtension,
+		TablePointerExtension, TableScrollExtension /*, jQuerySapPlugin,jQuerySAPTrace */) {
 	"use strict";
 
 
@@ -57,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.40.6
+	 * @version 1.40.7
 	 *
 	 * @constructor
 	 * @public
@@ -736,6 +738,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			return;
 		}
 		TableExtension.enrich(this, TablePointerExtension);
+		TableExtension.enrich(this, TableScrollExtension);
 		TableExtension.enrich(this, TableKeyboardExtension);
 		TableExtension.enrich(this, TableAccExtension); //Must be registered after keyboard to reach correct delegate order
 		this._bExtensionsInitialized = true;
@@ -770,18 +773,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._detachExtensions = function(){
-		if (!this._bExtensionsInitialized) {
-			return;
-		}
-		this._getPointerExtension().destroy();
-		this._getKeyboardExtension().destroy();
-		this._getAccExtension().destroy();
-		delete this._bExtensionsInitialized;
+		TableExtension.cleanup(this);
 	};
 
 
 	/**
-	 * theme changed
+	 * Theme changed
 	 * @private
 	 */
 	Table.prototype.onThemeChanged = function() {
@@ -873,8 +870,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			tableCtrlFixedWidth: 0,
 			tableCntHeight: 0,
 			tableCntWidth: 0,
-			columnRowHeight: 0,
-			columnRowOuterHeight: 0,
 			invisibleColWidth: 0
 		};
 
@@ -926,12 +921,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		var iFixedHeaderWidthSum = 0;
 		var aHeaderElements = oDomRef.querySelectorAll(".sapUiTableCtrlFirstCol > th:not(.sapUiTableColSel)");
 		if (aHeaderElements) {
+			var aColumns = this.getColumns();
 			for (var i = 0; i < aHeaderElements.length; i++) {
 				var oHeaderElementClientBoundingRect = aHeaderElements[i].getBoundingClientRect();
 				var iHeaderWidth = oHeaderElementClientBoundingRect.right - oHeaderElementClientBoundingRect.left;
 				aHeaderWidths.push(iHeaderWidth);
 
-				if (!this.getColumns()[i].getVisible()) {
+				if (i < aColumns.length && aColumns[i] && !aColumns[i].getVisible()) {
 					// the fixedColumnCount does not consider the visibility of the column, whereas the DOM only represents
 					// the visible columns. In order to match both, the fixedColumnCount (aggregation) and fixedColumnCount
 					// of the DOM, for each invisible column, 1 must be deducted from the fixedColumnCount (aggregation).
@@ -971,12 +967,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				oSizes.invisibleColWidth = oFirstInvisibleColumn.clientWidth;
 			}
 		}
-
-		function getColumnSize(oColumn) {
-			oSizes.columnRowHeight = Math.max(oColumn.clientHeight || 0, oSizes.columnRowHeight);
-			oSizes.columnRowOuterHeight = Math.max(oColumn.offsetHeight || 0, oSizes.columnRowOuterHeight);
-		}
-		Array.prototype.forEach.call(oDomRef.querySelectorAll(".sapUiTableCol"), getColumnSize);
 
 		if (!aTableRowHeights) {
 			oSizes.tableRowHeights = this._collectRowHeights();
@@ -1339,10 +1329,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			this._oSelection.setSelectionMode(SelectionModel.MULTI_SELECTION);
 		}
 
-		if (sSelectionMode === SelectionMode.Multi) {
-			sSelectionMode = SelectionMode.MultiToggle;
-			jQuery.sap.log.warning("The selection mode 'Multi' is deprecated and must not be used anymore. Your setting was defaulted to selection mode 'MultiToggle'");
-		}
+		// Check for valid selection modes (e.g. change deprecated mode "Multi" to "MultiToggle")
+		sSelectionMode = TableUtils.sanitizeSelectionMode(this, sSelectionMode);
 
 		this.setProperty("selectionMode", sSelectionMode);
 		return this;
@@ -1496,7 +1484,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * handler for change events of the binding
+	 * Handler for change events of the binding.
 	 * @param {sap.ui.base.Event} oEvent change event
 	 * @private
 	 */
@@ -1833,7 +1821,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * refresh rows
+	 * Refresh rows
 	 * @private
 	 */
 	Table.prototype.refreshRows = function(vEvent) {
@@ -1877,7 +1865,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * updates the rows - called internally by the updateAggregation function when
+	 * Updates the rows - called internally by the updateAggregation function when
 	 * anything in the model has been changed.
 	 * @private
 	 */
@@ -1986,7 +1974,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	// =============================================================================
 
 	/**
-	 * attaches the required native event handlers
+	 * Attaches the required native event handlers.
 	 * @private
 	 */
 	Table.prototype._attachEvents = function() {
@@ -2038,21 +2026,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			$this.find(".sapUiTableCtrlFixed > tbody > tr").removeClass("sapUiTableRowHvr");
 		});
 
-		this._getPointerExtension().initColumnResizeEvents();
-
 		var $vsb = jQuery(this.getDomRef(SharedDomRef.VerticalScrollBar));
 		var $hsb = jQuery(this.getDomRef(SharedDomRef.HorizontalScrollBar));
 		$vsb.bind("scroll.sapUiTableVScroll", this.onvscroll.bind(this));
 		$hsb.bind("scroll.sapUiTableHScroll", this.onhscroll.bind(this));
-
-		// For preventing the ItemNavigation to re-apply focus to old position (table cell)
-		// when clicking on ScrollBar
-		$hsb.bind("mousedown.sapUiTableHScroll", function(oEvent) {
-			oEvent.preventDefault();
-		});
-		$vsb.bind("mousedown.sapUiTableVScroll", function(oEvent) {
-			oEvent.preventDefault();
-		});
 
 		if (Device.browser.firefox) {
 			this._getScrollTargets().bind("MozMousePixelScroll.sapUiTableMouseWheel", this._onMouseWheel.bind(this));
@@ -2069,10 +2046,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 					}
 			}, this));
 		}
+
+		TableExtension.attachEvents(this);
 	};
 
 	/**
-	 * detaches the required native event handlers
+	 * Detaches the required native event handlers.
 	 * @private
 	 */
 	Table.prototype._detachEvents = function() {
@@ -2081,7 +2060,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		$this.find(".sapUiTableRowHdrScr").unbind();
 		$this.find(".sapUiTableCtrl > tbody > tr").unbind();
 		$this.find(".sapUiTableRowHdr").unbind();
-		this._getPointerExtension().cleanupColumnResizeEvents();
 		$this.find(".sapUiTableCtrlScrFixed, .sapUiTableColHdrFixed").unbind("scroll.sapUiTablePreventFixedAreaScroll");
 
 		if (TableUtils.isVariableRowHeightEnabled(this)) {
@@ -2090,11 +2068,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 		var $vsb = jQuery(this.getDomRef(SharedDomRef.VerticalScrollBar));
 		$vsb.unbind("scroll.sapUiTableVScroll");
-		$vsb.unbind("mousedown.sapUiTableVScroll");
 
 		var $hsb = jQuery(this.getDomRef(SharedDomRef.HorizontalScrollBar));
 		$hsb.unbind("scroll.sapUiTableHScroll");
-		$hsb.unbind("mousedown.sapUiTableHScroll");
 
 		var $scrollTargets = this._getScrollTargets();
 		$scrollTargets.unbind("MozMousePixelScroll.sapUiTableMouseWheel");
@@ -2104,6 +2080,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		$body.unbind('webkitTransitionEnd transitionend');
 
 		TableUtils.deregisterResizeHandler(this);
+		TableExtension.detachEvents(this);
 	};
 
 	/**
@@ -2366,7 +2343,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * show or hide the no data container
+	 * Show or hide the no data container.
 	 * @private
 	 */
 	Table.prototype._updateNoData = function() {
@@ -2381,8 +2358,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * determines the currently visible columns (used for simply updating only the
-	 * controls of the visible columns instead of the complete row!)
+	 * Determines the currently visible columns (used for simply updating only the
+	 * controls of the visible columns instead of the complete row!).
 	 * @private
 	 */
 	Table.prototype._determineVisibleCols = function(oTableSizes) {
@@ -2453,7 +2430,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * returns the count of rows when bound or 0
+	 * Returns the count of rows when bound or 0.
 	 * @private
 	 */
 	Table.prototype._getRowCount = function() {
@@ -2461,7 +2438,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * returns the count of rows which can ca selected when bound or 0
+	 * Returns the count of rows which can ca selected when bound or 0.
 	 * @private
 	 */
 	Table.prototype._getSelectableRowCount = function() {
@@ -2496,7 +2473,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * returns the count of visible columns
+	 * Returns the count of visible columns.
 	 * @private
 	 */
 	Table.prototype._getVisibleColumns = function() {
@@ -2745,27 +2722,38 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			}
 		});
 
-		// Table Column Height Calculation
-		// we change the height of the cols, col header and the row header to auto to
-		// find out whether to use the height of a cell or the min height of the col header.
-		var bHasColHdrHeight = this.getColumnHeaderHeight() > 0;
-		if (!bHasColHdrHeight) {
-			// Height of one row within the header
-			// avoid half pixels
-			$cols.each(function(index, item) {
-				item.style.height = oTableSizes.columnRowOuterHeight + "px";
-			});
-
-			var oColHdrCnt = oDomRef.querySelector(".sapUiTableColHdrCnt");
-			if (oColHdrCnt) {
-				oColHdrCnt.style.height = Math.floor(oTableSizes.columnRowHeight * TableUtils.getHeaderRowCount(this)) + "px";
-			}
-		}
-
 		// Sync width of content scroll area to header scroll area
 		$colHdrScr.each(function(index, item) {
 			item.style.width = oTableSizes.tableCtrlScrWidth + "px";
 		});
+
+
+		// --------------------------------
+		// Table Column Height Calculation.
+		// --------------------------------
+		// Header row heights must be found after the cell width is set (due to contents wrapping),
+		// therefore this adjustment is done here and not in _collectTableSizes
+		//
+		// Find height of each column header row and set all containing header sells to be equally high
+		var headerHeight = 0;
+
+		// Set height of a specific column header
+		function setColumnHeaderHeight(index, columnHeaderElement) {
+			columnHeaderElement.style.height = headerHeight + "px";
+		}
+
+		// Fix column headers in a specific row
+		function fixHeaderRowHeight(index, headerRowElement) {
+			headerHeight = headerRowElement.clientHeight; // height of the row, as calculated by the browser
+			jQuery(headerRowElement).find(".sapUiTableCol").each(setColumnHeaderHeight);
+		}
+
+		if (!(this.getColumnHeaderHeight() > 0)) {
+			// Fix header rows:
+			$colHeaderContainer.each(fixHeaderRowHeight);
+			// Fix the selection column header:
+			$this.find(".sapUiTableColHdrCnt").height($colHdrScr.height());
+		}
 	};
 
 	/**
@@ -2827,7 +2815,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	// =============================================================================
 
 	/**
-	 * will be called by the vertical scrollbar. updates the visualized data by
+	 * Will be called by the vertical scrollbar. Updates the visualized data by
 	 * applying the first visible (scrollpos) row from the vertical scrollbar
 	 * @private
 	 */
@@ -2850,7 +2838,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * will be called by the paginator. updates the visualized data by
+	 * Will be called by the paginator. Updates the visualized data by
 	 * applying the first visible (scrollpos) row from the vertical scrollbar
 	 * @private
 	 */
@@ -2979,53 +2967,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		}
 	};
 
-
 	/**
-	 * listens to the mousedown events for starting column drag & drop. therefore
-	 * we wait 200ms to make sure it is no click on the column to open the menu.
-	 * @private
-	 */
-	Table.prototype.onmousedown = function(oEvent) {
-		// only move on left click!
-		var bLeftButton = oEvent.button === 0;
-		var bIsTouchMode = this._isTouchMode(oEvent);
-
-		if (bLeftButton) {
-			var $target = jQuery(oEvent.target);
-
-			var $col = $target.closest(".sapUiTableCol");
-			if ($col.length === 1 && oEvent.target != this.getDomRef("sb")/*Not the interactive resize bar -> see PointerExtension*/) {
-
-				this._bShowMenu = true;
-				this._mTimeouts.delayedMenuTimer = jQuery.sap.delayedCall(200, this, function() {
-					this._bShowMenu = false;
-				});
-
-				var bIsColumnMenuTarget = this._isTouchMode(oEvent) && ($target.hasClass("sapUiTableColDropDown") || $target.hasClass("sapUiTableColResizer"));
-				if (this.getEnableColumnReordering() && !bIsColumnMenuTarget) {
-					var iIndex = parseInt($col.attr("data-sap-ui-colindex"), 10);
-					if (iIndex > this._iLastFixedColIndex) {
-						var oColumn = this.getColumns()[iIndex];
-
-						this._mTimeouts.delayedActionTimer = jQuery.sap.delayedCall(200, this, function() {
-							this._onColumnMoveStart(oColumn, bIsTouchMode);
-						});
-					}
-				}
-			}
-
-			// in case of FireFox and CTRL+CLICK it selects the target TD
-			//   => prevent the default behavior only in this case (to still allow text selection)
-			var bCtrl = !!(oEvent.metaKey || oEvent.ctrlKey);
-			if (!!Device.browser.firefox && bCtrl) {
-				oEvent.preventDefault();
-			}
-		}
-
-	};
-
-	/**
-	 * handles the cell contextmenu eventing of the table, open the menus for cell, group header and column header
+	 * Handles the cell contextmenu eventing of the table, open the menus for cell, group header and column header.
 	 * @private
 	 */
 	Table.prototype.oncontextmenu = function(oEvent) {
@@ -3045,7 +2988,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * handles the default cell contextmenu
+	 * Handles the default cell contextmenu.
 	 * @private
 	 */
 	Table.prototype._oncellcontextmenu = function(mParams) {
@@ -3097,7 +3040,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * finds the cell on which the click or contextmenu event is executed and
+	 * Finds the cell on which the click or contextmenu event is executed and
 	 * notifies the listener which control has been clicked or the contextmenu
 	 * should be openend.
 	 * @param {function} fnFire function to fire the event
@@ -3150,8 +3093,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * handles the focus in to reposition the focus or prevent default handling for
-	 * column resizing
+	 * Handles the focus in to reposition the focus or prevent default handling for
+	 * column resizing.
 	 * @private
 	 */
 	Table.prototype.onfocusin = function(oEvent) {
@@ -3207,8 +3150,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	// SELECTION HANDLING
 	// =============================================================================
 
-		/**
-	 * handles the row selection and the column header menu
+	/**
+	 * Handles the row selection and the column header menu.
 	 * @private
 	 */
 	Table.prototype._onSelect = function(oEvent) {
@@ -3292,7 +3235,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * handles the row selection (depending on the mode)
+	 * Handles the row selection (depending on the mode).
 	 * @private
 	 */
 	Table.prototype._onRowSelect = function(iRowIndex, bShift, bCtrl) {
@@ -3376,7 +3319,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	// =============================================================================
 
 	/**
-	 * column select event => opens the column menu
+	 * Column select event => opens the column menu.
 	 * @private
 	 */
 	Table.prototype._onColumnSelect = function(oColumn, oDomRef, bIsTouchMode, bWithKeyboard) {
@@ -3493,7 +3436,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 
 	/**
-	 * start column moving
+	 * Start column moving.
 	 * @private
 	 */
 	Table.prototype._onColumnMoveStart = function(oColumn, bIsTouchMode) {
@@ -3550,7 +3493,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * move the column position the ghost
+	 * Move the column position of the ghost.
 	 * @private
 	 */
 	Table.prototype._onColumnMove = function(oEvent) {
@@ -3641,7 +3584,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * animates the column movement
+	 * Animates the column movement.
 	 */
 	Table.prototype._animateColumnMove = function(iColIndex, iOldPos, iNewPos) {
 
@@ -3684,7 +3627,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * columns is moved => update!
+	 * Columns is moved => update!
 	 * @private
 	 */
 	Table.prototype._onColumnMoved = function(oEvent) {
@@ -3916,7 +3859,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * Check if at least one column has a percentage value
+	 * Check if at least one column has a percentage value.
 	 * @private
 	 */
 	Table.prototype._checkPercentageColumnWidth = function() {
@@ -3934,7 +3877,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	/**
 	 * Check if table has only non flexible columns with fixed widths and only then
 	 * the table adds a dummy column to fill the rest of the width instead of resizing
-	 * the columns to fit the complete table width
+	 * the columns to fit the complete table width.
 	 * @private
 	 */
 	Table.prototype._hasOnlyFixColumnWidths = function() {
@@ -3955,7 +3898,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	// =============================================================================
 
 	/**
-	 * pushes the sorted column to array
+	 * Pushes the sorted column to array.
 	 *
 	 * @param {sap.ui.table.Column} oColumn
 	 *         column to be sorted
@@ -3976,7 +3919,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * gets sorted columns
+	 * Gets sorted columns.
 	 *
 	 * @return Array of sorted columns
 	 * @public
@@ -3989,7 +3932,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * sorts the given column ascending or descending
+	 * Sorts the given column ascending or descending.
 	 *
 	 * @param {sap.ui.table.Column} oColumn
 	 *         column to be sorted
@@ -4008,7 +3951,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 
 	/**
-	 * filter the given column by the given value
+	 * Filter the given column by the given value.
 	 *
 	 * @param {sap.ui.table.Column} oColumn
 	 *         column to be filtered
@@ -4030,7 +3973,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	// =============================================================================
 
 	/**
-	 * updates the visual selection in the HTML markup
+	 * Updates the visual selection in the HTML markup.
 	 * @private
 	 */
 	Table.prototype._updateSelection = function() {
@@ -4058,7 +4001,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 
 	/**
-	 * notifies the selection listeners about the changed rows
+	 * Notifies the selection listeners about the changed rows.
 	 * @private
 	 */
 	Table.prototype._onSelectionChanged = function(oEvent) {
@@ -4528,7 +4471,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * creates the rows for the rows aggregation
+	 * Creates the rows for the rows aggregation.
 	 * @private
 	 */
 	Table.prototype._adjustRows = function(iNumberOfRows, bNoUpdate) {
@@ -4672,7 +4615,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 			bReturn = true;
 
-				this._updateTableContent();
+			this._updateTableContent();
 			this._attachEvents();
 		}
 
@@ -5062,9 +5005,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	/**
 	 * Lets you control in which situation the <code>ScrollBar</code> fires scroll events.
 	 *
-	 * @param {boolean} bLargeDataScrolling Set to true to let the <code>ScrollBar</code> only fires scroll events when
-	 * the scroll handle is released. No matter what the setting is, the <code>ScrollBar</code> keeps on fireing scroll events
-	 * when the user scroll with the mousewheel or using touch
+	 * @param {boolean} bLargeDataScrolling Set to true to let the <code>ScrollBar</code> only fire scroll events when
+	 * the scroll handle is released. No matter what the setting is, the <code>ScrollBar</code> keeps on firing scroll events
+	 * when the user scrolls with the mouse wheel or using touch.
 	 * @private
 	 */
 	Table.prototype._setLargeDataScrolling = function(bLargeDataScrolling) {

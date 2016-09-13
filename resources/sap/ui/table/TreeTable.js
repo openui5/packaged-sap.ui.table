@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.40.6
+	 * @version 1.40.7
 	 *
 	 * @constructor
 	 * @public
@@ -138,6 +138,9 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		var oBinding = this.getBinding("rows");
 		if (oBinding && oBinding.clearSelection) {
 			oBinding.clearSelection();
+
+			// Check for valid selection modes (e.g. change deprecated mode "Multi" to "MultiToggle")
+			sSelectionMode = TableUtils.sanitizeSelectionMode(this, sSelectionMode);
 			this.setProperty("selectionMode", sSelectionMode);
 		} else {
 			Table.prototype.setSelectionMode.call(this, sSelectionMode);
