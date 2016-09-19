@@ -9,12 +9,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		'sap/ui/core/Control', 'sap/ui/core/Element', 'sap/ui/core/IconPool', 'sap/ui/core/IntervalTrigger', 'sap/ui/core/library', 'sap/ui/core/Popup',
 		'sap/ui/core/ResizeHandler', 'sap/ui/core/ScrollBar', 'sap/ui/core/delegate/ItemNavigation', 'sap/ui/core/theming/Parameters',
 		'sap/ui/model/ChangeReason', 'sap/ui/model/Context', 'sap/ui/model/Filter', 'sap/ui/model/SelectionModel', 'sap/ui/model/Sorter',
-		'./Column', './Row', './library', './TableUtils', './TableExtension', './TableAccExtension', './TableKeyboardExtension', './TablePointerExtension', 'jquery.sap.dom', 'jquery.sap.trace'],
+		'./Column', './Row', './library', './TableUtils', './TableExtension', './TableAccExtension', './TableKeyboardExtension', './TablePointerExtension',
+		'./TableScrollExtension', 'jquery.sap.dom', 'jquery.sap.trace'],
 	function(jQuery, Device,
 		Control, Element, IconPool, IntervalTrigger, coreLibrary, Popup,
 		ResizeHandler, ScrollBar, ItemNavigation, Parameters,
 		ChangeReason, Context, Filter, SelectionModel, Sorter,
-		Column, Row, library, TableUtils, TableExtension, TableAccExtension, TableKeyboardExtension, TablePointerExtension /*, jQuerySapPlugin,jQuerySAPTrace */) {
+		Column, Row, library, TableUtils, TableExtension, TableAccExtension, TableKeyboardExtension,
+		TablePointerExtension, TableScrollExtension /*, jQuerySapPlugin,jQuerySAPTrace */) {
 	"use strict";
 
 
@@ -57,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.38.7
+	 * @version 1.38.8
 	 *
 	 * @constructor
 	 * @public
@@ -749,6 +751,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			return;
 		}
 		TableExtension.enrich(this, TablePointerExtension);
+		TableExtension.enrich(this, TableScrollExtension);
 		TableExtension.enrich(this, TableKeyboardExtension);
 		TableExtension.enrich(this, TableAccExtension); //Must be registered after keyboard to reach correct delegate order
 		this._bExtensionsInitialized = true;
@@ -783,13 +786,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._detachExtensions = function(){
-		if (!this._bExtensionsInitialized) {
-			return;
-		}
-		this._getPointerExtension().destroy();
-		this._getKeyboardExtension().destroy();
-		this._getAccExtension().destroy();
-		delete this._bExtensionsInitialized;
+		TableExtension.cleanup(this);
 	};
 
 
@@ -939,10 +936,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		var iFixedHeaderWidthSum = 0;
 		var aHeaderElements = oDomRef.querySelectorAll(".sapUiTableCtrlFirstCol > th:not(.sapUiTableColSel)");
 		if (aHeaderElements) {
+			var aColumns = this.getColumns();
 			for (var i = 0; i < aHeaderElements.length; i++) {
 				var oHeaderElementClientBoundingRect = aHeaderElements[i].getBoundingClientRect();
 				var iHeaderWidth = oHeaderElementClientBoundingRect.right - oHeaderElementClientBoundingRect.left;
 				aHeaderWidths.push(iHeaderWidth);
+
+				if (i < aColumns.length && aColumns[i] && !aColumns[i].getVisible()) {
+					// the fixedColumnCount does not consider the visibility of the column, whereas the DOM only represents
+					// the visible columns. In order to match both, the fixedColumnCount (aggregation) and fixedColumnCount
+					// of the DOM, for each invisible column, 1 must be deducted from the fixedColumnCount (aggregation).
+					iFixedColumnCount--;
+				}
 
 				if (i < iFixedColumnCount) {
 					iFixedHeaderWidthSum += iHeaderWidth;
@@ -1365,10 +1370,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			this._oSelection.setSelectionMode(SelectionModel.MULTI_SELECTION);
 		}
 
-		if (sSelectionMode === SelectionMode.Multi) {
-			sSelectionMode = SelectionMode.MultiToggle;
-			jQuery.sap.log.warning("The selection mode 'Multi' is deprecated and must not be used anymore. Your setting was defaulted to selection mode 'MultiToggle'");
-		}
+		// Check for valid selection modes (e.g. change deprecated mode "Multi" to "MultiToggle")
+		sSelectionMode = TableUtils.sanitizeSelectionMode(this, sSelectionMode);
 
 		this.setProperty("selectionMode", sSelectionMode);
 		return this;
@@ -2065,21 +2068,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			$this.find(".sapUiTableCtrlFixed > tbody > tr").removeClass("sapUiTableRowHvr");
 		});
 
-		this._getPointerExtension().initColumnResizeEvents();
-
 		var $vsb = jQuery(this.getDomRef(SharedDomRef.VerticalScrollBar));
 		var $hsb = jQuery(this.getDomRef(SharedDomRef.HorizontalScrollBar));
 		$vsb.bind("scroll.sapUiTableVScroll", this.onvscroll.bind(this));
 		$hsb.bind("scroll.sapUiTableHScroll", this.onhscroll.bind(this));
-
-		// For preventing the ItemNavigation to re-apply focus to old position (table cell)
-		// when clicking on ScrollBar
-		$hsb.bind("mousedown.sapUiTableHScroll", function(oEvent) {
-			oEvent.preventDefault();
-		});
-		$vsb.bind("mousedown.sapUiTableVScroll", function(oEvent) {
-			oEvent.preventDefault();
-		});
 
 		if (Device.browser.firefox) {
 			this._getScrollTargets().bind("MozMousePixelScroll.sapUiTableMouseWheel", this._onMouseWheel.bind(this));
@@ -2096,6 +2088,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 					}
 			}, this));
 		}
+
+		TableExtension.attachEvents(this);
 	};
 
 	/**
@@ -2108,7 +2102,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		$this.find(".sapUiTableRowHdrScr").unbind();
 		$this.find(".sapUiTableCtrl > tbody > tr").unbind();
 		$this.find(".sapUiTableRowHdr").unbind();
-		this._getPointerExtension().cleanupColumnResizeEvents();
 		$this.find(".sapUiTableCtrlScrFixed, .sapUiTableColHdrFixed").unbind("scroll.sapUiTablePreventFixedAreaScroll");
 
 		if (TableUtils.isVariableRowHeightEnabled(this)) {
@@ -2117,11 +2110,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 		var $vsb = jQuery(this.getDomRef(SharedDomRef.VerticalScrollBar));
 		$vsb.unbind("scroll.sapUiTableVScroll");
-		$vsb.unbind("mousedown.sapUiTableVScroll");
 
 		var $hsb = jQuery(this.getDomRef(SharedDomRef.HorizontalScrollBar));
 		$hsb.unbind("scroll.sapUiTableHScroll");
-		$hsb.unbind("mousedown.sapUiTableHScroll");
 
 		var $scrollTargets = this._getScrollTargets();
 		$scrollTargets.unbind("MozMousePixelScroll.sapUiTableMouseWheel");
@@ -2131,6 +2122,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		$body.unbind('webkitTransitionEnd transitionend');
 
 		TableUtils.deregisterResizeHandler(this);
+		TableExtension.detachEvents(this);
 	};
 
 	/**
@@ -2269,6 +2261,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 			this._toggleVSb();
 		}
+		this.getDomRef("vsb").style.maxHeight = (this.getVisibleRowCount() * iDefaultRowHeight) + "px";
 		this.getDomRef("vsb-content").style.height = iVSbHeight + "px";
 
 		if (!TableUtils.isVariableRowHeightEnabled(this)) {
@@ -2412,69 +2405,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._determineVisibleCols = function(oTableSizes) {
-		// determine the visible colums
-		var $this = this.$();
-
-		if ($this.hasClass("sapUiTableHScr")) {
-
-			var bRtl = this._bRtlMode;
-
-			// calculate the view port
-			var iScrollLeft = oTableSizes.tableHSbScrollLeft;
-			var iScrollWidth = oTableSizes.tableCtrlScrollWidth;
-			var iScrWidth = oTableSizes.tableCtrlScrWidth;
-
-			if (bRtl && Device.browser.firefox && iScrollLeft < 0) {
-				// Firefox deals with negative scrollPosition in RTL mode
-				iScrollLeft = iScrollLeft * -1;
+		// TODO: to be implemented; currently, all columns are counted
+		var aColumns = [];
+		this.getColumns().forEach(function(column, i){
+			if (column.shouldRender()) {
+				aColumns.push(i);
 			}
-
-			var iScrollRight = iScrollLeft + iScrWidth;
-			// has the view port changed?
-			if (this._iOldScrollLeft !== iScrollLeft || this._iOldScrollRight !== iScrollRight || this._bForceVisibleColCalc) {
-				// calculate the first and last visible column
-				var iLeft = bRtl ? iScrollWidth : 0;
-
-				if ((Device.browser.internet_explorer || Device.browser.firefox) && bRtl) {
-					// Assume ScrollWidth=100px, Scroll to the very left in RTL mode
-					// IE has reverse scroll position (Chrome = 0, IE = 100, FF = -100)
-					iLeft = 0;
-				}
-
-				this._aVisibleColumns = [];
-				for (var i = 0, l = this.getFixedColumnCount(); i < l; i++) {
-					this._aVisibleColumns.push(i);
-				}
-
-				var aHeaderWidths = oTableSizes.headerWidths;
-				for (var i = 0; i < aHeaderWidths.length; i++) {
-					var iHeaderWidth = aHeaderWidths[i];
-					if (bRtl && Device.browser.chrome) {
-						iLeft -= iHeaderWidth;
-					}
-					if (iLeft + iHeaderWidth >= iScrollLeft && iLeft <= iScrollRight) {
-						//var iColIndex = parseInt(jQuery(oElement).data('sap-ui-headcolindex'),10);
-						this._aVisibleColumns.push(i);
-					}
-					if (!bRtl || (Device.browser.internet_explorer || Device.browser.firefox)) {
-						iLeft += iHeaderWidth;
-					}
-				}
-
-				// keep the view port information (performance!!)
-				this._iOldScrollLeft = iScrollLeft;
-				this._iOldScrollRight = iScrollRight;
-				this._bForceVisibleColCalc = false;
-			}
-		} else {
-			this._aVisibleColumns = [];
-			var aCols = this.getColumns();
-			for (var i = 0, l = aCols.length; i < l; i++) {
-				if (aCols[i].shouldRender()) {
-					this._aVisibleColumns.push(i);
-				}
-			}
-		}
+		});
 	};
 
 	/*
@@ -2482,7 +2419,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 */
 	Table.prototype.removeColumn = function (oColumn, bSuppressInvalidate) {
 		var oResult = this.removeAggregation('columns', oColumn, bSuppressInvalidate);
-		this._bDetermineVisibleCols = true;
 
 		if (typeof oColumn === "number" && oColumn > -1) {
 			oColumn = this.getColumns()[oColumn];
@@ -2521,13 +2457,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @see JSDoc generated by SAPUI5 control API generator
 	 */
 	Table.prototype.addColumn = function (oColumn, bSuppressInvalidate) {
-		var that = this;
 		this.addAggregation('columns', oColumn, bSuppressInvalidate);
-		oColumn.attachEvent('_widthChanged', function(oEvent) {
-			that._bForceVisibleColCalc = true;
-		});
-
-		this._bDetermineVisibleCols = true;
 		this._resetRowTemplate();
 		return this;
 	};
@@ -2536,13 +2466,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @see JSDoc generated by SAPUI5 control API generator
 	 */
 	Table.prototype.insertColumn = function (oColumn, iIndex, bSuppressInvalidate) {
-		var that = this;
 		this.insertAggregation('columns', oColumn, iIndex, bSuppressInvalidate);
-		oColumn.attachEvent('_widthChanged', function() {
-			that._bForceVisibleColCalc = true;
-		});
-
-		this._bDetermineVisibleCols = true;
 		this._resetRowTemplate();
 		return this;
 	};
@@ -3072,51 +2996,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				oHsb.scrollLeft = oColHdrScr.scrollLeft;
 			}
 		}
-	};
-
-
-	/**
-	 * listens to the mousedown events for starting column drag & drop. therefore
-	 * we wait 200ms to make sure it is no click on the column to open the menu.
-	 * @private
-	 */
-	Table.prototype.onmousedown = function(oEvent) {
-		// only move on left click!
-		var bLeftButton = oEvent.button === 0;
-		var bIsTouchMode = this._isTouchMode(oEvent);
-
-		if (bLeftButton) {
-			var $target = jQuery(oEvent.target);
-
-			var $col = $target.closest(".sapUiTableCol");
-			if ($col.length === 1 && oEvent.target != this.getDomRef("sb")/*Not the interactive resize bar -> see PointerExtension*/) {
-
-				this._bShowMenu = true;
-				this._mTimeouts.delayedMenuTimer = jQuery.sap.delayedCall(200, this, function() {
-					this._bShowMenu = false;
-				});
-
-				var bIsColumnMenuTarget = this._isTouchMode(oEvent) && ($target.hasClass("sapUiTableColDropDown") || $target.hasClass("sapUiTableColResizer"));
-				if (this.getEnableColumnReordering() && !bIsColumnMenuTarget) {
-					var iIndex = parseInt($col.attr("data-sap-ui-colindex"), 10);
-					if (iIndex > this._iLastFixedColIndex) {
-						var oColumn = this.getColumns()[iIndex];
-
-						this._mTimeouts.delayedActionTimer = jQuery.sap.delayedCall(200, this, function() {
-							this._onColumnMoveStart(oColumn, bIsTouchMode);
-						});
-					}
-				}
-			}
-
-			// in case of FireFox and CTRL+CLICK it selects the target TD
-			//   => prevent the default behavior only in this case (to still allow text selection)
-			var bCtrl = !!(oEvent.metaKey || oEvent.ctrlKey);
-			if (!!Device.browser.firefox && bCtrl) {
-				oEvent.preventDefault();
-			}
-		}
-
 	};
 
 	/**
