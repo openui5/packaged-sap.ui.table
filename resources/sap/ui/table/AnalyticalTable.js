@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @see http://scn.sap.com/docs/DOC-44986
 	 *
 	 * @extends sap.ui.table.Table
-	 * @version 1.42.0
+	 * @version 1.42.2
 	 *
 	 * @constructor
 	 * @public
@@ -211,12 +211,10 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 		var oBinding = this.getBinding("rows");
 		if (oBinding && oBinding.clearSelection) {
 			oBinding.clearSelection();
-			// If this needs to be changed, remember to consider the related implementations in Table and TreeTable
-			if (sSelectionMode === SelectionMode.Multi) {
-				sSelectionMode = SelectionMode.MultiToggle;
-				jQuery.sap.log.warning("The selection mode 'Multi' is deprecated and must not be used anymore. Your setting was defaulted to selection mode 'MultiToggle'");
-			}
 		}
+
+		// Check for valid selection modes (e.g. change deprecated mode "Multi" to "MultiToggle")
+		sSelectionMode = TableUtils.sanitizeSelectionMode(this, sSelectionMode);
 
 		// set selection mode independent from clearing the selection
 		this.setProperty("selectionMode", sSelectionMode);

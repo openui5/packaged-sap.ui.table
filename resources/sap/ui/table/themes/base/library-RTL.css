@@ -882,6 +882,11 @@ html[dir=rtl] .sapUiTableTreeIcon.sapUiTableTreeIconNodeClosed::before {
 .sapUiTableGroupMode.sapUiAnalyticalTable .sapUiTableGroupHeader .sapUiTableTdFirst:not(.sapUiTableMeasureCell) .sapUiTableCell {
   display: none;
 }
+.sapUiTableGroupMode.sapUiAnalyticalTable .sapUiTableGroupHeader .sapUiTableCell > .sapUiAnalyticalTableGroupCellHidden,
+.sapUiTableGroupMode.sapUiAnalyticalTable .sapUiAnalyticalTableSum .sapUiTableCell > .sapUiAnalyticalTableSumCellHidden {
+  visibility: hidden;
+  /* hidden cell content*/
+}
 .sapUiTableGroupMode.sapUiTableTouch .sapUiTableCtrlScroll .sapUiTableGroupHeader td:last-child {
   padding-left: 3rem;
 }

@@ -23,7 +23,7 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 	 * @class
 	 * The column allows you to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.42.0
+	 * @version 1.42.2
 	 *
 	 * @constructor
 	 * @public
@@ -538,18 +538,6 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 		this.setProperty("filterOperator", sValue, true);
 		this._setAppDefault("filterOperator", sValue);
 		return this;
-	};
-
-
-	/**
-	 * Function is called when mouse button is pressed.
-	 *
-	 * @param {jQuery.Event} oEvent
-	 * @private
-	 */
-	Column.prototype.onmousedown = function(oEvent) {
-		var oMenu = this.getAggregation("menu");
-		this._bSkipOpen = oMenu && oMenu.bOpen;
 	};
 
 

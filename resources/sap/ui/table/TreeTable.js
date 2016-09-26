@@ -9,9 +9,6 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	function(jQuery, Table, ODataTreeBindingAdapter, ClientTreeBindingAdapter, TreeBindingCompatibilityAdapter, library, Element, TableUtils) {
 	"use strict";
 
-	// shortcuts
-	var SelectionMode = library.SelectionMode;
-
 	/**
 	 * Constructor for a new TreeTable.
 	 *
@@ -21,7 +18,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.42.0
+	 * @version 1.42.2
 	 *
 	 * @constructor
 	 * @public
@@ -141,11 +138,9 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		var oBinding = this.getBinding("rows");
 		if (oBinding && oBinding.clearSelection) {
 			oBinding.clearSelection();
-			// If this needs to be changed, remember to consider the related implementations in Table and AnalyticalTable
-			if (sSelectionMode === SelectionMode.Multi) {
-				sSelectionMode = SelectionMode.MultiToggle;
-				jQuery.sap.log.warning("The selection mode 'Multi' is deprecated and must not be used anymore. Your setting was defaulted to selection mode 'MultiToggle'");
-			}
+
+			// Check for valid selection modes (e.g. change deprecated mode "Multi" to "MultiToggle")
+			sSelectionMode = TableUtils.sanitizeSelectionMode(this, sSelectionMode);
 			this.setProperty("selectionMode", sSelectionMode);
 		} else {
 			Table.prototype.setSelectionMode.call(this, sSelectionMode);
