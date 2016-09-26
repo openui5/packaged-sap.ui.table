@@ -188,7 +188,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/It
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.40.7
+	 * @version 1.40.8
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardExtension
@@ -215,6 +215,15 @@ sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/It
 			oTable._getItemNavigation = function() { return that._itemNavigation; };
 
 			return "KeyboardExtension";
+		},
+
+		/*
+		 * Enables debugging for the extension
+		 */
+		_debug : function() {
+			this._ExtensionHelper = ExtensionHelper;
+			this._ItemNavigationDelegate = ItemNavigationDelegate;
+			this._ExtensionDelegate = ExtensionDelegate;
 		},
 
 		/*
