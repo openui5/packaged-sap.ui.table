@@ -906,6 +906,17 @@ html[dir=rtl] .sapUiTableTreeIcon.sapUiTableTreeIconNodeClosed::before {
   border-top: 1px solid #999999;
   height: 1px;
 }
+.sapUiTableGroupShield {
+  position: absolute;
+  top: 0px;
+  right: -1px;
+  bottom: -1px;
+  box-sizing: border-box;
+  width: 0px;
+  margin-right: 0px;
+  background-color: #000000;
+  pointer-events: none;
+}
 .sapUiTableGroupMode .sapUiTableRowHdr:focus:not(.sapUiTableGroupHeader)::before {
   top: 0px;
   right: 0px;

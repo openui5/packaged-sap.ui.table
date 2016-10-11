@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.42.2
+	 * @version 1.42.3
 	 *
 	 * @constructor
 	 * @public
@@ -700,12 +700,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		// columns to cells map
 		this._aIdxCols2Cells = [];
 
-		// visible columns
-		this._aVisibleColumns = [];
-
-		// column index of the last fixed column (to prevent column reordering!)
-		this._iLastFixedColIndex = -1;
-
 		// flag whether the editable property should be inherited or not
 		this._bInheritEditableToControls = false;
 
@@ -766,6 +760,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		// cleanup
 		this._cleanUpTimers();
 		this._detachEvents();
+
+		// selection model
+		if (this._oSelection) {
+			this._oSelection.destroy(); // deregisters all the handler(s)
+			//Note: _oSelection is not nulled to avoid checks everywhere (in case table functions are called after the table destroy, see 1670448195)
+		}
 	};
 
 
@@ -924,8 +924,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (aHeaderElements) {
 			var aColumns = this.getColumns();
 			for (var i = 0; i < aHeaderElements.length; i++) {
-				var oHeaderElementClientBoundingRect = aHeaderElements[i].getBoundingClientRect();
-				var iHeaderWidth = oHeaderElementClientBoundingRect.right - oHeaderElementClientBoundingRect.left;
+				var iHeaderWidth = aHeaderElements[i].offsetWidth;
 				aHeaderWidths.push(iHeaderWidth);
 
 				if (i < aColumns.length && aColumns[i] && !aColumns[i].getVisible()) {
@@ -2730,30 +2729,62 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 
 		// --------------------------------
-		// Table Column Height Calculation.
+		//  Adjust column header heights.
 		// --------------------------------
-		// Header row heights must be found after the cell width is set (due to contents wrapping),
-		// therefore this adjustment is done here and not in _collectTableSizes
+		// Ensure that all header cells in each header row are equally high
+		// Header row heights must be determined after the cell width is set (due to contents wrapping)
 		//
-		// Find height of each column header row and set all containing header sells to be equally high
-		var headerHeight = 0;
+		var totalHeight;
+		var headerRows = []; // two dimensional array of header cells
 
-		// Set height of a specific column header
-		function setColumnHeaderHeight(index, columnHeaderElement) {
-			columnHeaderElement.style.height = headerHeight + "px";
+		// Collect headers from fixed and scrollable areas into array of rows
+		function collectHeaderRows(rowIndex, headerRowElement){
+			var cols = [].slice.call(headerRowElement.getElementsByClassName("sapUiTableCol"));
+			headerRows[rowIndex] = (headerRows[rowIndex] || []).concat(cols);
 		}
 
-		// Fix column headers in a specific row
-		function fixHeaderRowHeight(index, headerRowElement) {
-			headerHeight = headerRowElement.clientHeight; // height of the row, as calculated by the browser
-			jQuery(headerRowElement).find(".sapUiTableCol").each(setColumnHeaderHeight);
+		// Process each header row separately. Add row height to total height.
+		function processRow(total, row) {
+
+			var maxHeight = 0,
+				cellHeight,
+				bDoFix = false, // in many cases, all cells have equal height and no adjustment is needed
+				l = row.length,
+				i;
+
+			// If, after resize, the cell contents requires less vertical space, the old
+			// css height would keep it too high, clear it
+			for (i = 0; i < l; i++) {
+				row[i].style.height = null;
+			}
+
+			// Find maximum cell height in the current row and check if all cells are equally high
+			for (i = 0; i < l; i++) {
+				cellHeight = row[i].offsetHeight;
+				if (maxHeight > 0 && cellHeight > 0 && cellHeight != maxHeight) {
+					bDoFix = true; // at least two cells in a row have different heights
+				}
+				maxHeight = Math.max(cellHeight, maxHeight);
+			}
+
+			// Fix column heights
+			if (bDoFix) {
+				for (i = 0; i < l; i++) {
+					row[i].style.height = maxHeight + "px";
+				}
+			}
+			return total + maxHeight;
 		}
 
 		if (!(this.getColumnHeaderHeight() > 0)) {
-			// Fix header rows:
-			$colHeaderContainer.each(fixHeaderRowHeight);
-			// Fix the selection column header:
-			$this.find(".sapUiTableColHdrCnt").height($colHdrScr.height());
+			// Select header rows in each header area separately and collect into rows
+			$this.find(".sapUiTableColHdrFixed").find(".sapUiTableColHdr").each(collectHeaderRows);
+			$this.find(".sapUiTableColHdrScr").find(".sapUiTableColHdr").each(collectHeaderRows);
+
+			totalHeight = headerRows.reduce(processRow, 0);
+
+			// Fix the whole column header area (to adjust the select all column header)
+			$this.find(".sapUiTableColHdrCnt").height(totalHeight);
 		}
 	};
 
@@ -3435,283 +3466,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		}
 	};
 
-
-	/**
-	 * Start column moving.
-	 * @private
-	 */
-	Table.prototype._onColumnMoveStart = function(oColumn, bIsTouchMode) {
-		this._disableTextSelection();
-
-		var $col = oColumn.$();
-		var iColIndex = parseInt($col.attr("data-sap-ui-colindex"), 10);
-
-		if (iColIndex < this.getFixedColumnCount()) {
-			return;
-		}
-
-		this.$().addClass("sapUiTableDragDrop");
-		this._$colGhost = $col.clone().removeAttr("id");
-
-		$col.css({
-			"opacity": ".25"
-		});
-
-		this._$colGhost.addClass("sapUiTableColGhost").css({
-			"left": -10000,
-			"top": -10000,
-			//Position is set to relative for columns later, if the moving is started a second time the position: relative overwrites
-			//the absolut position set by the sapUiTableColGhost class, so we overrite the style attribute for position here to make
-			//sure that the position is absolute
-			"position": "absolute",
-			"z-index": this.$().zIndex() + 10
-		});
-
-		// TODO: only for the visible columns!?
-		this.$().find(".sapUiTableCol").each(function(iIndex, oElement) {
-
-			var $col = jQuery(this);
-			$col.css({position: "relative"});
-
-			$col.data("pos", {
-				left: $col.position().left,
-				center: $col.position().left + $col.outerWidth() / 2,
-				right:  $col.position().left + $col.outerWidth()
-			});
-
-		});
-
-		this._$colGhost.appendTo(document.body);
-
-		var $body = jQuery(document.body);
-		if (bIsTouchMode) {
-			$body.bind("touchmove.sapUiColumnMove", jQuery.proxy(this._onColumnMove, this));
-			$body.bind("touchend.sapUiColumnMove", jQuery.proxy(this._onColumnMoved, this));
-		} else {
-			$body.bind("mousemove.sapUiColumnMove", jQuery.proxy(this._onColumnMove, this));
-			$body.bind("mouseup.sapUiColumnMove", jQuery.proxy(this._onColumnMoved, this));
-		}
-	};
-
-	/**
-	 * Move the column position of the ghost.
-	 * @private
-	 */
-	Table.prototype._onColumnMove = function(oEvent) {
-		var $this = this.$();
-		var iLocationX = oEvent.pageX;
-		var iLocationY = oEvent.pageY;
-		if (oEvent && this._isTouchMode(oEvent)) {
-			iLocationX = oEvent.targetTouches[0].pageX;
-			iLocationY = oEvent.targetTouches[0].pageY;
-			oEvent.stopPropagation();
-			oEvent.preventDefault();
-		}
-
-		var bRtl = this._bRtlMode;
-		var iRelX = iLocationX - $this.offset().left;
-		var iDnDColIndex = parseInt(this._$colGhost.attr("data-sap-ui-colindex"), 10);
-		var $DnDCol = this.getColumns()[iDnDColIndex].$();
-
-		// find out the new col position
-		var iOldColPos = this._iNewColPos;
-		this._iNewColPos = iDnDColIndex;
-		var that = this;
-		$this.find(".sapUiTableCol").each(function(iIndex, oCol) {
-			var $col = jQuery(oCol);
-			var iColIndex = parseInt($col.attr("data-sap-ui-colindex"), 10);
-			var vHeaderSpans = sap.ui.getCore().byId($col.attr("data-sap-ui-colid")).getHeaderSpan();
-			var iSpan;
-
-			if (vHeaderSpans) {
-				if (jQuery.isArray(vHeaderSpans)) {
-					iSpan = vHeaderSpans[0];
-				} else {
-					iSpan = vHeaderSpans;
-				}
-			} else {
-				iSpan = 1;
-			}
-
-			if ($col.get(0) !== $DnDCol.get(0)) {
-
-				var oPos = $col.data("pos");
-
-				var bBefore = iRelX >= oPos.left && iRelX <= oPos.center;
-				var bAfter = iRelX >= oPos.center && iRelX <= oPos.right;
-
-				if (!bRtl) {
-					if (bBefore) {
-						that._iNewColPos = iColIndex;
-					} else if (bAfter) {
-						that._iNewColPos = iColIndex + iSpan;
-					} else {
-						that._iNewColPos = that._iNewColPos;
-					}
-				} else {
-					if (bAfter) {
-						that._iNewColPos = iColIndex;
-					} else if (bBefore) {
-						that._iNewColPos = iColIndex + iSpan;
-					} else {
-						that._iNewColPos = that._iNewColPos;
-					}
-				}
-
-				if ((bBefore || bAfter) && iColIndex > iDnDColIndex) {
-					that._iNewColPos--;
-				}
-
-			}
-
-		});
-
-		// prevent the reordering of the fixed columns
-		if (this._iNewColPos <= this._iLastFixedColIndex) {
-			this._iNewColPos = iOldColPos;
-		}
-		if (this._iNewColPos < this.getFixedColumnCount()) {
-			this._iNewColPos = iOldColPos;
-		}
-
-		// animate the column move
-		this._animateColumnMove(iDnDColIndex, iOldColPos, this._iNewColPos);
-
-		// update the ghost position
-		this._$colGhost.css({
-			"left": iLocationX + 5,
-			"top": iLocationY + 5
-		});
-	};
-
-	/**
-	 * Animates the column movement.
-	 */
-	Table.prototype._animateColumnMove = function(iColIndex, iOldPos, iNewPos) {
-
-		var bRtl = this._bRtlMode;
-		var $DnDCol = this.getColumns()[iColIndex].$();
-
-		// position has been changed => reorder
-		if (iOldPos !== iNewPos) {
-
-			for (var i = Math.min(iOldPos, iNewPos), l = Math.max(iOldPos, iNewPos); i <= l; i++) {
-				var oCol = this.getColumns()[i];
-				if (i !== iColIndex && oCol.getVisible()) {
-					oCol.$().stop(true, true).animate({left: "0px"});
-				}
-			}
-
-			var iOffsetLeft = 0;
-			if (iNewPos < iColIndex) {
-				for (var i = iNewPos; i < iColIndex; i++) {
-					var oCol = this.getColumns()[i];
-					if (oCol.getVisible()) {
-						var $col = oCol.$();
-						iOffsetLeft -= $col.outerWidth();
-						$col.stop(true, true).animate({left: $DnDCol.outerWidth() * (bRtl ? -1 : 1) + "px"});
-					}
-				}
-			} else {
-				for (var i = iColIndex + 1, l = iNewPos + 1; i < l; i++) {
-					var oCol = this.getColumns()[i];
-					if (oCol.getVisible()) {
-						var $col = oCol.$();
-						iOffsetLeft += $col.outerWidth();
-						$col.stop(true, true).animate({left: $DnDCol.outerWidth() * (bRtl ? 1 : -1) + "px"});
-					}
-				}
-			}
-			$DnDCol.stop(true, true).animate({left: iOffsetLeft * (bRtl ? -1 : 1) + "px"});
-		}
-
-	};
-
-	/**
-	 * Columns is moved => update!
-	 * @private
-	 */
-	Table.prototype._onColumnMoved = function(oEvent) {
-		var that = this;
-		this.$().removeClass("sapUiTableDragDrop");
-
-		var iDnDColIndex = parseInt(this._$colGhost.attr("data-sap-ui-colindex"), 10);
-		var oDnDCol = this.getColumns()[iDnDColIndex];
-
-		var $body = jQuery(document.body);
-		$body.unbind("touchmove.sapUiColumnMove");
-		$body.unbind("touchend.sapUiColumnMove");
-		$body.unbind("mousemove.sapUiColumnMove");
-		$body.unbind("mouseup.sapUiColumnMove");
-
-		this._$colGhost.remove();
-		this._$colGhost = undefined;
-
-		this._enableTextSelection();
-
-		// forward the event
-		var bExecuteDefault = this.fireColumnMove({
-			column: oDnDCol,
-			newPos: this._iNewColPos
-		});
-
-		var bMoveRight = iDnDColIndex < this._iNewColPos;
-
-		if (bExecuteDefault && this._iNewColPos !== undefined && this._iNewColPos !== iDnDColIndex) {
-			this.removeColumn(oDnDCol);
-			this.insertColumn(oDnDCol, this._iNewColPos);
-			var vHeaderSpan = oDnDCol.getHeaderSpan(),
-				iSpan;
-
-			if (vHeaderSpan) {
-				if (jQuery.isArray(vHeaderSpan)) {
-					iSpan = vHeaderSpan[0];
-				} else {
-					iSpan = vHeaderSpan;
-				}
-			} else {
-				iSpan = 1;
-			}
-
-			if (iSpan > 1) {
-				if (!bMoveRight) {
-					this._iNewColPos++;
-				}
-				for (var i = 1; i < iSpan; i++) {
-					var oDependentCol = this.getColumns()[bMoveRight ? iDnDColIndex : iDnDColIndex + i];
-					this.removeColumn(oDependentCol);
-					this.insertColumn(oDependentCol, this._iNewColPos);
-					this.fireColumnMove({
-						column: oDependentCol,
-						newPos: this._iNewColPos
-					});
-					if (!bMoveRight) {
-						this._iNewColPos++;
-					}
-				}
-			}
-		} else {
-			this._animateColumnMove(iDnDColIndex, this._iNewColPos, iDnDColIndex);
-			oDnDCol.$().css({
-				"backgroundColor": "",
-				"backgroundImage": "",
-				"opacity": ""
-			});
-		}
-
-		// Re-apply focus
-		if (this._mTimeouts.reApplyFocusTimer) {
-			window.clearTimeout(this._mTimeouts.reApplyFocusTimer);
-		}
-		this._mTimeouts.reApplyFocusTimer = window.setTimeout(function() {
-			var iOldFocusedIndex = TableUtils.getFocusedItemInfo(that).cell;
-			TableUtils.focusItem(that, 0, oEvent);
-			TableUtils.focusItem(that, iOldFocusedIndex, oEvent);
-		}, 0);
-
-		delete this._iNewColPos;
-	};
-
 	/**
 	 *
 	 * @param oColumn
@@ -3765,6 +3519,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 					iNewWidth = 100 - iTotalPercentage;
 				} else {
 					iTotalPercentage += iNewWidth;
+				}
+				// foolproof the above calculation logic
+				if (!isFinite(iNewWidth) || iNewWidth <= 0) {
+					iNewWidth = 1;
 				}
 				that._updateColumnWidth(oCurrentColumn, iNewWidth + "%");
 			});
