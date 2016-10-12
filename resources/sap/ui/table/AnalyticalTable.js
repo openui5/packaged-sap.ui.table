@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @see http://scn.sap.com/docs/DOC-44986
 	 *
 	 * @extends sap.ui.table.Table
-	 * @version 1.38.8
+	 * @version 1.38.9
 	 *
 	 * @constructor
 	 * @public
@@ -770,11 +770,6 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	AnalyticalTable.prototype.getContextInfoByIndex = function(iIndex) {
 		var oBinding = this.getBinding("rows");
 		return iIndex >= 0 && oBinding ? oBinding.getNodeByIndex(iIndex) : null;
-	};
-
-	AnalyticalTable.prototype._onColumnMoved = function(oEvent) {
-		Table.prototype._onColumnMoved.apply(this, arguments);
-		this.updateAnalyticalInfo(true, true);
 	};
 
 	/**

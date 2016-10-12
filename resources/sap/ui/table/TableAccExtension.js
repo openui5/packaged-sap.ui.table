@@ -680,7 +680,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.38.8
+	 * @version 1.38.9
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension
@@ -726,6 +726,14 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 			this._hasTreeColumn = false;
 
 			TableExtension.prototype.destroy.apply(this, arguments);
+		},
+
+		/*
+		 * Enables debugging for the extension
+		 */
+		_debug : function() {
+			this._ExtensionHelper = ExtensionHelper;
+			this._ACCInfoHelper = ACCInfoHelper;
 		},
 
 		/*

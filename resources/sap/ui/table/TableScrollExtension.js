@@ -33,7 +33,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils'],
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.38.8
+	 * @version 1.38.9
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
@@ -65,6 +65,15 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils'],
 		 */
 		_detachEvents : function() {
 			// TBD: Deregistration for scrolling related events (see Table#_detachEvents) should go here
+		},
+
+		/*
+		 * Enables debugging for the extension
+		 */
+		_debug : function() {
+			this._ExtensionDelegate = ExtensionDelegate;
+			// this._ExtensionHelper = ExtensionHelper;
+			// ...
 		},
 
 		/*
