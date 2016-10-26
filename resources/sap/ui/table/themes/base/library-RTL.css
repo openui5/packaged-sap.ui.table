@@ -108,6 +108,7 @@
 .sapUiTable {
   color: #000000;
   position: relative;
+  min-width: 1rem;
 }
 .sapUiTableHScr .sapUiTableFtr {
   border-top: 1px solid #000000;
@@ -533,6 +534,9 @@ html.sap-desktop .sapUiTableColRsz.sapUiTableColRszActive:hover {
   width: 16px;
   bottom: 0px;
 }
+html[data-sap-ui-browser^="ed"] .sapUiTableVSb {
+  -ms-overflow-style: scrollbar;
+}
 html[data-sap-ui-browser^="ie"] .sapUiTableVSb {
   width: 18px;
   left: -1px;
@@ -592,6 +596,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableHSb {
 }
 html[data-sap-ui-browser^="ed"] .sapUiTableHSb {
   height: 12px;
+  -ms-overflow-style: scrollbar;
 }
 .sapUiTableHScr .sapUiTableHSb {
   display: block;
@@ -733,6 +738,49 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 }
 .sapMNavItemFlipping .sapUiTable {
   opacity: 0;
+}
+html.sap-tablet:not(.sap-desktop) .sapUiTableVSb::-webkit-scrollbar,
+html.sap-phone .sapUiTableVSb::-webkit-scrollbar,
+html.sap-tablet:not(.sap-desktop) .sapUiTableHSb::-webkit-scrollbar,
+html.sap-phone .sapUiTableHSb::-webkit-scrollbar {
+  -webkit-appearence: none;
+  width: 0.45rem;
+  height: 0.45rem;
+  background-color: #ffffff;
+}
+html.sap-tablet:not(.sap-desktop) .sapUiTableVSb::-webkit-scrollbar-thumb,
+html.sap-phone .sapUiTableVSb::-webkit-scrollbar-thumb,
+html.sap-tablet:not(.sap-desktop) .sapUiTableHSb::-webkit-scrollbar-thumb,
+html.sap-phone .sapUiTableHSb::-webkit-scrollbar-thumb {
+  background-color: #4f4f4f;
+  border-top: 0.125rem solid #4f4f4f;
+  border-right: 0.125rem solid #4f4f4f;
+  border-left: 0.125rem solid #4f4f4f;
+  border-bottom: 0.125rem solid #4f4f4f;
+  width: 0.25rem;
+  height: 0.25rem;
+}
+html.sap-tablet:not(.sap-desktop) .sapUiTableVSb,
+html.sap-phone .sapUiTableVSb {
+  width: 0.45rem;
+}
+html.sap-tablet:not(.sap-desktop) .sapUiTableHSb,
+html.sap-phone .sapUiTableHSb {
+  height: 0.45rem;
+}
+html.sap-tablet:not(.sap-desktop) .sapUiTableVScr .sapUiTableCtrlScr,
+html.sap-phone .sapUiTableVScr .sapUiTableCtrlScr,
+html.sap-tablet:not(.sap-desktop) .sapUiTableVScr .sapUiTableColHdrScr,
+html.sap-phone .sapUiTableVScr .sapUiTableColHdrScr,
+html.sap-tablet:not(.sap-desktop) .sapUiTableVScr .sapUiTableHSb,
+html.sap-phone .sapUiTableVScr .sapUiTableHSb {
+  margin-left: 0.45rem;
+}
+html.sap-tablet:not(.sap-desktop) .sapUiTableHScr .sapUiTableColReorderIndicator,
+html.sap-phone .sapUiTableHScr .sapUiTableColReorderIndicator,
+html.sap-tablet:not(.sap-desktop) .sapUiTableHScr .sapUiTableColRsz,
+html.sap-phone .sapUiTableHScr .sapUiTableColRsz {
+  bottom: 0.45rem;
 }
 /*2rem*/
 /*1.5rem*/
