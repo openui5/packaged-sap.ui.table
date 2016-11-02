@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.38.9
+	 * @version 1.38.10
 	 *
 	 * @constructor
 	 * @public
@@ -810,6 +810,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			return [];
 		}
 
+		var iDefaultRowHeight = this._getDefaultRowHeight();
+
 		var aFixedRowItems = oDomRef.querySelectorAll(".sapUiTableCtrlFixed > tbody > tr");
 		var aScrollRowItems = oDomRef.querySelectorAll(".sapUiTableCtrlScroll > tbody > tr");
 		var aRowItemHeights = [];
@@ -823,7 +825,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			var oScrollRowClientRect = aScrollRowItems[i].getBoundingClientRect();
 			var iRowHeight = oScrollRowClientRect.bottom - oScrollRowClientRect.top;
 
-			aRowItemHeights.push(Math.max(iFixedRowHeight, iRowHeight));
+			aRowItemHeights.push(Math.max(iFixedRowHeight, iRowHeight, iDefaultRowHeight));
 		}
 
 		return aRowItemHeights;
@@ -1085,7 +1087,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			return;
 		}
 
-		this._iDefaultRowHeight = undefined;
 		this._bInvalid = false;
 		this._bOnAfterRendering = true;
 		var $this = this.$();
@@ -1172,7 +1173,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 		this._resetRowHeights();
 		var aRowHeights = this._collectRowHeights();
-		this._getDefaultRowHeight(aRowHeights);
 
 		var iRowContentSpace = 0;
 		if (!bSkipHandleRowCountMode && this.getVisibleRowCountMode() == VisibleRowCountMode.Auto) {
@@ -1215,19 +1215,27 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		this._updateHSb(oTableSizes);
 		this._updateVSb(oTableSizes);
 
-		this.$().find(".sapUiTableNoOpacity").addBack().removeClass("sapUiTableNoOpacity");
+		var $this = this.$();
+		$this.find(".sapUiTableNoOpacity").addBack().removeClass("sapUiTableNoOpacity");
 
 		if (this._mTimeouts.afterUpdateTableSizes) {
 			window.clearTimeout(this._mTimeouts.afterUpdateTableSizes);
 		}
 
 		var that = this;
-		this._mTimeouts.afterUpdateTableSizes = window.setTimeout(function () {
+		function registerResizeHandler() {
+			TableUtils.registerResizeHandler(that, "", that._onTableResize.bind(that), true);
+		}
+
+		if ($this.closest(".sapUiLoSplitter").length) {
+			// a special workaround for the splitter control due to concurrence issues
+			registerResizeHandler();
+		} else {
 			// size changes of the parent happen due to adaptations of the table sizes. In order to first let the
 			// browser finish painting, the resize handler is registered in a timeout. If this would be done synchronously,
 			// updateTableSizes would always run twice.
-			TableUtils.registerResizeHandler(that, "", that._onTableResize.bind(that), true);
-		}, 0);
+			this._mTimeouts.afterUpdateTableSizes = window.setTimeout( registerResizeHandler, 0);
+		}
 	};
 
 	Table.prototype.setShowOverlay = function(bShow) {
@@ -2083,7 +2091,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			jQuery("body").bind('webkitTransitionEnd transitionend',
 				jQuery.proxy(function(oEvent) {
 					if (jQuery(oEvent.target).has($this).length > 0) {
-						this._iDefaultRowHeight = undefined;
 						this._updateTableSizes();
 					}
 			}, this));
@@ -2301,7 +2308,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			}
 		} else if (this.getDomRef()) {
 			// in case of Scrollbar Mode show/hide the scrollbar depending whether it is needed.
-			$this.toggleClass("sapUiTableVScr", this._isVSbRequired());
+			var isVSbRequired = this._isVSbRequired();
+			if (!isVSbRequired) {
+				// reset scroll position to zero when Scroll Bar disappears
+				this.setProperty("firstVisibleRow", 0, true);
+			}
+			$this.toggleClass("sapUiTableVScr", isVSbRequired);
 		}
 	};
 
@@ -3082,7 +3094,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	Table.prototype._findAndfireCellEvent = function(fnFire, oEvent, fnContextMenu) {
 		var $target = jQuery(oEvent.target);
 		// find out which cell has been clicked
-		var $cell = $target.closest("td[role='gridcell']");
+		var $cell = $target.closest("td.sapUiTableTd");
 		var sId = $cell.attr("id");
 		var aMatches = /.*-row(\d*)-col(\d*)/i.exec(sId);
 		var bCancel = false;
@@ -3224,15 +3236,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		}
 
 		// table control? (only if the selection behavior is set to row)
-		var oClosestTd;
+		var oClosestTd, $ClosestTd;
 		if (oEvent.target) {
-			var $ClosestTd = jQuery(oEvent.target).closest("td");
+			$ClosestTd = jQuery(oEvent.target).closest("td");
 			if ($ClosestTd.length > 0) {
 				oClosestTd = $ClosestTd[0];
 			}
 		}
 
-		if (oClosestTd && (oClosestTd.getAttribute("role") == "gridcell" || jQuery(oClosestTd).hasClass("sapUiTableTDDummy")) && (
+
+		if (oClosestTd && ($ClosestTd.hasClass("sapUiTableTd") || $ClosestTd.hasClass("sapUiTableTDDummy")) && (
 		    this.getSelectionBehavior() === SelectionBehavior.Row ||
 		    this.getSelectionBehavior() === SelectionBehavior.RowOnly)) {
 			var $row = $target.closest(".sapUiTableCtrl > tbody > tr");
@@ -3406,7 +3419,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @param oEvent
 	 */
 	Table.prototype.ontouchstart = function(oEvent) {
-		if ('ontouchstart' in document) {
+		if (this._isTouchMode(oEvent)) {
 			this._aTouchStartPosition = null;
 			this._bIsScrollVertical = null;
 			var $scrollTargets = this._getScrollTargets();
@@ -3432,7 +3445,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @param oEvent
 	 */
 	Table.prototype.ontouchmove = function(oEvent) {
-		if ('ontouchstart' in document && this._aTouchStartPosition) {
+		if (this._isTouchMode(oEvent) && this._aTouchStartPosition) {
 			var oTouch = oEvent.targetTouches[0];
 			var iDeltaX = (oTouch.pageX - this._aTouchStartPosition[0]);
 			var iDeltaY = (oTouch.pageY - this._aTouchStartPosition[1]);
@@ -3742,7 +3755,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._updateSelection = function() {
-		if (this.getSelectionMode() === SelectionMode.None) {
+		var oSelMode = this.getSelectionMode();
+		if (oSelMode === SelectionMode.None) {
 			// there is no selection which needs to be updated. With the switch of the
 			// selection mode the selection was cleared (and updated within that step)
 			return;
@@ -3762,6 +3776,20 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		}
 		// update internal property to reflect the correct index
 		this.setProperty("selectedIndex", this.getSelectedIndex(), true);
+
+		var $SelAll = this.$("selall");
+		if ((oSelMode == SelectionMode.Multi || oSelMode == SelectionMode.MultiToggle)
+				&& this.getEnableSelectAll() && !$SelAll.hasClass("sapUiTableSelAll")) {
+			var iSelectedIndicesCount = this._getSelectedIndicesCount();
+			var bClearSelectAll = iSelectedIndicesCount == 0;
+			if (!bClearSelectAll) {
+				var iSelectableRowCount = this._getSelectableRowCount();
+				bClearSelectAll = iSelectableRowCount == 0 || iSelectableRowCount !== iSelectedIndicesCount;
+			}
+			if (bClearSelectAll) {
+				$SelAll.addClass("sapUiTableSelAll");
+			}
+		}
 	};
 
 
@@ -3774,10 +3802,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		var bSelectAll = oEvent.getParameter("selectAll");
 		var iRowIndex = this._iSourceRowIndex !== undefined ? this._iSourceRowIndex : this.getSelectedIndex();
 		this._updateSelection();
-		var oSelMode = this.getSelectionMode();
-		if (oSelMode === "Multi" || oSelMode === "MultiToggle") {
-			this.$("selall").attr('title',this._oResBundle.getText("TBL_SELECT_ALL")).addClass("sapUiTableSelAll");
-		}
 
 		this.fireRowSelectionChange({
 			rowIndex: iRowIndex,
@@ -3873,8 +3897,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		}
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
+			this.$("selall").attr('title', this._oResBundle.getText("TBL_DESELECT_ALL")).removeClass("sapUiTableSelAll");
 			this._oSelection.selectAll((oBinding.getLength() || 0) - 1);
-			this.$("selall").attr('title',this._oResBundle.getText("TBL_DESELECT_ALL")).removeClass("sapUiTableSelAll");
 		}
 		return this;
 	};
@@ -3910,6 +3934,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	Table.prototype.addSelectionInterval = function(iIndexFrom, iIndexTo) {
+		if (this.getSelectionMode() === library.SelectionMode.None) {
+			return this;
+		}
+
 		this._oSelection.addSelectionInterval(iIndexFrom, iIndexTo);
 		return this;
 	};
@@ -3926,6 +3954,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	Table.prototype.setSelectionInterval = function(iIndexFrom, iIndexTo) {
+		if (this.getSelectionMode() === library.SelectionMode.None) {
+			return this;
+		}
+
 		this._oSelection.setSelectionInterval(iIndexFrom, iIndexTo);
 		return this;
 	};
@@ -4536,7 +4568,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			var oRM = new sap.ui.getCore().createRenderManager(),
 				oRenderer = this.getRenderer();
 
-			this._iDefaultRowHeight = undefined;
 			oRenderer.renderTableCCnt(oRM, this);
 			oRM.flush(oTBody, false, false);
 			oRM.destroy();
@@ -4589,23 +4620,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * Determines the default row height, based upon the height of the row template.
 	 * @private
 	 */
-	Table.prototype._getDefaultRowHeight = function(aRowHeights) {
-		if (TableUtils.isVariableRowHeightEnabled(this)) {
-			this._iDefaultRowHeight = this.getRowHeight() || 28;
-		} else {
-			if (!this._iDefaultRowHeight && this.getDomRef()) {
-				aRowHeights = aRowHeights || this._collectRowHeights();
-				if (aRowHeights && aRowHeights.length > 0) {
-					this._iDefaultRowHeight = aRowHeights[0];
-				}
-			}
-
-			if (!this._iDefaultRowHeight) {
-				this._iDefaultRowHeight = 28;
-			}
-		}
-
-		return this._iDefaultRowHeight;
+	Table.prototype._getDefaultRowHeight = function() {
+		var sContentDensity = TableUtils.getContentDensity(this);
+		// +1 for the border
+		return this.getRowHeight() || TableUtils.CONTENT_DENSITY_ROW_HEIGHTS[sContentDensity] + 1;
 	};
 
 	/**

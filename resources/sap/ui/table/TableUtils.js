@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.38.9
+	 * @version 1.38.10
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
@@ -33,6 +33,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 			COLUMNHEADER : "COLUMNHEADER", // column header
 			ROWHEADER : "ROWHEADER", // row header (standard, group or sum)
 			COLUMNROWHEADER : "COLUMNROWHEADER" // select all row selector (top left cell)
+		},
+
+		CONTENT_DENSITY_ROW_HEIGHTS : {
+			sapUiSizeCondensed : 24,
+			sapUiSizeCompact : 32,
+			sapUiSizeCozy : 48,
+			undefined : 27
 		},
 
 		/**

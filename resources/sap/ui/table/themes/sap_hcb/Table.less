@@ -162,12 +162,6 @@
 	padding-bottom: 5px;
 }
 
-.sapUiTableRowHdr,
-.sapUiTableTr > td {
-	padding-top: 2px;
-	padding-bottom: 1px;
-}
-
 .sapUiTableRowHdr {
 	position: relative;
 }
@@ -487,8 +481,28 @@ html[data-sap-ui-browser^="ed"] .sapUiTableCtrlEmpty:focus:before {
 	border-width: 2px;
 }
 
-.sapUiSizeCompact .sapUiTableTreeIcon:focus {
-	outline: 0.125rem dotted @sapHCStandardFG;
+.sapUiTableTreeIcon:focus {
+	outline: 2px dotted @sapHCStandardFG;
+}
+
+html[data-sap-ui-browser^="ed"] .sapUiTableTreeIcon:focus,
+html[data-sap-ui-browser^="ie"] .sapUiTableTreeIcon:focus {
+	outline: 0px;
+}
+
+html[data-sap-ui-browser^="ed"] .sapUiTableTreeIcon:focus::before,
+html[data-sap-ui-browser^="ie"] .sapUiTableTreeIcon:focus::before {
+	outline: 2px dotted @sapHCStandardFG;
+}
+
+.sapUiTableTreeIcon:focus:not(*:root) { /*Webkit*/
+	outline-offset: -1px;
+}
+
+@supports (-moz-appearance:meterbar) { /* Firefox */
+	.sapUiTableTreeIcon:focus {
+		outline-offset: -1px;
+	}
 }
 
 .sapUiSizeCompact .sapUiTableGroupIcon::before,
@@ -545,14 +559,19 @@ html[data-sap-ui-browser^="ed"] .sapUiTableCtrlEmpty:focus:before {
 	border-bottom: none;
 }
 
-.sapUiTableTouch .sapUiScrollBar {
-	::-webkit-scrollbar-thumb {
-		background-color: @sapHCStandardFG;
+html.sap-tablet:not(.sap-desktop), html.sap-phone {
 
-	}
+	.sapUiTableVSb,
+	.sapUiTableHSb {
 
-	::-webkit-scrollbar {
-		background-color: @sapHCStandardBG;
+		::-webkit-scrollbar-thumb {
+			background-color: @sapHCStandardFG;
+		}
+
+		::-webkit-scrollbar {
+			background-color: @sapHCStandardBG;
+		}
+
 	}
 }
 
