@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.42.4
+	 * @version 1.42.5
 	 *
 	 * @constructor
 	 * @public
@@ -436,11 +436,21 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	TreeTable.prototype.setSelectionInterval = function (iFromIndex, iToIndex) {
+		var sSelectionMode = this.getSelectionMode();
+
+		if (sSelectionMode === library.SelectionMode.None) {
+			return this;
+		}
+
 		//when using the treebindingadapter, check if the node is selected
 		var oBinding = this.getBinding("rows");
 
 		if (oBinding && oBinding.findNode && oBinding.setSelectionInterval) {
-			oBinding.setSelectionInterval(iFromIndex, iToIndex);
+			if (sSelectionMode === library.SelectionMode.Single) {
+				oBinding.setSelectionInterval(iFromIndex, iFromIndex);
+			} else {
+				oBinding.setSelectionInterval(iFromIndex, iToIndex);
+			}
 		} else {
 			Table.prototype.setSelectionInterval.call(this, iFromIndex, iToIndex);
 		}
@@ -464,10 +474,20 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	TreeTable.prototype.addSelectionInterval = function (iFromIndex, iToIndex) {
+		var sSelectionMode = this.getSelectionMode();
+
+		if (sSelectionMode === library.SelectionMode.None) {
+			return this;
+		}
+
 		var oBinding = this.getBinding("rows");
 		//TBA check
 		if (oBinding && oBinding.findNode && oBinding.addSelectionInterval) {
-			oBinding.addSelectionInterval(iFromIndex, iToIndex);
+			if (sSelectionMode === library.SelectionMode.Single) {
+				oBinding.setSelectionInterval(iFromIndex, iFromIndex);
+			} else {
+				oBinding.addSelectionInterval(iFromIndex, iToIndex);
+			}
 		} else {
 			Table.prototype.addSelectionInterval.call(this, iFromIndex, iToIndex);
 		}
@@ -519,8 +539,8 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		//The OData TBA exposes a selectAll function
 		var oBinding = this.getBinding("rows");
 		if (oBinding.selectAll) {
-			oBinding.selectAll();
 			this.$("selall").attr('title',this._oResBundle.getText("TBL_DESELECT_ALL")).removeClass("sapUiTableSelAll");
+			oBinding.selectAll();
 		} else {
 			//otherwise fallback on the tables own function
 			Table.prototype.selectAll.call(this);
