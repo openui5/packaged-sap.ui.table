@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.38.10
+	 * @version 1.38.11
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
@@ -558,6 +558,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 					bScrolled = true;
 				}
 			}
+
+			oTable._bIsScrolledByKeyboard = bScrolled;
 
 			return bScrolled;
 		},
