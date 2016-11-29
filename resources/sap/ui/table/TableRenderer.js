@@ -223,6 +223,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 
 		this.renderTableCCnt(rm, oTable);
 		rm.write("</div>");
+		this.renderVSb(rm, oTable);
 		this.renderHSb(rm, oTable);
 	};
 
@@ -230,7 +231,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 		this.renderTabElement(rm, "sapUiTableCtrlBefore");
 		this.renderTableCtrl(rm, oTable);
 		this.renderRowHdr(rm, oTable);
-		this.renderVSb(rm, oTable);
 		this.renderTabElement(rm, "sapUiTableCtrlAfter");
 
 		rm.write("<div");
@@ -929,8 +929,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 
 	TableRenderer.renderTableCellControl = function(rm, oTable, oCell, bIsFirstColumn) {
 		if (TableUtils.Grouping.isTreeMode(oTable) && bIsFirstColumn) {
-			rm.write("<span class='sapUiTableTreeIcon' tabindex='-1'");
-			oTable._getAccRenderExtension().writeAriaAttributesFor(rm, oTable, "TREEICON", {row: oCell.getParent()});
+			var oRow = oCell.getParent();
+			rm.write("<span class='sapUiTableTreeIcon' tabindex='-1' id='" + oRow.getId() + "-treeicon'");
+			oTable._getAccRenderExtension().writeAriaAttributesFor(rm, oTable, "TREEICON", {row: oRow});
 			rm.write(">&nbsp;</span>");
 		}
 		rm.renderControl(oCell);
@@ -941,12 +942,23 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 		rm.addClass("sapUiTableVSb");
 		rm.writeClasses();
 		rm.writeAttribute("id", oTable.getId() + "-vsb");
+		rm.writeAttribute("tabindex", "-1"); // Avoid focusing in Firefox
+		rm.addStyle("max-height", oTable._getVSbHeight() + "px");
+
+		if (oTable.getFixedRowCount() > 0) {
+			oTable._iVsbTop = (oTable.getFixedRowCount() * oTable._getDefaultRowHeight()) - 1;
+			rm.addStyle("top", oTable._iVsbTop  + 'px');
+		}
+
+		rm.writeStyles();
 		rm.write(">");
 
 		rm.write("<div");
 		rm.writeAttribute("id", oTable.getId() + "-vsb-content");
 		rm.addClass("sapUiTableVSbContent");
 		rm.writeClasses();
+		rm.addStyle("height", oTable._getTotalScrollRange() + "px");
+		rm.writeStyles();
 		rm.write(">");
 		rm.write("</div>");
 		rm.write("</div>");

@@ -83,7 +83,8 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 
 			var oColumn = this._getVisibleColumns()[this._iLastHoveredColumnIndex];
 			var iDeltaX = iLocationX - this._iColumnResizeStart;
-			var iWidth = Math.max(oColumn.$().width() + iDeltaX * (this._bRtlMode ? -1 : 1), this._iColMinWidth);
+			var iOldWidth = this.$().find("th[data-sap-ui-headcolindex='" + oColumn.getIndex() + "']").width();
+			var iNewWidth = Math.max(iOldWidth + iDeltaX * (this._bRtlMode ? -1 : 1), this._iColMinWidth);
 
 			// calculate and set the position of the resize handle
 			var iRszOffsetLeft = this.$().find(".sapUiTableCnt").offset().left;
@@ -91,7 +92,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 			this._$colResize.css("left", iRszLeft + "px");
 
 			// store the width of the column to apply later
-			oColumn._iNewWidth = iWidth;
+			oColumn._iNewWidth = iNewWidth;
 		},
 
 		/*
@@ -792,7 +793,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.40.11
+	 * @version 1.40.12
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension
