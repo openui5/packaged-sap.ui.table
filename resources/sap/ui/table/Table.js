@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.38.11
+	 * @version 1.38.12
 	 *
 	 * @constructor
 	 * @public
@@ -1122,6 +1122,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		}
 
 		this._updateVSb(this._iScrollTop);
+		if (this._iScrollLeft) {
+			this.getDomRef(SharedDomRef.HorizontalScrollBar).scrollLeft = this._iScrollLeft;
+		}
 
 		this._updateGroupHeader();
 
@@ -1315,6 +1318,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (mFocusInfo && mFocusInfo.customId) {
 			this.$().find("#" + mFocusInfo.customId).focus();
 		} else {
+			//TBD: should be applyFocusInfo but changing it breaks the unit tests
 			Element.prototype.getFocusInfo.apply(this, arguments);
 		}
 		return this;
@@ -3056,6 +3060,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				window.clearTimeout(this._mTimeouts.hScrollUpdateTimer);
 			}
 			this._mTimeouts.hScrollUpdateTimer = window.setTimeout(function() {
+				this._iScrollLeft = this.getDomRef(SharedDomRef.HorizontalScrollBar).scrollLeft;
 				var oTableSizes = this._collectTableSizes();
 				this._syncHeaderAndContent(oTableSizes);
 				this._determineVisibleCols(oTableSizes);
@@ -3325,7 +3330,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		// table control? (only if the selection behavior is set to row)
 		var oClosestTd, $ClosestTd;
 		if (oEvent.target) {
-			$ClosestTd = jQuery(oEvent.target).closest("td");
+			$ClosestTd = jQuery(oEvent.target).closest(".sapUiTableCtrl > tbody > tr > td");
 			if ($ClosestTd.length > 0) {
 				oClosestTd = $ClosestTd[0];
 			}
