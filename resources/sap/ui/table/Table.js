@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.44.1
+	 * @version 1.44.2
 	 *
 	 * @constructor
 	 * @public
@@ -643,7 +643,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 						that._iRenderedFirstVisibleRow = this.getFirstVisibleRow();
 					}
 					if (that._bBindingLengthChanged) {
-						that._updateVSb();
+						that._updateVSbScrollTop();
 					}
 					that._toggleVSb();
 
@@ -829,19 +829,27 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	/**
-	 * Determines all needed table size at one dedicated point,
-	 * for avoiding layout thrashing through read/write UI operations.
+	 * Determines the space available for the rows.
+	 *
+	 * @return {int} The available space in pixels.
 	 * @private
 	 */
 	Table.prototype._determineAvailableSpace = function() {
 		var oDomRef = this.getDomRef();
+
 		if (oDomRef && oDomRef.parentNode) {
 			var oCCnt = oDomRef.querySelector(".sapUiTableCCnt");
+
 			if (oCCnt) {
 				var iUsedHeight = oDomRef.scrollHeight - oCCnt.clientHeight;
+
+				// For simplicity always add the default height of the horizontal scrollbar to the used height, even if it will not be visible.
+				iUsedHeight += 18;
+
 				return jQuery(oDomRef.parentNode).height() - iUsedHeight;
 			}
 		}
+
 		return 0;
 	};
 
@@ -1025,6 +1033,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 */
 	Table.prototype.onAfterRendering = function(oEvent) {
 		if (oEvent && oEvent.isMarked("insertTableRows")) {
+			this._getScrollExtension().updateVSbMaxHeight();
+			this._updateVSbRange();
 			return;
 		}
 
@@ -1067,7 +1077,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			this._updateTableSizes();
 		}
 
-		this._updateVSb(this._iScrollTop);
+		this._updateVSbTop();
 
 		// needed for the column resize ruler
 		this._aTableHeaders = this.$().find(".sapUiTableColHdrCnt th");
@@ -1148,8 +1158,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				var colHeader;
 				var domWidth;
 				// if a column has variable width, check if its current width of the
-				// first corresponding <th> element in less than minimum and store it
-				if (TableUtils.isVariableWidth(colWidth)) {
+				// first corresponding <th> element in less than minimum and store it;
+				// do not change freezed columns
+				if (TableUtils.isVariableWidth(colWidth) && !TableUtils.isFixedColumn(oTable, col.getIndex())) {
 					aColHeaders = oTableRef.querySelectorAll('th[data-sap-ui-colid="' + col.getId() + '"]');
 					colHeader = aColHeaders[0];
 					domWidth = colHeader && colHeader.offsetWidth;
@@ -1301,6 +1312,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (mFocusInfo && mFocusInfo.customId) {
 			this.$().find("#" + mFocusInfo.customId).focus();
 		} else {
+			//TBD: should be applyFocusInfo but changing it breaks the unit tests
 			Element.prototype.getFocusInfo.apply(this, arguments);
 		}
 		return this;
@@ -1418,7 +1430,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (bFirstVisibleRowChanged && this.getBinding("rows") && !this._bRefreshing) {
 			this.updateRows();
 			if (!bOnScroll) {
-				this._updateVSb();
+				this._updateVSbScrollTop();
 			}
 		}
 
@@ -2068,14 +2080,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * Update the vertical scrollbar position
 	 * @private
 	 */
-	Table.prototype._updateVSb = function(iScrollTop) {
+	Table.prototype._updateVSbTop = function() {
 		var oVSb = this._getScrollExtension().getVerticalScrollbar();
 		if (!oVSb) {
 			return;
-		}
-
-		if (iScrollTop === undefined) {
-			iScrollTop = Math.ceil(this.getFirstVisibleRow() * this._getScrollingPixelsForRow());
 		}
 
 		var oTableCCnt = this.getDomRef("tableCCnt");
@@ -2086,6 +2094,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				iTop += this._iVsbTop;
 			}
 			oVSb.style.top = iTop + "px";
+		}
+	};
+
+	Table.prototype._updateVSbScrollTop = function(iScrollTop) {
+		var oVSb = this._getScrollExtension().getVerticalScrollbar();
+		if (!oVSb) {
+			return;
+		}
+
+		if (iScrollTop === undefined) {
+			iScrollTop = Math.ceil(this.getFirstVisibleRow() * this._getScrollingPixelsForRow());
 		}
 
 		oVSb.scrollTop = iScrollTop;
@@ -2115,7 +2134,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			var isVSbRequired = this._isVSbRequired();
 			if (!isVSbRequired) {
 				// reset scroll position to zero when Scroll Bar disappe
-				this._updateVSb(0);
+				this._updateVSbScrollTop(0);
 			}
 			$this.toggleClass("sapUiTableVScr", isVSbRequired);
 		}
@@ -2682,7 +2701,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		// table control? (only if the selection behavior is set to row)
 		var oClosestTd, $ClosestTd;
 		if (oEvent.target) {
-			$ClosestTd = jQuery(oEvent.target).closest("td");
+			$ClosestTd = jQuery(oEvent.target).closest(".sapUiTableCtrl > tbody > tr > td");
 			if ($ClosestTd.length > 0) {
 				oClosestTd = $ClosestTd[0];
 			}
@@ -3252,8 +3271,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			var oColumn = aCols[i];
 			if (oColumn) {
 				var iColumnIndex = jQuery.inArray(oColumn, this.getColumns());
-				if (!oColumn.getWidth()) {
-					oColumn.setWidth($ths.filter("[data-sap-ui-headcolindex='" + iColumnIndex + "']").width() + "px");
+				if (TableUtils.isVariableWidth(oColumn.getWidth())) {
+					// remember the current column width for the next rendering
+					oColumn._iFixWidth = $ths.filter("[data-sap-ui-headcolindex='" + iColumnIndex + "']").width();
 				}
 			}
 		}
