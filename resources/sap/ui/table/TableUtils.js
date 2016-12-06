@@ -17,7 +17,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.44.2
+	 * @version 1.44.3
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
@@ -793,7 +793,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 						// make sure there is not endless loop if oParent has no getParent function
 						oParent = null;
 					}
-				} while (oParent && !oParentDomRef)
+				} while (oParent && !oParentDomRef);
 			}
 
 			// if we found a DOM reference, check for content density
