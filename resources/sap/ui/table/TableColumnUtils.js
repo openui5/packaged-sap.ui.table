@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './l
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Column...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.44.0
+		 * @version 1.44.1
 		 * @namespace
 		 * @name sap.ui.table.TableColumnUtils
 		 * @private
@@ -43,6 +43,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './l
 			invalidateColumnUtils : function(oTable) {
 				oTable._oColumnInfo = null;
 			},
+
+			//TBD: @type definitions below does not work with the JSDoc generation -> should be cleaned up
+			//     but not so important because the functions are anyhow private
 
 			/**
 			 * Updates the column info object
@@ -643,16 +646,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './l
 
 					if (iWidthChange !== 0) {
 						var bExecuteDefault = true;
+						var sWidth = iNewWidth + "px";
 
 						if (bFireEvent) {
 							bExecuteDefault = oTable.fireColumnResize({
 								column: oResizableColumn,
-								width: iNewWidth
+								width: sWidth
 							});
 						}
 
 						if (bExecuteDefault) {
-							oResizableColumn.setWidth(iNewWidth + "px");
+							oResizableColumn.setWidth(sWidth);
 							bResizeWasPerformed = true;
 						}
 					}

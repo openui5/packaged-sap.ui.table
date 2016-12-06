@@ -136,11 +136,12 @@
  .sapUiTableCtrlEmptyMsg {
 	position: absolute;
 	top: 50%;
-	margin-top: -0.5em;
+	display: inline-block;
 	left: 0;
 	width: 100%;
 	box-sizing: border-box;
-	padding: 0 1rem;
+	padding: 0.2rem 1rem;
+	transform: translateY(-50%);
 	white-space: pre-wrap;
 }
 
@@ -459,6 +460,10 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 	border-right: 1px solid @sapUiListVerticalBorderColor;
 	background-color: @sapUiListHeaderBackground;
 	color: @sapUiListTextColor;
+}
+
+.sapUiTableColHdrTr > .sapUiTableCol {
+	position: relative;
 }
 
 .sapUiSizeCozy {
@@ -826,6 +831,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 
 .sapUiTableTr > .sapUiTableTDDummy {
 	border-bottom: none;
+	background: darken(@sapUiListBackground,2.5);
 }
 
 .sapUiTableTr > td.sapUiTableTdFirst {
@@ -861,15 +867,15 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 	border-right: 1px solid @sapUiListTableFixedBorder;
 }
 
-.sapUiTableTr.sapUiTableRowHvr > td {
+.sapUiTableTr.sapUiTableRowHvr > td:not(.sapUiTableTDDummy) {
 	background-color: @sapUiListHoverBackground;
 }
 
-.sapUiTableTr.sapUiTableRowSel:not(.sapUiTableGroupHeader) > td {
+.sapUiTableTr.sapUiTableRowSel:not(.sapUiTableGroupHeader) > td:not(.sapUiTableTDDummy) {
 	background-color: @sapUiListSelectionBackgroundColor;
 }
 
-.sapUiTableTr.sapUiTableRowHvr.sapUiTableRowSel:not(.sapUiTableGroupHeader) > td {
+.sapUiTableTr.sapUiTableRowHvr.sapUiTableRowSel:not(.sapUiTableGroupHeader) > td:not(.sapUiTableTDDummy) {
 	background-color: @sapUiListSelectionHoverBackground;
 }
 

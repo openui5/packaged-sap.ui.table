@@ -126,7 +126,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 			if (iColIndex >= 0 && iColIndex < aVisibleColumns.length) {
 				oColumn = aVisibleColumns[iColIndex];
 				if (oColumn._iNewWidth) {
-					TableUtils.Column.resizeColumn(oTable, iColIndex, oColumn._iNewWidth);
+					TableUtils.Column.resizeColumn(oTable, oTable.indexOfColumn(oColumn), oColumn._iNewWidth);
 					delete oColumn._iNewWidth;
 					bResized = true;
 				}
@@ -472,7 +472,14 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 
 			this._iNewColPos = this._iDnDColIndex;
 
+			oEvent.preventDefault(); // Avoid default actions e.g. scrolling on mobile devices
+
 			var oPos = ReorderHelper.findColumnForPosition(this, iLocationX);
+
+			if ( !oPos.id ) { //Special handling for dummy column (in case the other columns does not occupy the whole space)
+				this._iNewColPos = iOldColPos;
+				return;
+			}
 
 			// do scroll if needed
 			var iScrollTriggerAreaWidth = 40,
@@ -849,7 +856,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.0
+	 * @version 1.44.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension

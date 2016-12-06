@@ -287,7 +287,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 
 			var iRow = TableUtils.getRowIndexOfFocusedCell(oTable),
 				iCol = TableUtils.getColumnIndexOfFocusedCell(oTable),
-				oTableInstances = TableUtils.getRowColCell(oTable, iRow, iCol),
+				oTableInstances = TableUtils.getRowColCell(oTable, iRow, iCol, false),
 				oInfo = null,
 				bHidden = ExtensionHelper.isHiddenCell($Cell, oTableInstances.cell),
 				bIsTreeColumnCell = ExtensionHelper.isTreeColumnCell(this, $Cell),
@@ -648,6 +648,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 							if (mParams && mParams.row) {
 								if (mParams.row._bHasChildren) {
 									mAttributes["title"] = oTable._oResBundle.getText(mParams.row._bIsExpanded ? "TBL_COLLAPSE" : "TBL_EXPAND");
+									mAttributes["aria-expanded"] = "" + (!!mParams.row._bIsExpanded);
 								} else {
 									mAttributes["aria-label"] = oTable._oResBundle.getText("TBL_LEAF");
 								}
@@ -695,7 +696,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.0
+	 * @version 1.44.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension

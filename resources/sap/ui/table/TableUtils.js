@@ -17,7 +17,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.44.0
+	 * @version 1.44.1
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
@@ -465,10 +465,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 		/**
 		 * Returns the row index and column index of a data cell.
 		 *
+		 * @param {sap.ui.table.Table} oTable Instance of the table
 		 * @param {jQuery|HtmlElement} oCell The data cell.
 		 * @returns {{rowIndex: int, columnIndex: int}|null} Returns <code>null</code> if <code>oCell</code> is not a table data cell.
 		 */
-		getDataCellInfo: function(oCell) {
+		getDataCellInfo: function(oTable, oCell) {
 			if (oCell == null) {
 				return null;
 			}
@@ -477,16 +478,24 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 			var oCellInfo = this.getCellInfo($Cell);
 
 			if (oCellInfo !== null && oCellInfo.type === TableUtils.CELLTYPES.DATACELL) {
-				var sCellId = $Cell.prop("id"); // Example: __table0-rows-row3-col2
-				var aCellIdAreas = sCellId.split("-");
+				var iRowIndex = parseInt($Cell.parent().data("sap-ui-rowindex"), 10);
+				var sColId = $Cell.data("sap-ui-colid");
 
-				return {
-					rowIndex: parseInt(aCellIdAreas[2].slice(3), 10),
-					columnIndex: parseInt(aCellIdAreas[3].slice(3), 10)
-				};
-			} else {
-				return null;
+				if (iRowIndex >= 0 && sColId) {
+					var oColumn = sap.ui.getCore().byId(sColId);
+					if (oColumn) {
+						var iColIndex = oTable.indexOfColumn(oColumn);
+						if (iColIndex >= 0) {
+							return {
+								rowIndex: iRowIndex,
+								columnIndex: iColIndex
+							};
+						}
+					}
+				}
 			}
+
+			return null;
 		},
 
 		/**
@@ -494,7 +503,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 		 * and column index (in the array of visible columns (see Table._getVisibleColumns()).
 		 * @param {sap.ui.table.Table} oTable Instance of the table
 		 * @param {int} iRowIdx Index of row in the tables rows aggregation
-		 * @param {int} iColIdx Index of column in the list of visible columns
+		 * @param {int} iColIdx Index of column in the list of visible columns or in the columns aggregation, as indicated with <code>bIdxInColumnAgg</code>
+		 * @param {boolean} bIdxInColumnAgg Whether the given column index is the index in the columns (<code>true</code>)
+		 * 									aggregation or in the list of visble columns (<code>false</code>).
 		 * @return {Object}
 		 * @type {Object}
 		 * @property {sap.ui.table.Row} row Row of the table
@@ -502,10 +513,25 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 		 * @property {sap.ui.core.Control} cell Cell control of row/column
 		 * @private
 		 */
-		getRowColCell : function(oTable, iRowIdx, iColIdx) {
+		getRowColCell : function(oTable, iRowIdx, iColIdx, bIdxInColumnAgg) {
 			var oRow = oTable.getRows()[iRowIdx];
-			var oColumn = oTable._getVisibleColumns()[iColIdx];
-			var oCell = oRow && oRow.getCells()[iColIdx];
+			var aColumns = bIdxInColumnAgg ? oTable.getColumns() : oTable._getVisibleColumns();
+			var oColumn = aColumns[iColIdx];
+			var oCell = null;
+
+			if (bIdxInColumnAgg) {
+				if (oColumn.shouldRender()) {
+					var aVisibleColumns = oTable._getVisibleColumns();
+					for (var i = 0; i < aVisibleColumns.length; i++) {
+						if (aVisibleColumns[i] === oColumn) {
+							oCell = oRow && oRow.getCells()[i];
+							break;
+						}
+					}
+				}
+			} else {
+				oCell = oRow && oRow.getCells()[iColIdx];
+			}
 
 			//TBD: Clarify why this is needed!
 			if (oCell && oCell.data("sap-ui-colid") != oColumn.getId()) {
@@ -800,6 +826,35 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 		 */
 		isVariableWidth: function(sWidth) {
 			return !sWidth || sWidth == "auto" || sWidth.toString().match(/%$/);
+		},
+
+		/**
+		 * Returns the index of the first fixed buttom row in the <code>rows</code> aggregation.
+		 *
+		 * @param {sap.ui.table.Table} oTable Instance of the table
+		 * @returns {int} The index of the first fixed buttom row in the <code>rows</code> aggregation, or <code>-1</code>.
+		 * @private
+		 */
+		getFirstFixedButtomRowIndex: function(oTable) {
+			var iFixedBottomRowCount = oTable.getFixedBottomRowCount();
+			var oBinding = oTable.getBinding("rows");
+			var iFirstFixedButtomIndex = -1;
+
+			if (oBinding && iFixedBottomRowCount > 0) {
+				var iVisibleRowCount = oTable.getVisibleRowCount();
+				var iFirstVisibleRow = oTable._getSanitizedFirstVisibleRow();
+
+				if (oTable._iBindingLength >= iVisibleRowCount) {
+					iFirstFixedButtomIndex = iVisibleRowCount - iFixedBottomRowCount;
+				} else {
+					var iIdx = oTable._iBindingLength - iFixedBottomRowCount - iFirstVisibleRow;
+					if (iIdx >= 0 && (iFirstVisibleRow + iIdx) < oTable._iBindingLength) {
+						iFirstFixedButtomIndex = iIdx;
+					}
+				}
+			}
+
+			return iFirstFixedButtomIndex;
 		}
 
 	};

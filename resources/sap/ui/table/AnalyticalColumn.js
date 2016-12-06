@@ -6,9 +6,10 @@
 
 // Provides control sap.ui.table.AnalyticalColumn.
 sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Element',
-		'sap/ui/model/type/Boolean', 'sap/ui/model/type/DateTime', 'sap/ui/model/type/Float', 'sap/ui/model/type/Integer', 'sap/ui/model/type/Time', './TableUtils'
+		'sap/ui/model/type/Boolean', 'sap/ui/model/type/DateTime', 'sap/ui/model/type/Float',
+		'sap/ui/model/type/Integer', 'sap/ui/model/type/Time', './TableUtils', './AnalyticalColumnMenu'
 	],
-	function(jQuery, Column, library, Element, BooleanType, DateTime, Float, Integer, Time, TableUtils) {
+	function(jQuery, Column, library, Element, BooleanType, DateTime, Float, Integer, Time, TableUtils, AnalyticalColumnMenu) {
 	"use strict";
 
 	function isInstanceOfAnalyticalTable(oControl) {
@@ -26,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 	 * @extends sap.ui.table.Column
 	 *
 	 * @author SAP SE
-	 * @version 1.44.0
+	 * @version 1.44.1
 	 *
 	 * @constructor
 	 * @public
@@ -90,7 +91,6 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 	 * @return {sap.ui.table.AnalyticalColumnMenu} The created column menu.
 	 */
 	AnalyticalColumn.prototype._createMenu = function() {
-		var AnalyticalColumnMenu = sap.ui.requireSync("sap/ui/table/AnalyticalColumnMenu");
 		return new AnalyticalColumnMenu(this.getId() + "-menu");
 	};
 

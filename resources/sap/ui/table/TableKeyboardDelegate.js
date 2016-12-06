@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.44.0
+	 * @version 1.44.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate
@@ -559,16 +559,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	 */
 	TableKeyboardDelegate.prototype.onsapdownmodifiers = function(oEvent) {
 		if (oEvent.shiftKey) {
-			var iFocusedRow = TableKeyboardDelegate._getFocusedRowIndex(this);
-			var bIsFocusedRowSelected = TableKeyboardDelegate._isFocusedRowSelected(this);
-			if (bIsFocusedRowSelected === true) {
-				this.addSelectionInterval(iFocusedRow + 1, iFocusedRow + 1);
-			} else if (bIsFocusedRowSelected === false) {
-				this.removeSelectionInterval(iFocusedRow + 1, iFocusedRow + 1);
-			}
+			if (this.getSelectionMode() === library.SelectionMode.Single || this.getSelectionMode() === library.SelectionMode.None) {
+				oEvent.setMarked("sapUiTableSkipItemNavigation");
+				oEvent.preventDefault();
+			} else {
+				var iFocusedRow = TableKeyboardDelegate._getFocusedRowIndex(this);
+				var bIsFocusedRowSelected = TableKeyboardDelegate._isFocusedRowSelected(this);
+				if (bIsFocusedRowSelected === true) {
+					this.addSelectionInterval(iFocusedRow + 1, iFocusedRow + 1);
+				} else if (bIsFocusedRowSelected === false) {
+					this.removeSelectionInterval(iFocusedRow + 1, iFocusedRow + 1);
+				}
 
-			if (TableUtils.isLastScrollableRow(this, oEvent.target)) {
-				this._getScrollExtension().scroll(true, false);
+				if (TableUtils.isLastScrollableRow(this, oEvent.target)) {
+					this._getScrollExtension().scroll(true, false);
+				}
 			}
 		} else if (oEvent.altKey) {
 			// Toggle group header on ALT + DOWN.
@@ -584,21 +589,26 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	 */
 	TableKeyboardDelegate.prototype.onsapupmodifiers = function(oEvent) {
 		if (oEvent.shiftKey) {
-			var iFocusedRow = TableKeyboardDelegate._getFocusedRowIndex(this);
-			var bIsFocusedRowSelected = TableKeyboardDelegate._isFocusedRowSelected(this);
+			if (this.getSelectionMode() === library.SelectionMode.Single || this.getSelectionMode() === library.SelectionMode.None) {
+				oEvent.setMarked("sapUiTableSkipItemNavigation");
+				oEvent.preventDefault();
+			} else {
+				var iFocusedRow = TableKeyboardDelegate._getFocusedRowIndex(this);
+				var bIsFocusedRowSelected = TableKeyboardDelegate._isFocusedRowSelected(this);
 
-			if (bIsFocusedRowSelected === true) {
-				this.addSelectionInterval(iFocusedRow - 1, iFocusedRow - 1);
-			} else if (bIsFocusedRowSelected === false) {
-				this.removeSelectionInterval(iFocusedRow - 1, iFocusedRow - 1);
-			}
-
-			if (TableUtils.isFirstScrollableRow(this, oEvent.target)) {
-				// Prevent that focus jumps to header in this case.
-				if (this.getFirstVisibleRow() != 0) {
-					oEvent.stopImmediatePropagation(true);
+				if (bIsFocusedRowSelected === true) {
+					this.addSelectionInterval(iFocusedRow - 1, iFocusedRow - 1);
+				} else if (bIsFocusedRowSelected === false) {
+					this.removeSelectionInterval(iFocusedRow - 1, iFocusedRow - 1);
 				}
-				this._getScrollExtension().scroll(false, false);
+
+				if (TableUtils.isFirstScrollableRow(this, oEvent.target)) {
+					// Prevent that focus jumps to header in this case.
+					if (this.getFirstVisibleRow() != 0) {
+						oEvent.stopImmediatePropagation(true);
+					}
+					this._getScrollExtension().scroll(false, false);
+				}
 			}
 		} else if (oEvent.altKey) {
 			// Toggle group header on ALT + UP.

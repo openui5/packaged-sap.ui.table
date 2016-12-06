@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Grouping...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.44.0
+	 * @version 1.44.1
 	 * @namespace
 	 * @name sap.ui.table.TableGrouping
 	 * @private
@@ -100,7 +100,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 				return oTable._bShowGroupMenuButton;
 			}
 
-			if (Device.support.touch && TableGrouping.TableUtils.isInstanceOf(oTable, "sap/ui/table/AnalyticalTable")) {
+			if (!Device.system.desktop && TableGrouping.TableUtils.isInstanceOf(oTable, "sap/ui/table/AnalyticalTable")) {
 				oTable._bShowGroupMenuButton = true;
 			} else {
 				oTable._bShowGroupMenuButton = false;
@@ -349,9 +349,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 				var $GroupHeaderMenuButton = $RowHdr.find(".sapUiTableGroupMenuButton");
 
 				if (oTable._bRtlMode) {
-					$GroupHeaderMenuButton.css("right", ($Table.width() - $GroupHeaderMenuButton.width() + $RowHdr.position().left - iScrollBarOffset) + "px");
+					$GroupHeaderMenuButton.css("right", ($Table.width() - $GroupHeaderMenuButton.width() + $RowHdr.position().left - iScrollBarOffset - 5) + "px");
 				} else {
-					$GroupHeaderMenuButton.css("left", ($Table.width() - $GroupHeaderMenuButton.width() - $RowHdr.position().left - iScrollBarOffset) + "px");
+					$GroupHeaderMenuButton.css("left", ($Table.width() - $GroupHeaderMenuButton.width() - $RowHdr.position().left - iScrollBarOffset - 5) + "px");
 				}
 			}
 

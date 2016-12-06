@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.table.ColumnMenu.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 'sap/ui/unified/Menu', 'sap/ui/unified/MenuItem', 'sap/ui/Device', './TableUtils'],
-	function(jQuery, RenderManager, library, Menu, MenuItem, Device, TableUtils) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 'sap/ui/unified/Menu', 'sap/ui/unified/MenuItem', 'sap/ui/unified/MenuTextFieldItem', 'sap/ui/Device', './TableUtils'],
+	function(jQuery, RenderManager, library, Menu, MenuItem, MenuTextFieldItem, Device, TableUtils) {
 	"use strict";
 
 	/**
@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 	 * @class
 	 * The column menu provides all common actions that can be performed on a column.
 	 * @extends sap.ui.unified.Menu
-	 * @version 1.44.0
+	 * @version 1.44.1
 	 *
 	 * @constructor
 	 * @public
@@ -105,11 +105,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 	ColumnMenu.prototype._updateReferences = function(oParent) {
 		this._oColumn = oParent;
 		if (oParent) {
-			jQuery.sap.assert(lazyInstanceof(oParent, "sap/ui/table/Column"), "ColumnMenu.setParent: parent must be a subclass of sap.ui.table.Column");
+			jQuery.sap.assert(TableUtils.isInstanceOf(oParent, "sap/ui/table/Column"), "ColumnMenu.setParent: parent must be a subclass of sap.ui.table.Column");
 
 			this._oTable = this._oColumn.getParent();
 			if (this._oTable) {
-				jQuery.sap.assert(lazyInstanceof(this._oTable, "sap/ui/table/Table"), "ColumnMenu.setParent: parent of parent must be subclass of sap.ui.table.Table");
+				jQuery.sap.assert(TableUtils.isInstanceOf(this._oTable, "sap/ui/table/Table"), "ColumnMenu.setParent: parent of parent must be subclass of sap.ui.table.Table");
 			}
 		}
 	};
@@ -354,12 +354,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 			}
 
 			var oBinding = oTable.getBinding();
-			var bAnalyticalBinding = lazyInstanceof(oBinding, "sap/ui/model/analytics/AnalyticalBinding");
+			var bAnalyticalBinding = TableUtils.isInstanceOf(oBinding, "sap/ui/model/analytics/AnalyticalBinding");
 
 			for (var i = 0, l = aColumns.length; i < l; i++) {
 				var oColumn = aColumns[i];
 				// skip columns which are set to invisible by analytical metadata
-				if (bAnalyticalBinding && lazyInstanceof(oColumn, "sap/ui/table/AnalyticalColumn")) {
+				if (bAnalyticalBinding && TableUtils.isInstanceOf(oColumn, "sap/ui/table/AnalyticalColumn")) {
 
 					var oQueryResult = oBinding.getAnalyticalQueryResult();
 					var oEntityType = oQueryResult.getEntityType();
@@ -394,7 +394,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 				if (bVisible || TableUtils.getVisibleColumnCount(this._oTable) > 1) {
 					var oTable = oColumn.getParent();
 					var bExecuteDefault = true;
-					if (oTable && lazyInstanceof(oTable, "sap/ui/table/Table")) {
+					if (oTable && TableUtils.isInstanceOf(oTable, "sap/ui/table/Table")) {
 						bExecuteDefault = oTable.fireColumnVisibility({
 							column: oColumn,
 							newVisible: bVisible
@@ -439,7 +439,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 	 * @private
 	 */
 	ColumnMenu.prototype._createMenuTextFieldItem = function(sId, sTextI18nKey, sIcon, sValue, fHandler) {
-		var MenuTextFieldItem = sap.ui.requireSync("sap/ui/unified/MenuTextFieldItem");
 		fHandler = fHandler || function() {};
 		return new MenuTextFieldItem(this.getId() + "-" + sId, {
 			label: this.oResBundle.getText(sTextI18nKey),
@@ -483,12 +482,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/RenderManager', './library', 's
 		}
 		return this;
 	};
-
-
-	function lazyInstanceof(o, sModule) {
-		var FNClass = sap.ui.require(sModule);
-		return typeof FNClass === 'function' && (o instanceof FNClass);
-	}
 
 	return ColumnMenu;
 
