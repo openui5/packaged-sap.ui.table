@@ -665,6 +665,8 @@
     "sapUiMarginLarge": "3rem",
     "sapUiEscapedEmptyString": "",
     "sapUiTableRowHeight": "28px",
+    "sapUiTableCompactRowHeight": "32px",
+    "sapUiTableCondensedRowHeight": "25px",
     "sapUiTableColHdrHeight": "32px",
     "sapUiTableRowHdrWidth": "25px",
     "sapUiTableToolbarDesign": "Transparent",
@@ -730,10 +732,8 @@
     "sapMeOverlapCalendarIndicator": "#ffffff",
     "sapMeCalendarLegendIconCollapse": "collapse",
     "sapMeCalendarLegendIconExpand": "expand",
-    "sapUiTableCompactRowHeight": "32px",
     "sapUiTableCompactColHdrHeight": "32px",
     "sapUiTableCompactRowHdrWidth": "32px",
-    "sapUiTableCondensedRowHeight": "25px",
     "sapUiTableCondensedColHdrHeight": "25px",
     "sapUiTableCondensedRowHdrWidth": "25px"
 }

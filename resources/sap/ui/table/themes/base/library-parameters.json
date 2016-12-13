@@ -665,6 +665,8 @@
     "sapUiMarginLarge": "3rem",
     "sapUiEscapedEmptyString": "",
     "sapUiTableRowHeight": "23px",
+    "sapUiTableCompactRowHeight": "32px",
+    "sapUiTableCondensedRowHeight": "25px",
     "sapUiTableColHdrHeight": "23px",
     "sapUiTableRowHdrWidth": "22px",
     "sapUiTableToolbarDesign": "Transparent",

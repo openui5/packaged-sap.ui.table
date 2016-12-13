@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.38.14
+	 * @version 1.38.15
 	 *
 	 * @constructor
 	 * @public
@@ -2952,7 +2952,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (this._bLargeDataScrolling && !this._bIsScrolledByWheel) {
 			window.clearTimeout(this._mTimeouts.scrollUpdateTimerId);
 			this._mTimeouts.scrollUpdateTimerId = window.setTimeout(function() {
-				updateVisibleRow(this);
+				updateVisibleRow(that);
 				that._mTimeouts._sScrollUpdateTimerId = null;
 			}, 300);
 		} else {
