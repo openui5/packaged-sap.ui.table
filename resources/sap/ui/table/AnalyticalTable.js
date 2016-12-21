@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @see http://scn.sap.com/docs/DOC-44986
 	 *
 	 * @extends sap.ui.table.Table
-	 * @version 1.40.13
+	 * @version 1.40.14
 	 *
 	 * @constructor
 	 * @public
@@ -1028,7 +1028,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
 			var oRootNode = oBinding.getGrandTotalContextInfo();
-			return oRootNode ? oRootNode.numberOfLeafs : 0;
+			return oRootNode ? oRootNode.totalNumberOfLeafs : 0;
 		}
 	};
 
