@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.42.6
+	 * @version 1.42.7
 	 *
 	 * @constructor
 	 * @public
@@ -1540,6 +1540,12 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		return this;
 	};
 
+	Table.prototype.setRowHeight = function(iRowHeight) {
+		this.setProperty("rowHeight", iRowHeight);
+		this._iTableRowContentHeight = undefined;
+		return this;
+	};
+
 	/**
 	 * Sets a new tooltip for this object. The tooltip can either be a simple string
 	 * (which in most cases will be rendered as the <code>title</code> attribute of this
@@ -2951,7 +2957,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (this._bLargeDataScrolling && !this._bIsScrolledByWheel) {
 			window.clearTimeout(this._mTimeouts.scrollUpdateTimerId);
 			this._mTimeouts.scrollUpdateTimerId = window.setTimeout(function() {
-				updateVisibleRow(this);
+				updateVisibleRow(that);
 				that._mTimeouts._sScrollUpdateTimerId = null;
 			}, 300);
 		} else {

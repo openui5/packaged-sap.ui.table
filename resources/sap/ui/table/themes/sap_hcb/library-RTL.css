@@ -516,6 +516,8 @@ html[data-sap-ui-browser^="ed"] .sapUiTableCtrlEmpty:focus:before {
 }
 html[dir=rtl] .sapUiTableColRsz {
   margin-left: -3px;
+  left: -5px;
+  right: auto;
 }
 .sapUiTableHScr .sapUiTableColRsz {
   bottom: 18px;
