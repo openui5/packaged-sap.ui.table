@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -564,7 +564,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 		if (oRow._bHidden) {
 			rm.addClass("sapUiTableRowHidden");
 		} else {
-			if (oTable.isIndexSelected(oTable._getAbsoluteRowIndex(iRowIndex))) {
+			if (oTable.isIndexSelected(oRow.getIndex())) {
 				rm.addClass("sapUiTableRowSel");
 				bRowSelected = true;
 			}
@@ -821,7 +821,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 		if (oRow._bHidden) {
 			rm.addClass("sapUiTableRowHidden");
 		} else {
-			if (oTable.isIndexSelected(oTable._getAbsoluteRowIndex(iRowIndex))) {
+			if (oTable.isIndexSelected(oRow.getIndex())) {
 				rm.addClass("sapUiTableRowSel");
 			}
 
@@ -852,7 +852,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/library'
 		if (TableUtils.hasRowHeader(oTable) || aCells.length === 0) {
 			rm.write("<td");
 			oTable._getAccRenderExtension().writeAriaAttributesFor(rm, oTable, "ROWHEADER_TD", {
-				rowSelected: !oRow._bHidden && oTable.isIndexSelected(oTable._getAbsoluteRowIndex(iRowIndex)), //see TableRenderer.renderRowHdrRow
+				rowSelected: !oRow._bHidden && oTable.isIndexSelected(oTable.getRows()[iRowIndex].getIndex()), //see TableRenderer.renderRowHdrRow
 				index: iRowIndex
 			});
 			rm.write("></td>");

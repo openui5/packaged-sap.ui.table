@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.42.7
+	 * @version 1.42.8
 	 *
 	 * @constructor
 	 * @public
@@ -2482,7 +2482,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	Table.prototype._getRowHeightsDelta = function(aRowHeights) {
 		var iEstimatedViewportHeight = this._getDefaultRowHeight() * this.getVisibleRowCount();
 		// Case: Not enough data to fill all available rows, only sum used rows.
-		if (this.getVisibleRowCount() > this._getRowCount()) {
+		if (this.getVisibleRowCount() >= this._getRowCount()) {
 			aRowHeights = aRowHeights.slice(0, this._getRowCount());
 		}
 		var iRowHeightsDelta = aRowHeights.reduce(function(a, b) { return a + b; }, 0) - iEstimatedViewportHeight;
@@ -3263,29 +3263,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		}
 	};
 
-	/**
-	 * The row index only considers the position of the row in the aggregation. It must be adapted
-	 * to consider the firstVisibleRow offset or if a fixed bottom row was pressed
-	 * @param {int} iRow row index of the control in the rows aggregation
-	 * @returns {int} the adapted (absolute) row index
-	 * @private
-	 */
-	Table.prototype._getAbsoluteRowIndex = function(iRow) {
-		var iIndex = 0;
-		var iFirstVisibleRow = this.getFirstVisibleRow();
-		var iFixedBottomRowCount = this.getFixedBottomRowCount();
-		var iVisibleRowCount = this.getVisibleRowCount();
-		var iFirstFixedBottomRowIndex = iVisibleRowCount - iFixedBottomRowCount;
-
-		if (iFixedBottomRowCount > 0 && iRow >= iFirstFixedBottomRowIndex) {
-			iIndex = this.getBinding().getLength() - iVisibleRowCount + iRow;
-		} else {
-			iIndex = iFirstVisibleRow + iRow;
-		}
-
-		return iIndex;
-	};
-
 	// =============================================================================
 	// SELECTION HANDLING
 	// =============================================================================
@@ -3328,7 +3305,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		var $row = $target.closest(".sapUiTableRowHdr");
 		if ($row.length === 1) {
 			var iIndex = parseInt($row.attr("data-sap-ui-rowindex"), 10);
-			this._onRowSelect(this._getAbsoluteRowIndex(iIndex), bShift, bCtrl);
+			this._onRowSelect(this.getRows()[iIndex].getIndex(), bShift, bCtrl);
 			return;
 		}
 
@@ -3346,7 +3323,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			var $row = $target.closest(".sapUiTableCtrl > tbody > tr");
 			if ($row.length === 1) {
 				var iIndex = parseInt($row.attr("data-sap-ui-rowindex"), 10);
-				this._onRowSelect(this._getAbsoluteRowIndex(iIndex), bShift, bCtrl);
+				this._onRowSelect(this.getRows()[iIndex].getIndex(), bShift, bCtrl);
 				return;
 			}
 		}

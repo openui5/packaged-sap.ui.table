@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @see http://scn.sap.com/docs/DOC-44986
 	 *
 	 * @extends sap.ui.table.Table
-	 * @version 1.42.7
+	 * @version 1.42.8
 	 *
 	 * @constructor
 	 * @public
@@ -1028,7 +1028,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
 			var oRootNode = oBinding.getGrandTotalContextInfo();
-			return oRootNode ? oRootNode.numberOfLeafs : 0;
+			return oRootNode ? oRootNode.totalNumberOfLeafs : 0;
 		}
 	};
 
