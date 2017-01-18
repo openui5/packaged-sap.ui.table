@@ -188,7 +188,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/It
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.42.8
+	 * @version 1.42.9
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardExtension
