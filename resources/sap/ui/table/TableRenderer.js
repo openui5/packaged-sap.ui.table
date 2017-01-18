@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -329,10 +329,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/theming/
 		rm.writeAttribute("id", oTable.getId() + "-selall");
 		var oSelMode = oTable.getSelectionMode();
 		var bEnabled = false;
+		var bSelAll = false;
 		if ((oSelMode == "Multi" || oSelMode == "MultiToggle") && oTable.getEnableSelectAll()) {
 			rm.writeAttributeEscaped("title", oTable._oResBundle.getText("TBL_SELECT_ALL"));
 			if (!TableUtils.areAllRowsSelected(oTable)) {
 				rm.addClass("sapUiTableSelAll");
+			} else {
+				bSelAll = true;
 			}
 			rm.addClass("sapUiTableSelAllEnabled");
 			bEnabled = true;
@@ -345,7 +348,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/theming/
 
 		rm.writeAttribute("tabindex", "-1");
 
-		oTable._getAccRenderExtension().writeAriaAttributesFor(rm, oTable, "COLUMNROWHEADER", {enabled: bEnabled});
+		oTable._getAccRenderExtension().writeAriaAttributesFor(rm, oTable, "COLUMNROWHEADER", {enabled: bEnabled, checked: bSelAll});
 
 		rm.write(">");
 		if (oTable.getSelectionMode() !== SelectionMode.Single) {

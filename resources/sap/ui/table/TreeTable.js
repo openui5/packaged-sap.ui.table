@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.44.3
+	 * @version 1.44.5
 	 *
 	 * @constructor
 	 * @public
@@ -49,7 +49,10 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 
 			/**
 			 * Setting collapseRecursive to true means, that when collapsing a node all subsequent child nodes will also be collapsed.
-			 * This property is only supported with sap.ui.model.odata.v2.ODataModel
+			 * This property is only supported with sap.ui.model.odata.v2.ODataModel.
+			 * <b>Note:</b> collapseRecursive is currently <b>not</b> supported if your OData service exposes the hierarchy annotation <code>hierarchy-descendant-count-for</code>.
+			 * In this case the value of the collapseRecursive property is ignored.
+			 * For more information about the OData hierarchy annotations, please see the <b>SAP Annotations for OData Version 2.0</b> specification.
 			 */
 			collapseRecursive : {type: "boolean", defaultValue: true},
 
@@ -123,8 +126,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 			oBindingInfo.parameters.rootNodeID = oBindingInfo.parameters.rootNodeID;
 		}
 
-		//return Table.prototype.bindRows.call(this, oBindingInfo, vTemplate, oSorter, aFilters);
-		return this.bindAggregation("rows", oBindingInfo);
+		return Table.prototype.bindRows.call(this, oBindingInfo);
 	};
 
 	/**
@@ -507,6 +509,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		var oBinding = this.getBinding("rows");
 		if (oBinding.selectAll) {
 			this.$("selall").attr('title',this._oResBundle.getText("TBL_DESELECT_ALL")).removeClass("sapUiTableSelAll");
+			this._getAccExtension().setSelectAllState(true);
 			oBinding.selectAll();
 		} else {
 			//otherwise fallback on the tables own function
@@ -611,7 +614,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		//when using the treebindingadapter, check if the node is selected
 		var oBinding = this.getBinding("rows");
 
-		if (oBinding && oBinding.findNode && oBinding.getSelectedNodesCount) {
+		if (oBinding && oBinding.getSelectedNodesCount) {
 			return oBinding.getSelectedNodesCount();
 		} else {
 			// selection model case

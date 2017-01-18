@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -25,7 +25,7 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 	 * @class
 	 * The column allows you to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.44.3
+	 * @version 1.44.5
 	 *
 	 * @constructor
 	 * @public
@@ -983,6 +983,12 @@ function(jQuery, Element, coreLibrary, Popup, RenderManager, Filter, FilterOpera
 			oClone.data("sap-ui-colindex", iIndex);
 			oClone.data("sap-ui-colid", this.getId());
 			this._aTemplateClones.push(oClone);
+
+			var oTable = this.getParent();
+			if (oTable) {
+				oTable._getAccExtension().addColumnHeaderLabel(this, oClone);
+			}
+
 			return oClone;
 		}
 	};

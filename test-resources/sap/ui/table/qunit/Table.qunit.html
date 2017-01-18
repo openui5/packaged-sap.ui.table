@@ -238,8 +238,8 @@
 			var oCell = jQuery.sap.domById(oTable.getId() + "-rowsel" + i);
 			oCell.focus();
 			if (bKeyboard) {
-				qutils.triggerKeyEvent("keydown", oCell, "SPACE", !!bShiftKey, false, !!bCtrlKey);
-				qutils.triggerKeyEvent("keyup", oCell, "SPACE", !!bShiftKey, false, !!bCtrlKey);
+				qutils.triggerKeydown(oCell, "SPACE", !!bShiftKey, false, !!bCtrlKey);
+				qutils.triggerKeyup(oCell, "SPACE", !!bShiftKey, false, !!bCtrlKey);
 			} else {
 				qutils.triggerEvent("click", oCell, {metaKey : !!bCtrlKey, ctrlKey : !!bCtrlKey, shiftKey: !!bShiftKey});
 			}
@@ -268,21 +268,20 @@
 		checkSelection("MultiToggle - After 4th selection", [2, 3]);
 		triggerSelectionOnRow(3, true, false, false);
 		checkSelection("MultiToggle - After 5th selection", [2]);
-		triggerSelectionOnRow(0, true, true, false);
+		triggerSelectionOnRow(0, true, false, false);
 		checkSelection("MultiToggle - After 6th selection", [0, 2]);
 		if (oTable._getKeyboardExtension()._legacy) {
 			triggerSelectionOnRow(4, true, false, true);
 		} else {
 			var oCell = jQuery.sap.domById(oTable.getId() + "-rowsel0");
 			oCell.focus();
-			qutils.triggerKeyEvent("keydown", document.activeElement, "SHIFT", true, false, false);
-			qutils.triggerKeyEvent("keydown", document.activeElement, "ARROW_DOWN", true, false, false);
-			qutils.triggerKeyEvent("keydown", document.activeElement, "ARROW_DOWN", true, false, false);
-			qutils.triggerKeyEvent("keydown", document.activeElement, "ARROW_DOWN", true, false, false);
-			qutils.triggerKeyEvent("keydown", document.activeElement, "ARROW_DOWN", true, false, false);
-			qutils.triggerKeyEvent("keyup", document.activeElement, "SHIFT", true, false, false);
+			qutils.triggerKeydown(document.activeElement, "SHIFT", false, false, false);
+			qutils.triggerKeydown(document.activeElement, "ARROW_DOWN", true, false, false);
+			qutils.triggerKeydown(document.activeElement, "ARROW_DOWN", true, false, false);
+			qutils.triggerKeydown(document.activeElement, "ARROW_DOWN", true, false, false);
+			qutils.triggerKeydown(document.activeElement, "ARROW_DOWN", true, false, false);
+			qutils.triggerKeyup(document.activeElement, "SHIFT", false, false, false);
 		}
-		//debugger;
 		checkSelection("MultiToggle - After 7th selection", [0, 1, 2, 3, 4]);
 		triggerSelectionOnRow(2, false, false, true);
 		checkSelection("MultiToggle - After 8th selection", [0, 1, 2, 3, 4]);
@@ -1261,6 +1260,16 @@
 		assert.ok(spy.notCalled, "destroyRows was not called");
 	});
 
+	QUnit.test("BindRows", function(assert) {
+		var spy = this.spy(sap.ui.table.Table.prototype, "bindRows");
+		new sap.ui.table.Table({
+			rows: {path: "/modelData"},
+			columns: [new sap.ui.table.Column()]
+		});
+
+		assert.ok(spy.calledOnce, "bindRows was called");
+	});
+
 	QUnit.module("Callbacks", {
 		afterEach: destroyTable
 	});
@@ -1717,23 +1726,39 @@
 	});
 
 	QUnit.test("test _onTableResize function", function(assert) {
-		oTable._onTableResize();
-		var iOldAfterUpdateTableSizes = oTable._mTimeouts.afterUpdateTableSizes;
-		oTable.setRowHeight(40);
-		oTable._bInvalid = false;
-		oTable._bVariableRowHeightEnabled = true;
-		oTable._iRowHeightsDelta = 15;
-		oTable._onTableResize();
-		var iNewAfterUpdateTableSizes = oTable._mTimeouts.afterUpdateTableSizes;
-		assert.ok(iOldAfterUpdateTableSizes !== iNewAfterUpdateTableSizes, "Table must have been resized");
-		assert.ok(oTable._isVSbRequired());
+		oTable.setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Auto);
+		sap.ui.getCore().applyChanges();
+
+		var done = assert.async();
+		var $TableParent = oTable.$().parent();
+
+		window.setTimeout(function() {
+			var iOldTableContentHeight = oTable._collectTableSizes().tableCntHeight;
+			$TableParent.height(500);
+
+			window.setTimeout(function() {
+				var iNewTableContentHeight = oTable._collectTableSizes().tableCntHeight;
+
+				assert.notStrictEqual(iOldTableContentHeight, iNewTableContentHeight,
+						"The table content height has changed. (Old " + iOldTableContentHeight + ", New: " + iNewTableContentHeight + ")");
+				assert.ok(iOldTableContentHeight > iNewTableContentHeight, "The table content height has decreased");
+
+				$TableParent.height("");
+
+				done();
+			}, 500);
+		}, 500);
 	});
 
 	QUnit.test("test onfocusin function", function(assert) {
+		var oScrollExtension = oTable._getScrollExtension();
+		oScrollExtension._debug();
+
 		var oEvent = jQuery.Event("focus", {
 			target: oTable.getColumns()[5].getDomRef()
 		});
-		oTable.onfocusin(oEvent);
+
+		oScrollExtension._ExtensionDelegate.onfocusin(oEvent);
 		assert.ok(jQuery(oEvent.target).parent('.sapUiTableColHdrTr').length > 0, "Column header is in focus");
 	});
 

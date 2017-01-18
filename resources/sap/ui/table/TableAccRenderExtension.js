@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -36,7 +36,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension'],
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.3
+	 * @version 1.44.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccRenderExtension
@@ -72,8 +72,8 @@ sap.ui.define(['jquery.sap.global', './TableExtension'],
 			_writeAccText(oRm, sTableId, "ariacount");
 			// aria description for toggling the edit mode
 			_writeAccText(oRm, sTableId, "toggleedit", oBundle.getText("TBL_TOGGLE_EDIT_KEY"));
-			// aria description for toggling the edit mode
-			_writeAccText(oRm, sTableId, "ariaselectall", oBundle.getText("TBL_SELECT_ALL_KEY"));
+			// aria description for select all button
+			_writeAccText(oRm, sTableId, "ariaselectall", oBundle.getText("TBL_SELECT_ALL"));
 			// aria label for row headers
 			_writeAccText(oRm, sTableId, "ariarowheaderlabel", oBundle.getText("TBL_ROW_HEADER_LABEL"));
 			// aria label for group rows

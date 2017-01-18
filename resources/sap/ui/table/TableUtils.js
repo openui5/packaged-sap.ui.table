@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,7 +17,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.44.3
+	 * @version 1.44.5
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
@@ -91,7 +91,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 			}
 
 			var iSelectableRowCount = oTable._getSelectableRowCount();
-			return iSelectableRowCount > 0 && iSelectableRowCount === oTable.getSelectedIndices().length;
+			return iSelectableRowCount > 0 && iSelectableRowCount === oTable._getSelectedIndicesCount();
 		},
 
 		/**
@@ -154,6 +154,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 			}
 
 			function setSelectionState(iAbsoluteRowIndex) {
+				if (!oTable._isRowSelectable(iAbsoluteRowIndex)) {
+					return false;
+				}
+
 				oTable._iSourceRowIndex = iAbsoluteRowIndex; // To indicate that the selection was changed by user interaction.
 
 				if (oTable.isIndexSelected(iAbsoluteRowIndex)) {

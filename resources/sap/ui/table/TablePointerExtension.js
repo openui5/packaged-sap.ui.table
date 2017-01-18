@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,6 +8,8 @@
 sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/Device', 'sap/ui/core/Popup', 'jquery.sap.dom'],
 	function(jQuery, TableExtension, TableUtils, Device, Popup, jQueryDom) {
 	"use strict";
+
+	var KNOWNCLICKABLECONTROLS = ["sapMBtnBase", "sapMInputBase", "sapMLnk", "sapMSlt", "sapMCb", "sapMRI", "sapMSegBBtn", "sapUiIconPointer"];
 
 	/*
 	 * Provides utility functions used this extension
@@ -25,6 +27,36 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 				oPos = oEvent;
 			}
 			return {x: oPos.pageX, y: oPos.pageY};
+		},
+
+		/*
+		 * Returns true, when the given click event should be skipped because it happened on a
+		 * interactive control inside a table cell.
+		 */
+		_skipClick : function(oEvent, $Target, oCellInfo) {
+			if (oCellInfo.type != TableUtils.CELLTYPES.DATACELL) {
+				return false;
+			}
+
+			// Common preferred way to avoid handling the click event
+			if (oEvent.isMarked()) {
+				return true;
+			}
+
+			// Special handling for known clickable controls
+			var oClickedControl = $Target.control(0);
+			if (oClickedControl) {
+				var $ClickedControl = oClickedControl.$();
+				if ($ClickedControl.length) {
+					for (var i = 0; i < KNOWNCLICKABLECONTROLS.length; i++) {
+						if ($ClickedControl.hasClass(KNOWNCLICKABLECONTROLS[i])) {
+							return typeof oClickedControl.getEnabled === "function" ? oClickedControl.getEnabled() : true;
+						}
+					}
+				}
+			}
+
+			return false;
 		}
 
 	};
@@ -697,13 +729,12 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 			var oPointerExtension = this._getPointerExtension();
 			var $Cell = TableUtils.getCell(this, oEvent.target);
 			var oCellInfo = TableUtils.getCellInfo($Cell) || {};
+			var $Target = jQuery(oEvent.target);
 
 			// check whether item navigation should be reapplied from scratch
 			this._getKeyboardExtension().initItemNavigation();
 
 			if (oEvent.button === 0) { // left mouse button
-				var $Target = jQuery(oEvent.target);
-
 				if (oEvent.target === this.getDomRef("sb")) { // mousedown on interactive resize bar
 					InteractiveResizeHelper.initInteractiveResizing(this, oEvent);
 
@@ -748,6 +779,11 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 			}
 
 			if (oEvent.button === 2) { // Right mouse button.
+				if (ExtensionHelper._skipClick(oEvent, $Target, oCellInfo)) {
+					oPointerExtension._bShowDefaultMenu = true;
+					return;
+				}
+
 				if (oCellInfo.type === TableUtils.CELLTYPES.COLUMNHEADER) {
 					var oColumnHeaderCellInfo = TableUtils.getColumnHeaderCellInfo($Cell);
 					var oColumn = this.getColumns()[oColumnHeaderCellInfo.index];
@@ -756,6 +792,8 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 
 					if (!bMenuOpen) {
 						oPointerExtension._bShowMenu = true;
+					} else {
+						oPointerExtension._bHideMenu = true;
 					}
 
 				} else if (oCellInfo.type === TableUtils.CELLTYPES.DATACELL) {
@@ -764,6 +802,8 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 
 					if (!bMenuOpen || bMenuOpenedAtAnotherDataCell) {
 						oPointerExtension._bShowMenu = true;
+					} else {
+						oPointerExtension._bHideMenu = true;
 					}
 				}
 			}
@@ -818,6 +858,10 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 					delete oPointerExtension._bShowMenu;
 				}
 			} else {
+				if (ExtensionHelper._skipClick(oEvent, $Target, oCellInfo)) {
+					return;
+				}
+
 				// forward the event
 				if (!this._findAndfireCellEvent(this.fireCellClick, oEvent)) {
 					this._onSelect(oEvent);
@@ -828,26 +872,25 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 		},
 
 		oncontextmenu: function(oEvent) {
-			var $Cell = TableUtils.getCell(this, oEvent.target);
-			var oCellInfo = TableUtils.getCellInfo($Cell) || {};
+			var oPointerExtension = this._getPointerExtension();
 
-			if (oCellInfo.type === TableUtils.CELLTYPES.COLUMNHEADER ||
-				oCellInfo.type === TableUtils.CELLTYPES.DATACELL) {
+			if (oPointerExtension._bShowDefaultMenu) {
+				oEvent.setMarked("handledByPointerExtension");
+				delete oPointerExtension._bShowDefaultMenu;
 
+			} else if (oPointerExtension._bShowMenu) {
+				oEvent.setMarked("handledByPointerExtension");
 				oEvent.preventDefault(); // To prevent opening the default browser context menu.
+				TableUtils.Menu.openContextMenu(this, oEvent.target, false);
+				delete oPointerExtension._bShowMenu;
 
-				var oPointerExtension = this._getPointerExtension();
-				var bRightMouseClick = oEvent.button === 2;
-
-				if (oPointerExtension._bShowMenu && bRightMouseClick) {
-					TableUtils.Menu.openContextMenu(this, oEvent.target, false);
-					delete oPointerExtension._bShowMenu;
-				}
+			} else if (oPointerExtension._bHideMenu) {
+				oEvent.setMarked("handledByPointerExtension");
+				oEvent.preventDefault(); // To prevent opening the default browser context menu.
+				delete oPointerExtension._bHideMenu;
 			}
 		}
 	};
-
-
 
 	/**
 	 * Extension for sap.ui.table.Table which handles mouse and touch related things.
@@ -856,7 +899,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.3
+	 * @version 1.44.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension
@@ -919,6 +962,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 			this._ReorderHelper = ReorderHelper;
 			this._ExtensionDelegate = ExtensionDelegate;
 			this._RowHoverHandler = RowHoverHandler;
+			this._KNOWNCLICKABLECONTROLS = KNOWNCLICKABLECONTROLS;
 		},
 
 		/*

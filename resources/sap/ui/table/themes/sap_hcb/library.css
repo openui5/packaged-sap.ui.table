@@ -1,11 +1,11 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /* =========================== */
@@ -574,6 +574,13 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 }
 .sapUiTableCtrlCnt {
   box-sizing: border-box;
+  min-height: 2rem;
+}
+.sapUiSizeCozy .sapUiTableCtrlCnt {
+  min-height: 3rem;
+}
+.sapUiSizeCondensed .sapUiTableCtrlCnt {
+  min-height: 1.5rem;
 }
 .sapUiTableCtrl {
   position: relative;
@@ -1170,7 +1177,8 @@ html[dir=rtl] .sapUiTableTreeIcon.sapUiTableTreeIconNodeClosed::before {
   visibility: hidden;
   /* hidden cell content*/
 }
-.sapUiTableGroupMode.sapUiTableTouch .sapUiTableCtrlScroll .sapUiTableGroupHeader td:last-child {
+html.sap-tablet:not(.sap-desktop) .sapUiTableGroupMode .sapUiTableCtrlScroll .sapUiTableGroupHeader td:last-child,
+html.sap-phone .sapUiTableGroupMode .sapUiTableCtrlScroll .sapUiTableGroupHeader td:last-child {
   padding-right: 3rem;
 }
 .sapUiTableGroupMode .sapUiTableRowHdr::before {

@@ -1,18 +1,29 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides helper sap.ui.table.TableKeyboardDelegate2.
 sap.ui.define([
-	'jquery.sap.global', 'sap/ui/base/Object', './library', './TableUtils'
-], function(jQuery, BaseObject, library, TableUtils) {
+	'jquery.sap.global', 'sap/ui/base/Object', 'sap/ui/Device', './library', './TableUtils'
+], function(jQuery, BaseObject, Device, library, TableUtils) {
 	"use strict";
 
 	// Shortcuts
 	var CellType = TableUtils.CELLTYPES;
 	var SelectionMode = library.SelectionMode;
+
+	/**
+	 * Modifier key flags.
+	 *
+	 * @type {{CTRL: int, SHIFT: int, ALT: int}}
+	 */
+	var ModKey = {
+		CTRL: 1,
+		SHIFT: 2,
+		ALT: 4
+	};
 
 	// Workaround until (if ever) these values can be set by applications.
 	var HORIZONTAL_SCROLLING_PAGE_SIZE = 5;
@@ -25,7 +36,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.44.3
+	 * @version 1.44.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate2
@@ -75,12 +86,47 @@ sap.ui.define([
 	};
 
 	/**
+	 * Checks whether a keyboard event was triggered by a specific key combination.
+	 * On Mac systems the Meta key will be checked instead of the Ctrl key.
+	 *
+	 * @param {KeyboardEvent} oEvent The event object.
+	 * @param {int|string|null} key The key code integer, or character string, of the key which should have been pressed.
+	 * 								If an <code>integer</code> is passed, the value will be compared with the <code>keyCode</code> value.
+	 * 								If a <code>string</code> is passed, the value will be compared with the string representation of the <code>charCode</code>.
+	 * 								If no value is passed only the modifier keys will be checked.
+	 * @param {int} [modifierKeyMask=0] The modifier key bitmask.
+	 * @example
+	 * TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.A); // A
+	 * TableKeyboardDelegate._isKeyCombination(oEvent, "+"); // CharCode check: "+" and "NumpadPlus"
+	 * TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.A, ModKey.CTRL + ModKey.SHIFT); // Ctrl+Shift+A
+	 * TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.CTRL); // Ctrl (useful for simulated events like "sapdown")
+	 * @private
+	 */
+	TableKeyboardDelegate._isKeyCombination = function(oEvent, key, modifierKeyMask) {
+		if (modifierKeyMask == null) {
+			modifierKeyMask = 0;
+		}
+
+		var eventKey = typeof key === "string" ? String.fromCharCode(oEvent.charCode) : oEvent.keyCode;
+		var eventModifierKeyMask = 0;
+
+		eventModifierKeyMask |= (Device.os.macintosh ? oEvent.metaKey : oEvent.ctrlKey) && key !== jQuery.sap.KeyCodes.CONTROL ? ModKey.CTRL : 0;
+		eventModifierKeyMask |= oEvent.shiftKey && key !== jQuery.sap.KeyCodes.SHIFT ? ModKey.SHIFT : 0;
+		eventModifierKeyMask |= oEvent.altKey && key !== jQuery.sap.KeyCodes.ALT ? ModKey.ALT : 0;
+
+		var bValidKey = key == null || eventKey === key;
+		var bValidModifierKeys = modifierKeyMask === eventModifierKeyMask;
+
+		return bValidKey && bValidModifierKeys;
+	};
+
+	/**
 	 * Handler which is called when the Space or Enter keys are pressed.
 	 * Opening the column context menu is not handled here, because pressing the ENTER key triggers sapenter on keydown. The column header should
 	 * only be opened on keyup.
 	 *
 	 * @param {sap.ui.table.Table} oTable Instance of the table.
-	 * @param {jQuery.Event} oEvent The event object.
+	 * @param {UIEvent} oEvent The event object.
 	 * @private
 	 */
 	TableKeyboardDelegate._handleSpaceAndEnter = function(oTable, oEvent) {
@@ -91,7 +137,7 @@ sap.ui.define([
 			oTable._toggleSelectAll();
 
 		// Expand/Collapse group.
-		} else if (TableKeyboardDelegate._isElementGroupToggler(oEvent.target)) {
+		} else if (TableKeyboardDelegate._isElementGroupToggler(oTable, oEvent.target)) {
 			TableUtils.Grouping.toggleGroupHeaderByRef(oTable, oEvent.target);
 
 		// Select/Deselect row.
@@ -100,19 +146,23 @@ sap.ui.define([
 
 		} else if (oCellInfo.type === CellType.DATACELL) {
 
-			// Select/Deselect row.
-			if (TableUtils.isRowSelectionAllowed(oTable)) {
-				TableUtils.toggleRowSelection(oTable, oEvent.target);
+			// The action mode should only be entered when cellClick is not handled and no selection is performed.
+			var bEnterActionMode = !oTable.hasListeners("cellClick");
 
-			// Fire cell click event.
-			} else if (oTable.hasListeners("cellClick")) {
-				oTable._findAndfireCellEvent(oTable.fireCellClick, oEvent);
+			// Fire the cell click event.
+			if (!oTable._findAndfireCellEvent(oTable.fireCellClick, oEvent)) {
 
-			// Enter action mode.
-			} else {
+				// Select/Deselect row.
+				if (TableUtils.isRowSelectionAllowed(oTable)) {
+					TableUtils.toggleRowSelection(oTable, oEvent.target);
+					bEnterActionMode = false;
+				}
+			}
+
+			if (bEnterActionMode) {
 				var $InteractiveElements = TableKeyboardDelegate._getInteractiveElements(oEvent.target);
 				if ($InteractiveElements !== null) {
-					$InteractiveElements[0].focus();
+					oTable._getKeyboardExtension().setActionMode(true);
 				}
 			}
 		}
@@ -146,21 +196,21 @@ sap.ui.define([
 	 * @private
 	 */
 	TableKeyboardDelegate._focusRowSelector = function(oTable, iRowIndex) {
-		var $RowHeaderCell = jQuery(oTable.getDomRef("rowsel" + iRowIndex));
-		$RowHeaderCell.focus();
+		oTable._getKeyboardExtension()._setFocus(oTable.getDomRef("rowsel" + iRowIndex));
 	};
 
 	/**
 	 * Checks whether an element is in the list of elements which can allow expanding and collapsing a group, if a specific key is pressed on them.
 	 *
+	 * @param {sap.ui.table.Table} oTable Instance of the table.
 	 * @param {HTMLElement} oElement The element to check.
 	 * @returns {boolean} Returns <code>true</code>, if pressing a specific key on this element can cause a group to expand or to collapse.
 	 * @private
 	 */
-	TableKeyboardDelegate._isElementGroupToggler = function(oElement) {
+	TableKeyboardDelegate._isElementGroupToggler = function(oTable, oElement) {
 		return TableUtils.Grouping.isInGroupingRow(oElement) ||
-			(TableUtils.Grouping.isTreeMode(this) && oElement.classList.contains("sapUiTableTdFirst")) ||
-			oElement.classList.contains("sapUiTableTreeIcon");
+			   (TableUtils.Grouping.isTreeMode(oTable) && oElement.classList.contains("sapUiTableTdFirst")) ||
+			   oElement.classList.contains("sapUiTableTreeIcon");
 	};
 
 	/**
@@ -467,22 +517,22 @@ sap.ui.define([
 
 	/*
 	 * Handled keys:
-	 * Shift, F2, F4
+	 * Shift, F2, F4, Shift+F10, Ctrl+A, Ctrl+Shift+A
 	 */
 	TableKeyboardDelegate.prototype.onkeydown = function(oEvent) {
 		var oKeyboardExtension = this._getKeyboardExtension();
 
 		// Toggle the action mode by changing the focus between a data cell and its interactive controls.
-		if (oEvent.keyCode === jQuery.sap.KeyCodes.F2) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.F2)) {
 			var bIsInActionMode = oKeyboardExtension.isInActionMode();
 			oKeyboardExtension.setActionMode(!bIsInActionMode);
 			return;
 
 		// Expand/Collapse group.
-		} else if (oEvent.keyCode === jQuery.sap.KeyCodes.F4) {
-			if (TableKeyboardDelegate._isElementGroupToggler(oEvent.target)) {
-				TableUtils.Grouping.toggleGroupHeaderByRef(this, oEvent.target);
-			}
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.F4) &&
+				   TableKeyboardDelegate._isElementGroupToggler(this, oEvent.target)) {
+			TableUtils.Grouping.toggleGroupHeaderByRef(this, oEvent.target);
+			return;
 		}
 
 		if (this._getKeyboardExtension().isInActionMode()) {
@@ -493,10 +543,10 @@ sap.ui.define([
 		var oCellInfo = TableUtils.getCellInfo($Target) || {};
 
 		// Shift: Start the range selection mode.
-		if (oEvent.keyCode === jQuery.sap.KeyCodes.SHIFT &&
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.SHIFT) &&
 			this.getSelectionMode() === SelectionMode.MultiToggle &&
 			(oCellInfo.type === CellType.ROWHEADER && TableUtils.isRowSelectorSelectionAllowed(this) ||
-			oCellInfo.type === CellType.DATACELL && TableUtils.isRowSelectionAllowed(this))) {
+				oCellInfo.type === CellType.DATACELL && TableUtils.isRowSelectionAllowed(this))) {
 
 			var iFocusedRowIndex = TableUtils.getRowIndexOfFocusedCell(this);
 			var iDataRowIndex = this.getRows()[iFocusedRowIndex].getIndex();
@@ -511,29 +561,38 @@ sap.ui.define([
 			 */
 			this._oRangeSelection = {
 				startIndex: iDataRowIndex,
-				selected: this.isIndexSelected(iDataRowIndex)
+				selected:   this.isIndexSelected(iDataRowIndex)
 			};
 
 		// Ctrl+A: Select/Deselect all.
-		} else if ((oEvent.metaKey || oEvent.ctrlKey) && oEvent.keyCode === jQuery.sap.KeyCodes.A) {
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.A, ModKey.CTRL)) {
 			oEvent.preventDefault(); // To prevent full page text selection.
 
 			if ((oCellInfo.type === CellType.DATACELL ||
-				oCellInfo.type === CellType.ROWHEADER ||
-				oCellInfo.type === CellType.COLUMNROWHEADER)
+				 oCellInfo.type === CellType.ROWHEADER ||
+				 oCellInfo.type === CellType.COLUMNROWHEADER)
 				&& this.getSelectionMode() === SelectionMode.MultiToggle) {
 
 				this._toggleSelectAll();
 			}
 
+		// Ctrl+Shift+A: Deselect all.
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.A, ModKey.CTRL + ModKey.SHIFT)) {
+			if ((oCellInfo.type === CellType.DATACELL ||
+				 oCellInfo.type === CellType.ROWHEADER ||
+				 oCellInfo.type === CellType.COLUMNROWHEADER)) {
+
+				this.clearSelection();
+			}
+
 		// F4: Enter the action mode.
-		} else if (oEvent.keyCode === jQuery.sap.KeyCodes.F4) {
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.F4)) {
 			if (oCellInfo.type === CellType.DATACELL) {
 				oKeyboardExtension.setActionMode(true);
 			}
 
 		// F10: Open the context menu.
-		} else if (oEvent.shiftKey && oEvent.keyCode === jQuery.sap.KeyCodes.F10) {
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.F10, ModKey.SHIFT)) {
 			oEvent.preventDefault(); // To prevent opening the default browser context menu.
 			TableUtils.Menu.openContextMenu(this, oEvent.target, true);
 		}
@@ -558,17 +617,16 @@ sap.ui.define([
 		var oKeyboardExtension = this._getKeyboardExtension();
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target) || {};
 
-		if (String.fromCharCode(oEvent.charCode) === "+") {
-			if (TableKeyboardDelegate._isElementGroupToggler(oEvent.target)) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, "+")) {
+			if (TableKeyboardDelegate._isElementGroupToggler(this, oEvent.target)) {
 				TableUtils.Grouping.toggleGroupHeaderByRef(this, oEvent.target, true);
 
 			} else if (oCellInfo.type === CellType.DATACELL) {
 				oKeyboardExtension.setActionMode(true);
 			}
-		}
 
-		if (String.fromCharCode(oEvent.charCode) === "-") {
-			if (TableKeyboardDelegate._isElementGroupToggler(oEvent.target)) {
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, "-")) {
+			if (TableKeyboardDelegate._isElementGroupToggler(this, oEvent.target)) {
 				TableUtils.Grouping.toggleGroupHeaderByRef(this, oEvent.target, false);
 
 			} else if (oCellInfo.type === CellType.DATACELL) {
@@ -578,17 +636,14 @@ sap.ui.define([
 	};
 
 	TableKeyboardDelegate.prototype.oncontextmenu = function(oEvent) {
-		var bRightMouseClick = oEvent.button === 2;
-		if (bRightMouseClick) {
+		if (oEvent.isMarked("handledByPointerExtension")) {
 			return;
 		}
 
-		var oCellInfo = TableUtils.getCellInfo(oEvent.target);
+		oEvent.preventDefault(); // To prevent opening the default browser context menu.
 
-		if (oCellInfo !== null) {
-			// To prevent opening the default browser context menu when pressing the context menu key on a table cell.
-			oEvent.preventDefault();
-		}
+		var $Cell = TableUtils.getCell(this, oEvent.target);
+		var oCellInfo = TableUtils.getCellInfo($Cell) || {};
 
 		if (oCellInfo.type === CellType.COLUMNHEADER ||
 			oCellInfo.type === CellType.DATACELL) {
@@ -605,11 +660,11 @@ sap.ui.define([
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target) || {};
 
 		// End the range selection mode.
-		if (oEvent.keyCode === jQuery.sap.KeyCodes.SHIFT) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.SHIFT)) {
 			delete this._oRangeSelection;
 		}
 
-		if (oEvent.keyCode === jQuery.sap.KeyCodes.SPACE && !oEvent.shiftKey) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.SPACE)) {
 			oEvent.preventDefault(); // To prevent the browser window to scroll down.
 
 			// Open the column menu.
@@ -620,7 +675,7 @@ sap.ui.define([
 			}
 		}
 
-		if (oEvent.keyCode === jQuery.sap.KeyCodes.ENTER) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, jQuery.sap.KeyCodes.ENTER)) {
 			// Open the column menu.
 			if (oCellInfo.type === CellType.COLUMNHEADER) {
 				TableUtils.Menu.openContextMenu(this, oEvent.target, true);
@@ -707,7 +762,7 @@ sap.ui.define([
 			}
 
 		} else if (oCellInfo.type === CellType.COLUMNHEADER ||
-			oCellInfo.type === CellType.COLUMNROWHEADER) {
+				   oCellInfo.type === CellType.COLUMNROWHEADER) {
 
 			if (TableUtils.isNoDataVisible(this)) {
 				this.$("noDataCnt").focus();
@@ -729,7 +784,7 @@ sap.ui.define([
 			if ($DataCell !== null) {
 				// The target is a non-interactive element inside a data cell. We are not in action mode, so focus the cell.
 				oEvent.preventDefault();
-				$DataCell.focus().select();
+				$DataCell.focus();
 			}
 		}
 	};
@@ -815,8 +870,8 @@ sap.ui.define([
 			}
 
 		} else if (oCellInfo.type === CellType.DATACELL ||
-			oCellInfo.type === CellType.ROWHEADER ||
-			oEvent.target === this.getDomRef("noDataCnt")) {
+				   oCellInfo.type === CellType.ROWHEADER ||
+				   oEvent.target === this.getDomRef("noDataCnt")) {
 
 			if (this.getColumnHeaderVisible()) {
 				TableKeyboardDelegate._setFocusOnColumnHeaderOfLastFocusedDataCell(this, oEvent);
@@ -833,7 +888,7 @@ sap.ui.define([
 			if ($DataCell !== null) {
 				// The target is a non-interactive element inside a data cell. We are not in action mode, so focus the cell.
 				oEvent.preventDefault();
-				$DataCell.focus().select();
+				$DataCell.focus();
 			}
 		}
 	};
@@ -868,10 +923,10 @@ sap.ui.define([
 				}
 
 			} else if (oCellInfo.type === CellType.COLUMNROWHEADER && iHeaderRowCount > 1) {
-				// Special logic needed because for the SelectAll cell multiple elements are added to the item navigation, if the column header has
-				// multiple rows.
+				// Special logic needed because if the column header has multiple rows,
+				// for the SelectAll cell multiple elements are added to the item navigation.
 				oEvent.setMarked("sapUiTableSkipItemNavigation");
-				//Focus the first row header
+				// Focus the first row header.
 				TableUtils.focusItem(this, iHeaderRowCount * (TableUtils.getVisibleColumnCount(this) + 1/*Row Headers*/), oEvent);
 			}
 		}
@@ -880,11 +935,12 @@ sap.ui.define([
 	TableKeyboardDelegate.prototype.onsapdownmodifiers = function(oEvent) {
 		var oKeyboardExtension = this._getKeyboardExtension();
 
-		if (oEvent.altKey) {
-			if (TableKeyboardDelegate._isElementGroupToggler(oEvent.target)) {
-				TableUtils.Grouping.toggleGroupHeaderByRef(this, oEvent.target, true);
-			}
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.ALT) &&
+			TableKeyboardDelegate._isElementGroupToggler(this, oEvent.target)) {
+
 			oEvent.setMarked("sapUiTableSkipItemNavigation");
+			TableUtils.Grouping.toggleGroupHeaderByRef(this, oEvent.target, true);
+			return;
 		}
 
 		if (oKeyboardExtension.isInActionMode()) {
@@ -893,8 +949,10 @@ sap.ui.define([
 
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target) || {};
 
-		if (oEvent.shiftKey) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.SHIFT)) {
 			oEvent.preventDefault(); // To avoid text selection flickering.
+
+			/* Range Selection */
 
 			if (oCellInfo.type === CellType.ROWHEADER ||
 				oCellInfo.type === CellType.DATACELL) {
@@ -937,7 +995,7 @@ sap.ui.define([
 			}
 		}
 
-		if (oEvent.altKey) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.ALT)) {
 			if (oCellInfo.type === CellType.DATACELL) {
 				oKeyboardExtension.setActionMode(true);
 			}
@@ -957,6 +1015,7 @@ sap.ui.define([
 
 			if (TableUtils.isFirstScrollableRow(this, oEvent.target)) {
 				var bScrolled = this._getScrollExtension().scroll(false, false, true);
+
 				if (bScrolled) {
 					oEvent.setMarked("sapUiTableSkipItemNavigation");
 				}
@@ -967,11 +1026,12 @@ sap.ui.define([
 	TableKeyboardDelegate.prototype.onsapupmodifiers = function(oEvent) {
 		var oKeyboardExtension = this._getKeyboardExtension();
 
-		if (oEvent.altKey) {
-			if (TableKeyboardDelegate._isElementGroupToggler(oEvent.target)) {
-				TableUtils.Grouping.toggleGroupHeaderByRef(this, oEvent.target, false);
-			}
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.ALT) &&
+			TableKeyboardDelegate._isElementGroupToggler(this, oEvent.target)) {
+
 			oEvent.setMarked("sapUiTableSkipItemNavigation");
+			TableUtils.Grouping.toggleGroupHeaderByRef(this, oEvent.target, false);
+			return;
 		}
 
 		if (oKeyboardExtension.isInActionMode()) {
@@ -980,8 +1040,10 @@ sap.ui.define([
 
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target) || {};
 
-		if (oEvent.shiftKey) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.SHIFT)) {
 			oEvent.preventDefault(); // To avoid text selection flickering.
+
+			/* Range Selection */
 
 			if (oCellInfo.type === CellType.ROWHEADER ||
 				oCellInfo.type === CellType.DATACELL) {
@@ -1025,7 +1087,7 @@ sap.ui.define([
 			}
 		}
 
-		if (oEvent.altKey) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.ALT)) {
 			if (oCellInfo.type === CellType.DATACELL) {
 				oKeyboardExtension.setActionMode(true);
 			}
@@ -1041,7 +1103,7 @@ sap.ui.define([
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target) || {};
 		var bIsRTL = sap.ui.getCore().getConfiguration().getRTL();
 
-		if (oEvent.shiftKey) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.SHIFT)) {
 			oEvent.preventDefault(); // To avoid text selection flickering.
 
 			/* Range Selection */
@@ -1092,7 +1154,7 @@ sap.ui.define([
 				oEvent.setMarked("sapUiTableSkipItemNavigation");
 			}
 
-		} else if (oEvent.ctrlKey || oEvent.metaKey) {
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.CTRL)) {
 
 			/* Column Reordering */
 
@@ -1115,7 +1177,7 @@ sap.ui.define([
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target) || {};
 		var bIsRTL = sap.ui.getCore().getConfiguration().getRTL();
 
-		if (oEvent.shiftKey) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.SHIFT)) {
 			oEvent.preventDefault(); // To avoid text selection flickering.
 
 			/* Range Selection */
@@ -1155,7 +1217,7 @@ sap.ui.define([
 				oEvent.setMarked("sapUiTableSkipItemNavigation");
 			}
 
-		} else if (oEvent.ctrlKey || oEvent.metaKey) {
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.CTRL)) {
 
 			/* Column Reordering */
 
@@ -1265,7 +1327,7 @@ sap.ui.define([
 			return;
 		}
 
-		if (oEvent.metaKey || oEvent.ctrlKey) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.CTRL)) {
 			oEvent.preventDefault(); // To prevent the browser page from scrolling to the top.
 			var oCellInfo = TableUtils.getCellInfo(oEvent.target) || {};
 
@@ -1318,7 +1380,7 @@ sap.ui.define([
 			return;
 		}
 
-		if (oEvent.metaKey || oEvent.ctrlKey) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.CTRL)) {
 			oEvent.preventDefault(); // To prevent the browser page from scrolling to the bottom.
 			var oCellInfo = TableUtils.getCellInfo(oEvent.target) || {};
 
@@ -1523,7 +1585,7 @@ sap.ui.define([
 			return;
 		}
 
-		if (oEvent.altKey) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.ALT)) {
 			var oCellInfo = TableUtils.getCellInfo(oEvent.target) || {};
 
 			if (oCellInfo.type === CellType.DATACELL ||
@@ -1562,7 +1624,7 @@ sap.ui.define([
 			return;
 		}
 
-		if (oEvent.altKey) {
+		if (TableKeyboardDelegate._isKeyCombination(oEvent, null, ModKey.ALT)) {
 			var oCellInfo = TableUtils.getCellInfo(oEvent.target) || {};
 
 			if (oCellInfo.type === CellType.DATACELL ||

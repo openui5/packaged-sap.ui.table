@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Grouping...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.44.3
+	 * @version 1.44.5
 	 * @namespace
 	 * @name sap.ui.table.TableGrouping
 	 * @private
@@ -125,7 +125,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 			var oBinding = oTable.getBinding("rows");
 			if (oBinding) {
 				var bIsExpanded = oBinding.isExpanded(iRowIndex);
-				if (bExpand === true && !bIsExpanded) { // Force expand
+				if (oBinding.nodeHasChildren && !oBinding.nodeHasChildren(oBinding.getNodeByIndex(iRowIndex))) {
+					return null; // a leaf can't be expanded or collapsed
+				} else if (bExpand === true && !bIsExpanded) { // Force expand
 					oBinding.expand(iRowIndex);
 				} else if (bExpand === false && bIsExpanded) { // Force collapse
 					oBinding.collapse(iRowIndex);

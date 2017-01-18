@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -190,7 +190,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/It
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.3
+	 * @version 1.44.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardExtension
@@ -394,8 +394,40 @@ sap.ui.define(['jquery.sap.global', './TableExtension', 'sap/ui/core/delegate/It
 	 */
 	TableKeyboardExtension.prototype._setSilentFocus = function(oElement) {
 		this._bIgnoreFocusIn = true;
-		oElement.focus();
+		this._setFocus(oElement);
 		this._bIgnoreFocusIn = false;
+	};
+
+
+	/**
+	 * Sets the focus to the specified element.
+	 *
+	 * @param {jQuery|HTMLElement} oElement The element to be focused.
+	 * @protected (Only to be used by the keyboard delegate)
+	 */
+	TableKeyboardExtension.prototype._setFocus = function(oElement) {
+		if (!oElement) {
+			return;
+		}
+
+		var oTable = this.getTable();
+		var oCellInfo = TableUtils.getCellInfo(oElement) || {};
+		if (oCellInfo.type && oTable) {
+			var $Elem = jQuery(oElement);
+			if ($Elem.attr("tabindex") != "0") {
+				var oItemNav = oTable._getItemNavigation();
+				if (oItemNav && oItemNav.aItemDomRefs) {
+					for (var i = 0; i < oItemNav.aItemDomRefs.length; i++) {
+						if (oItemNav.aItemDomRefs[i]) {
+							oItemNav.aItemDomRefs[i].setAttribute("tabindex", "-1");
+						}
+					}
+				}
+				$Elem.attr("tabindex", "0");
+			}
+		}
+
+		oElement.focus();
 	};
 
 
