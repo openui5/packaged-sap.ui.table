@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.40.16
+	 * @version 1.40.17
 	 *
 	 * @constructor
 	 * @public
@@ -1162,6 +1162,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 		// update Vertical Scrollbar before collection because it changes sizes
 		this._toggleVSb();
+		this._updateVSbTop();
 
 		var oTableSizes = this._collectTableSizes(aRowHeights);
 
@@ -2185,8 +2186,16 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			iScrollTop = Math.ceil(this.getFirstVisibleRow() * this._getScrollingPixelsForRow());
 		}
 
+		this._updateVSbTop();
+
+		oVSb.scrollTop = iScrollTop;
+	};
+
+	Table.prototype._updateVSbTop = function() {
+		var oVSb = this.getDomRef(SharedDomRef.VerticalScrollBar);
 		var oTableCCnt = this.getDomRef("tableCCnt");
-		if (oTableCCnt) {
+
+		if (oVSb && oTableCCnt) {
 			var iTop = oTableCCnt.offsetTop;
 			var iFixedRows = this.getFixedRowCount();
 			if (iFixedRows > 0) {
@@ -2194,8 +2203,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			}
 			oVSb.style.top = iTop + "px";
 		}
-
-		oVSb.scrollTop = iScrollTop;
 	};
 
 	/**
