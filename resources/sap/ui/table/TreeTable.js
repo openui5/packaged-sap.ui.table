@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.46.2
+	 * @version 1.46.3
 	 *
 	 * @constructor
 	 * @public
@@ -31,9 +31,23 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		properties : {
 
 			/**
-			 * Flag to enable or disable expanding of first level.
+			 * Specifies whether the first level is expanded.
+			 * @deprecated As of version 1.46.3, replaced by the corresponding binding parameter <code>numberOfExpandedLevels</code>.
+			 *
+			 * Example:
+			 * <pre>
+			 *   oTable.bindRows({
+			 *      path: "...",
+			 *      parameters: {
+			 *         numberOfExpandedLevels: 1
+			 *      }
+			 *   });
+			 * </pre>
+			 *
+			 * The value of the property is only taken into account if no parameter <code>numberOfExpandedLevels</code> is given in the binding information.
+			 * Changes to this property after the table is bound do not have any effect unless an explicit (re-)bind of the <code>rows</code> aggregation is done.
 			 */
-			expandFirstLevel : {type : "boolean", defaultValue : false},
+			expandFirstLevel : {type : "boolean", defaultValue : false, deprecated: true},
 
 			/**
 			 * If group mode is enabled nodes with subitems are rendered as if they were group headers.
@@ -507,7 +521,11 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 		//The OData TBA exposes a selectAll function
 		var oBinding = this.getBinding("rows");
 		if (oBinding.selectAll) {
-			this.$("selall").attr('title',this._oResBundle.getText("TBL_DESELECT_ALL")).removeClass("sapUiTableSelAll");
+			var $SelAll = this.$("selall");
+			$SelAll.removeClass("sapUiTableSelAll");
+			if (this._getShowStandardTooltips()) {
+				$SelAll.attr('title', this._oResBundle.getText("TBL_DESELECT_ALL"));
+			}
 			this._getAccExtension().setSelectAllState(true);
 			oBinding.selectAll();
 		} else {

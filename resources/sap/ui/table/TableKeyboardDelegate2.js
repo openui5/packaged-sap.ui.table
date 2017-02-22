@@ -36,7 +36,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.46.2
+	 * @version 1.46.3
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate2
@@ -187,6 +187,42 @@ sap.ui.define([
 		if (iTargetIndex != null) {
 			TableUtils.Column.moveColumnTo(oColumn, iTargetIndex);
 		}
+	};
+
+	/**
+	 * Returns the visible and grouped columns of a table.
+	 *
+	 * @param {sap.ui.table.Table} oTable Instance of the table.
+	 * @returns {sap.ui.table.Column[]} Returns the visible and grouped columns of a table.
+	 * @private
+	 */
+	TableKeyboardDelegate._getVisibleAndGroupedColumns = function(oTable) {
+		return oTable.getColumns().filter(function(oColumn){
+			return oColumn.getVisible() || oColumn.getGrouped();
+		});
+	};
+
+	/**
+	 * Returns the index of the column in the array of visible and grouped columns
+	 *
+	 * @param {sap.ui.table.Table} oTable Instance of the table.
+	 * @param {sap.ui.table.Column} oColumn Instance of the table column to get the index for.
+	 * @returns {int} Returns the index of the column in the list of visible and grouped columns.
+	 * 				  Returns -1 if the column is not in this list.
+	 * @private
+	 */
+	TableKeyboardDelegate._getColumnIndexInVisibleAndGroupedColumns = function(oTable, oColumn) {
+		var aVisibleAndGroupedColumns = TableKeyboardDelegate._getVisibleAndGroupedColumns(oTable);
+
+		for (var i = 0; i < aVisibleAndGroupedColumns.length; i++) {
+			var oVisibleOrGroupedColumn = aVisibleAndGroupedColumns[i];
+
+			if (oVisibleOrGroupedColumn === oColumn) {
+				return i;
+			}
+		}
+
+		return -1;
 	};
 
 	/**
@@ -359,6 +395,8 @@ sap.ui.define([
 		var oDataCellInfo;
 		var oRow;
 		var aCells;
+		var oColumn;
+		var iColumnIndexInCellsAggregation;
 		var iColumnIndexToStartSearch;
 
 		if ($RowActionCell !== null) {
@@ -376,14 +414,18 @@ sap.ui.define([
 			aCells = oRow.getCells();
 			$DataCell = TableUtils.getParentDataCell(oTable, aCells[aCells.length - 1].getDomRef());
 			oDataCellInfo = TableUtils.getDataCellInfo(oTable, $DataCell);
-			iColumnIndexToStartSearch = oDataCellInfo.columnIndex;
+			oColumn = oTable.getColumns()[oDataCellInfo.columnIndex];
+			iColumnIndexInCellsAggregation = TableKeyboardDelegate._getColumnIndexInVisibleAndGroupedColumns(oTable, oColumn);
+			iColumnIndexToStartSearch = iColumnIndexInCellsAggregation;
 		} else {
 			// Start to look for the previous interactive element from the cell the interactive element is inside.
 			$DataCell = TableUtils.getParentDataCell(oTable, oElement);
 			oDataCellInfo = TableUtils.getDataCellInfo(oTable, $DataCell);
 			oRow = oTable.getRows()[oDataCellInfo.rowIndex];
 			aCells = oRow.getCells();
-			iColumnIndexToStartSearch = oDataCellInfo.columnIndex - 1;
+			oColumn = oTable.getColumns()[oDataCellInfo.columnIndex];
+			iColumnIndexInCellsAggregation = TableKeyboardDelegate._getColumnIndexInVisibleAndGroupedColumns(oTable, oColumn);
+			iColumnIndexToStartSearch = iColumnIndexInCellsAggregation - 1;
 
 			// Search for the previous interactive element in the current cell.
 			$InteractiveElements = this._getInteractiveElements($DataCell);
@@ -440,7 +482,9 @@ sap.ui.define([
 			}
 
 			// Search in the next cells.
-			for (var i = oDataCellInfo.columnIndex + 1; i < aCells.length; i++) {
+			var oColumn = oTable.getColumns()[oDataCellInfo.columnIndex];
+			var iColumnIndexInCellsAggregation = TableKeyboardDelegate._getColumnIndexInVisibleAndGroupedColumns(oTable, oColumn);
+			for (var i = iColumnIndexInCellsAggregation + 1; i < aCells.length; i++) {
 				var oCellDomRef = aCells[i].getDomRef();
 				$DataCell = TableUtils.getParentDataCell(oTable, oCellDomRef);
 				$InteractiveElements = this._getInteractiveElements($DataCell);
@@ -1021,8 +1065,11 @@ sap.ui.define([
 		function focusCell() {
 			var cell = $cell && $cell[0];
 			if (cell) {
-				var interactiveElements = bActive ? TableKeyboardDelegate._getInteractiveElements(cell) || [] : [];
-				(interactiveElements[0] || cell).focus();
+				var interactiveElement = (bActive ? TableKeyboardDelegate._getInteractiveElements(cell) || [] : [])[0];
+				var keyboardExtension = oTable._getKeyboardExtension();
+				// skip additional focus handling in KeyboardExtension:
+				keyboardExtension._actionMode = !!interactiveElement;
+				keyboardExtension._setSilentFocus(interactiveElement || cell);
 			}
 		}
 		if (sCellType === CellType.ROWHEADER) {

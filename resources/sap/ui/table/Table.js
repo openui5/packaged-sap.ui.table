@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.46.2
+	 * @version 1.46.3
 	 *
 	 * @constructor
 	 * @public
@@ -618,6 +618,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		this._bBindingLengthChanged = false;
 		this._bRowAggregationInvalid = true;
 		this._mTimeouts = {};
+
+		// TBD: Tooltips are not desired by Visual Design, discuss whether to switch it off by default
+		this._bHideStandardTooltips = false;
 
 		/**
 		 * Updates the row binding contexts and synchronizes the row heights. This function will be called by updateRows
@@ -1261,8 +1264,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				if (TableUtils.isVariableWidth(colWidth) && !TableUtils.isFixedColumn(oTable, col.getIndex())) {
 					aColHeaders = oTableRef.querySelectorAll('th[data-sap-ui-colid="' + col.getId() + '"]');
 					colHeader = aColHeaders[bColumnHeaderVisible ? 0 : 1]; // if column headers have display:none, use data table
-					domWidth = colHeader && colHeader.offsetWidth;
-					if (domWidth) {
+					domWidth = colHeader ? colHeader.offsetWidth : null;
+					if (domWidth !== null) {
 						if (domWidth <= minWidth) {
 							return {headers : aColHeaders, newWidth: calcNewWidth(domWidth, minWidth)};
 						} else if (colHeader && colHeader.style.width != colWidth) {
@@ -1968,6 +1971,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			if (sReason == ChangeReason.Filter || sReason == ChangeReason.Sort) {
 				sUpdateReason = "skipNoDataUpdate";
 				this.setFirstVisibleRow(0);
+			} else if (sReason == ChangeReason.Refresh) {
+				sUpdateReason = "skipNoDataUpdate";
 			}
 			this._updateBindingContexts(true, iRowsToDisplay, sUpdateReason);
 		}
@@ -2439,10 +2444,20 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (TableUtils.isVariableRowHeightEnabled(this) && this._getRowCount() < this.getVisibleRowCount()) {
 			return 0;
 		} else {
+			// If there are 2 scrollable rows of 50 pixels height, the scrollbar should have a scroll range of 100 pixels. In zoomed in Chrome,
+			// the heights of elements can be slightly lower (below 1 pixel) than their original value, so the scroll range could be only 99.2 pixels.
+			// In this case the scrolling logic would not determine, that the rows should be scrolled to the end.
+			// Therefore we need to check if the scroll position is at its maximum by reading the DOM.
+			if (Device.browser.chrome && window.devicePixelRatio != 1) {
+				var oVSb = this._getScrollExtension().getVerticalScrollbar();
+				if (oVSb != null && oVSb.scrollTop >= oVSb.scrollHeight - oVSb.clientHeight) {
+					return this._getMaxRowIndex();
+				}
+			}
+
 			var iFirstVisibleRow = Math.floor(iScrollTop / this._getScrollingPixelsForRow());
 			return Math.min(this._getMaxRowIndex(), iFirstVisibleRow);
 		}
-		return 0;
 	};
 
 	/**
@@ -2930,10 +2945,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			}
 			$SelAll.toggleClass("sapUiTableSelAll", bClearSelectAll);
 			this._getAccExtension().setSelectAllState(!bClearSelectAll);
-			if (bClearSelectAll) {
+			if (bClearSelectAll && this._getShowStandardTooltips()) {
 				this.$("selall").attr('title', this._oResBundle.getText("TBL_SELECT_ALL"));
 			}
 		}
+	};
+
+	/**
+	 * Returns <code>true</code>, if the standard tooltips (e.g. for selection should be shown).
+	 * @private
+	 */
+	Table.prototype._getShowStandardTooltips = function() {
+		return !this._bHideStandardTooltips;
 	};
 
 
@@ -3041,7 +3064,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		}
 		var oBinding = this.getBinding("rows");
 		if (oBinding) {
-			this.$("selall").attr('title', this._oResBundle.getText("TBL_DESELECT_ALL")).removeClass("sapUiTableSelAll");
+			var $SelAll = this.$("selall");
+			$SelAll.removeClass("sapUiTableSelAll");
+			if (this._getShowStandardTooltips()) {
+				$SelAll.attr('title', this._oResBundle.getText("TBL_DESELECT_ALL"));
+			}
 			this._getAccExtension().setSelectAllState(true);
 			this._oSelection.selectAll((oBinding.getLength() || 0) - 1);
 		}

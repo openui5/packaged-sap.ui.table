@@ -59,6 +59,17 @@ sap.ui.define(['./library', 'jquery.sap.global', './TableExtension', './TableUti
 				}
 			}
 
+			var bHasSelection = false;
+			if (window.getSelection) {
+				var oSelection = window.getSelection();
+				bHasSelection = oSelection.rangeCount ? !oSelection.getRangeAt(0).collapsed : false;
+			}
+
+			if (bHasSelection) {
+				jQuery.sap.log.debug("DOM Selection detected -> Click event on table skipped, Target: " + oEvent.target);
+				return true;
+			}
+
 			return false;
 		},
 
@@ -889,7 +900,7 @@ sap.ui.define(['./library', 'jquery.sap.global', './TableExtension', './TableUti
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.46.2
+	 * @version 1.46.3
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension

@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Grouping...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.46.2
+	 * @version 1.46.3
 	 * @namespace
 	 * @name sap.ui.table.TableGrouping
 	 * @private
@@ -329,7 +329,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Sorter'
 				jQuery.sap.byId(oRow.getId() + "-groupHeader")
 					.toggleClass("sapUiTableGroupIconOpen", bChildren && bExpanded)
 					.toggleClass("sapUiTableGroupIconClosed", bChildren && !bExpanded)
-					.attr("title", sGroupHeaderText || null)
+					.attr("title", oTable._getShowStandardTooltips() && sGroupHeaderText ? sGroupHeaderText : null)
 					.text(sGroupHeaderText || "");
 
 				TableGrouping._setIndent(oTable, $Row, $RowHdr, TableGrouping._calcGroupIndent(oTable, iLevel, bChildren));
