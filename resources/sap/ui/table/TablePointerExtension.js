@@ -20,13 +20,32 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 		 * Returns the pageX and pageY position of the given mouse/touch event.
 		 */
 		_getEventPosition : function(oEvent, oTable) {
-			var oPos;
-			if (oTable._isTouchMode(oEvent)) {
-				oPos = oEvent.targetTouches ? oEvent.targetTouches[0] : oEvent.originalEvent.targetTouches[0];
-			} else {
-				oPos = oEvent;
+			var oPosition;
+
+			function getTouchObject(oTouchEvent) {
+				if (!oTable._isTouchEvent(oTouchEvent)) {
+					return null;
+				}
+
+				var aTouchEventObjectNames = ["touches", "targetTouches", "changedTouches"];
+
+				for (var i = 0; i < aTouchEventObjectNames.length; i++) {
+					var sTouchEventObjectName = aTouchEventObjectNames[i];
+
+					if (oEvent[sTouchEventObjectName] && oEvent[sTouchEventObjectName][0]) {
+						return oEvent[sTouchEventObjectName][0];
+					}
+					if (oEvent.originalEvent[sTouchEventObjectName] && oEvent.originalEvent[sTouchEventObjectName][0]) {
+						return oEvent.originalEvent[sTouchEventObjectName][0];
+					}
+				}
+
+				return null;
 			}
-			return {x: oPos.pageX, y: oPos.pageY};
+
+			oPosition = getTouchObject(oEvent) || oEvent;
+
+			return {x: oPosition.pageX, y: oPosition.pageY};
 		},
 
 		/*
@@ -78,7 +97,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 			oTable.$().toggleClass("sapUiTableResizing", true);
 
 			var $Document = jQuery(document),
-				bTouch = oTable._isTouchMode(oEvent);
+				bTouch = oTable._isTouchEvent(oEvent);
 
 			oTable._$colResize = oTable.$("rsz");
 			oTable._iColumnResizeStart = ExtensionHelper._getEventPosition(oEvent, oTable).x;
@@ -106,7 +125,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 				return;
 			}
 
-			if (this._isTouchMode(oEvent)) {
+			if (this._isTouchEvent(oEvent)) {
 				oEvent.stopPropagation();
 				oEvent.preventDefault();
 			}
@@ -371,7 +390,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 				offset = $Splitter.offset(),
 				height = $Splitter.height(),
 				width = $Splitter.width(),
-				bTouch = oTable._isTouchMode(oEvent);
+				bTouch = oTable._isTouchEvent(oEvent);
 
 			// Fix for IE text selection while dragging
 			$Body.bind("selectstart", InteractiveResizeHelper.onSelectStartWhileInteractiveResizing);
@@ -487,7 +506,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 
 			// Bind the event handlers
 			var $Document = jQuery(document),
-				bTouch = oTable._isTouchMode(oEvent);
+				bTouch = oTable._isTouchEvent(oEvent);
 			$Document.bind((bTouch ? "touchend" : "mouseup") + ".sapUiColumnMove", ReorderHelper.exitReordering.bind(oTable));
 			$Document.bind((bTouch ? "touchmove" : "mousemove") + ".sapUiColumnMove", ReorderHelper.onMouseMoveWhileReordering.bind(oTable));
 		},
@@ -508,7 +527,9 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 
 			var oPos = ReorderHelper.findColumnForPosition(this, iLocationX);
 
-			if ( !oPos.id ) { //Special handling for dummy column (in case the other columns does not occupy the whole space)
+			if ( !oPos || !oPos.id ) {
+				//Special handling for dummy column (in case the other columns does not occupy the whole space),
+				//row selectors and row actions
 				this._iNewColPos = iOldColPos;
 				return;
 			}
@@ -761,7 +782,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 					}
 
 					if (this.getEnableColumnReordering()
-						&& !(this._isTouchMode(oEvent) && $Target.hasClass("sapUiTableColDropDown")) /*Target is not the mobile column menu button*/) {
+						&& !(this._isTouchEvent(oEvent) && $Target.hasClass("sapUiTableColDropDown")) /*Target is not the mobile column menu button*/) {
 						// Start column reordering
 						this._getPointerExtension().doReorderColumn(iIndex, oEvent);
 					}
@@ -899,7 +920,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils', 'sap/ui/
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.9
+	 * @version 1.44.10
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension
