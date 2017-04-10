@@ -83,7 +83,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 					return;
 				}
 
-				ACCInfoHelper._flatten(oChild.getAccessibilityInfo(), oTargetInfo, oBundle, iLevel + 1);
+				var oChildInfo = oChild.getAccessibilityInfo();
+				if (oChildInfo) {
+					ACCInfoHelper._flatten(oChildInfo, oTargetInfo, oBundle, iLevel + 1);
+				}
 			});
 
 			if (iLevel == 0) {
@@ -720,7 +723,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.10
+	 * @version 1.44.11
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension
