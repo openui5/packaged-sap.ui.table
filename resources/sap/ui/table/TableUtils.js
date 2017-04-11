@@ -9,9 +9,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 	function(jQuery, Control, ResizeHandler, TableGrouping, TableColumnUtils, TableMenuUtils, Device, library) {
 	"use strict";
 
-	// shortcuts
-	var SelectionBehavior = library.SelectionBehavior,
-		SelectionMode = library.SelectionMode;
+	// Shortcuts
+	var SelectionBehavior = library.SelectionBehavior;
+	var SelectionMode = library.SelectionMode;
+
+	/**
+	 * The border width of a row in pixels.
+	 *
+	 * @type {int}
+	 * @constant
+	 */
+	var ROW_BORDER_WIDTH = 1;
 
 	/*
 	 * @see TableUtils#getParentRowActionCell
@@ -36,7 +44,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.46.5
+	 * @version 1.46.6
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
@@ -58,11 +66,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 			COLUMNROWHEADER : "COLUMNROWHEADER" // select all row selector (top left cell)
 		},
 
-		CONTENT_DENSITY_ROW_HEIGHTS : {
-			sapUiSizeCondensed : 24,
-			sapUiSizeCompact : 32,
-			sapUiSizeCozy : 48,
-			undefined : 32
+		/**
+		 * The default row heights in pixels for the different content densities.
+		 *
+		 * @type {DefaultRowHeight}
+		 * @typedef {Object} DefaultRowHeight
+		 * @property {int} sapUiSizeCondensed - The default height of a row in pixels in condensed content density.
+		 * @property {int} sapUiSizeCompact - The default height of a row in pixels in compact content density.
+		 * @property {int} sapUiSizeCozy - The default height of a row in pixels in cozy content density.
+		 * @property {int} undefined - The default height of a row in pixels in case no content density information is available.
+		 */
+		DEFAULT_ROW_HEIGHT: {
+			sapUiSizeCondensed : 24 + ROW_BORDER_WIDTH,
+			sapUiSizeCompact : 32 + ROW_BORDER_WIDTH,
+			sapUiSizeCozy : 48 + ROW_BORDER_WIDTH,
+			undefined : 32 + ROW_BORDER_WIDTH
 		},
 
 		/**
@@ -157,6 +175,22 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 			}
 
 			return !bHasData;
+		},
+
+		/**
+		 * Returns whether the busy indicator is visible. It is considered as visible when the busy indicator element exists in the DOM as
+		 * a child of the table element. It is not checked whether the indicator is actually visible on the screen.
+		 *
+		 * @param {sap.ui.table.Table} oTable Instance of the table
+		 * @returns {boolean} Returns <code>true</code>, if the busy indicator is visible.
+		 * @private
+		 */
+		isBusyIndicatorVisible: function(oTable) {
+			if (oTable == null || oTable.getDomRef() == null) {
+				return false;
+			}
+
+			return oTable.getDomRef().querySelector(".sapUiLocalBusyIndicator") != null;
 		},
 
 		/**
@@ -581,32 +615,34 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 		 * @private
 		 */
 		getRowColCell : function(oTable, iRowIdx, iColIdx, bIdxInColumnAgg) {
-			var oRow = oTable.getRows()[iRowIdx];
+			var oRow = iRowIdx >= 0 && iRowIdx < oTable.getRows().length ? oTable.getRows()[iRowIdx] : null;
 			var aColumns = bIdxInColumnAgg ? oTable.getColumns() : oTable._getVisibleColumns();
-			var oColumn = aColumns[iColIdx];
+			var oColumn = iColIdx >= 0 && iColIdx < aColumns.length ? aColumns[iColIdx] : null;
 			var oCell = null;
 
-			if (bIdxInColumnAgg) {
-				if (oColumn.shouldRender()) {
-					var aVisibleColumns = oTable._getVisibleColumns();
-					for (var i = 0; i < aVisibleColumns.length; i++) {
-						if (aVisibleColumns[i] === oColumn) {
-							oCell = oRow && oRow.getCells()[i];
-							break;
+			if (oRow && oColumn) {
+				if (bIdxInColumnAgg) {
+					if (oColumn.shouldRender()) {
+						var aVisibleColumns = oTable._getVisibleColumns();
+						for (var i = 0; i < aVisibleColumns.length; i++) {
+							if (aVisibleColumns[i] === oColumn) {
+								oCell = oRow.getCells()[i];
+								break;
+							}
 						}
 					}
+				} else {
+					oCell = oRow.getCells()[iColIdx];
 				}
-			} else {
-				oCell = oRow && oRow.getCells()[iColIdx];
-			}
 
-			//TBD: Clarify why this is needed!
-			if (oCell && oCell.data("sap-ui-colid") != oColumn.getId()) {
-				var aCells = oRow.getCells();
-				for (var i = 0; i < aCells.length; i++) {
-					if (aCells[i].data("sap-ui-colid") === oColumn.getId()) {
-						oCell = aCells[i];
-						break;
+				//TBD: Clarify why this is needed!
+				if (oCell && oCell.data("sap-ui-colid") != oColumn.getId()) {
+					var aCells = oRow.getCells();
+					for (var i = 0; i < aCells.length; i++) {
+						if (aCells[i].data("sap-ui-colid") === oColumn.getId()) {
+							oCell = aCells[i];
+							break;
+						}
 					}
 				}
 			}

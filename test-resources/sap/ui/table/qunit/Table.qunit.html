@@ -390,6 +390,41 @@
 		assert.ok(oTable.getDomRef("tableCCnt").clientHeight > 0, "CCnt still has clientHeight");
 	});
 
+	QUnit.test("getCellControl", function(assert) {
+		oTable.getColumns()[2].setVisible(false);
+		sap.ui.getCore().applyChanges();
+
+		var oCell = oTable.getCellControl(0, 0, true);
+		assert.strictEqual(oCell.getId(), oTable.getRows()[0].getCells()[0].getId(), "Cell 0,0");
+
+		oCell = oTable.getCellControl(1, 1, true);
+		assert.strictEqual(oCell.getId(), oTable.getRows()[1].getCells()[1].getId(), "Cell 1,1");
+
+		oCell = oTable.getCellControl(2, 2, true);
+		assert.strictEqual(oCell.getId(), oTable.getRows()[2].getCells()[2].getId(), "Cell 2,2");
+
+		oCell = oTable.getCellControl(0, 0, false);
+		assert.strictEqual(oCell.getId(), oTable.getRows()[0].getCells()[0].getId(), "Cell 0,0");
+
+		oCell = oTable.getCellControl(1, 1, false);
+		assert.strictEqual(oCell.getId(), oTable.getRows()[1].getCells()[1].getId(), "Cell 1,1");
+
+		oCell = oTable.getCellControl(2, 2, false);
+		assert.ok(!oCell, "Cell 2,2");
+
+		oCell = oTable.getCellControl(-1, 2, false);
+		assert.ok(!oCell, "Negative RowIndex");
+
+		oCell = oTable.getCellControl(2, -1, false);
+		assert.ok(!oCell, "Negative ColIndex");
+
+		oCell = oTable.getCellControl(5000, 2, false);
+		assert.ok(!oCell, "Big RowIndex");
+
+		oCell = oTable.getCellControl(2, 5000, false);
+		assert.ok(!oCell, "Big ColIndex");
+	});
+
 	QUnit.test("Row Actions", function(assert) {
 		assert.equal(sap.ui.table.TableUtils.getRowActionCount(oTable), 0, "Table has no row actions");
 		assert.ok(!oTable.$().hasClass("sapUiTableRAct"), "No CSS class sapUiTableRAct");
@@ -1599,7 +1634,7 @@
 		});
 	});
 
-	QUnit.module("Function(public/private), mouse/touch event & property tests", {
+	QUnit.module("Functions (public/private), mouse/touch events, properties", {
 		beforeEach: function() {
 			createTable();
 			this.sinon = sinon.sandbox.create();
@@ -1955,6 +1990,26 @@
 
 	QUnit.test("test _getColumnsWidth function", function(assert) {
 		assert.ok(oTable._getColumnsWidth() > 600 && oTable._getColumnsWidth() < 900, "Columns width returned");
+	});
+
+	QUnit.test("_getDefaultRowHeight", function(assert) {
+		oTable.setRowHeight(99);
+		assert.strictEqual(oTable._getDefaultRowHeight(), 99, "The default row height is the value of the rowHeight property (99)");
+
+		oTable.setRowHeight(0);
+		oTable.getDomRef().classList.add("sapUiSizeCozy");
+		assert.strictEqual(oTable._getDefaultRowHeight(), 49, "The default row height is correct in cozy size (49)");
+
+		oTable.getDomRef().classList.remove("sapUiSizeCozy");
+		oTable.getDomRef().classList.add("sapUiSizeCompact");
+		assert.strictEqual(oTable._getDefaultRowHeight(), 33, "The default row height is correct in compact size (33)");
+
+		oTable.getDomRef().classList.remove("sapUiSizeCompact");
+		oTable.getDomRef().classList.add("sapUiSizeCondensed");
+		assert.strictEqual(oTable._getDefaultRowHeight(), 25, "The default row height is correct in condensed size (25)");
+
+		oTable.getDomRef().classList.remove("sapUiSizeCondensed");
+		assert.strictEqual(oTable._getDefaultRowHeight(), 33, "The default row height is correct in default size (33)");
 	});
 
 	QUnit.module("Performance", {

@@ -394,7 +394,7 @@ sap.ui.define([
 	 */
 	var ExtensionDelegate = {
 		ontouchstart: function(oEvent) {
-			if (this._isTouchMode(oEvent)) {
+			if (this._isTouchEvent(oEvent)) {
 				this._aTouchStartPosition = null;
 				this._bIsScrollVertical = null;
 				var $scrollTargets = this._getScrollTargets();
@@ -416,7 +416,7 @@ sap.ui.define([
 		},
 
 		ontouchmove: function(oEvent) {
-			if (this._isTouchMode(oEvent) && this._aTouchStartPosition) {
+			if (this._isTouchEvent(oEvent) && this._aTouchStartPosition) {
 				var oTouch = oEvent.targetTouches[0];
 				var iDeltaX = (oTouch.pageX - this._aTouchStartPosition[0]);
 				var iDeltaY = (oTouch.pageY - this._aTouchStartPosition[1]);
@@ -491,7 +491,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.46.5
+	 * @version 1.46.6
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
