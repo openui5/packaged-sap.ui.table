@@ -261,6 +261,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 }
 .sapUiTableColRowHdr {
   display: none;
+  vertical-align: bottom;
   position: absolute;
   top: 0;
   bottom: 0;
@@ -279,22 +280,17 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
   width: 3rem;
   min-height: 3rem;
 }
-.sapUiSizeCozy .sapUiTableColRowHdr:active {
-  background-color: #7a5100;
-}
 .sapUiSizeCondensed .sapUiTableColRowHdr {
   width: 2rem;
 }
 .sapUiTableColRowHdr:hover {
   background-color: #0f0f0f;
 }
+.sapUiTableColRowHdr:active {
+  background-color: #7a5100;
+}
 .sapUiTableColRowHdrIco {
   display: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
 }
 .sapUiTableSelModeMultiToggle .sapUiTableColRowHdr.sapUiTableSelAllEnabled .sapUiTableColRowHdrIco {
   display: block;
@@ -358,27 +354,13 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
   min-height: 3rem;
 }
 .sapUiTableCol {
-  vertical-align: top;
+  vertical-align: middle;
   box-sizing: border-box;
   min-height: 2rem;
   padding-top: 7px;
   padding-bottom: 7px;
   border-right: 1px solid #ffffff;
   background-color: #000000;
-  color: #ffffff;
-}
-.sapUiTableColHdrTr > .sapUiTableCol {
-  position: relative;
-}
-.sapUiSizeCozy .sapUiTableCol {
-  padding-top: 0;
-  padding-bottom: 0;
-  min-height: 3rem;
-}
-.sapUiSizeCozy .sapUiTableCol:active {
-  background-color: #7a5100;
-}
-.sapUiSizeCozy .sapUiTableCol:active > div > label {
   color: #ffffff;
 }
 .sapUiTableCol:hover {
@@ -388,38 +370,47 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 .sapUiTableColHdrFixed .sapUiTableCol.sapUiTableColLastFixed {
   border-right: 1px solid #ffffff;
 }
+.sapUiTableCol:active {
+  background-color: #7a5100;
+}
+.sapUiTableCol:active > div > label,
+.sapUiTableCol:active > div > span {
+  color: #ffffff;
+}
+.sapUiTableColHdrTr > .sapUiTableCol {
+  position: relative;
+}
+.sapUiSizeCozy .sapUiTableCol {
+  min-height: 3rem;
+}
 .sapUiTableColCell {
   text-overflow: ellipsis;
   overflow: hidden;
-  vertical-align: middle;
   white-space: normal;
-  padding: 0 0.5rem;
   position: relative;
+  padding: 0 0.5rem;
 }
-.sapUiTableColCell.sapUiTableColSorted,
-.sapUiTableColCell.sapUiTableColFiltered {
-  padding-right: 24px;
+.sapUiTableColSorted,
+.sapUiTableColFiltered {
+  padding-right: 1.5rem;
 }
-.sapUiTableColCell.sapUiTableColSorted.sapUiTableColFiltered {
-  padding-right: 38px;
-}
-.sapUiSizeCozy .sapUiTableColCell {
-  height: 3rem;
-}
-.sapUiSizeCozy .sapUiTableColCell > * {
-  height: 100%;
-  line-height: 3rem;
+.sapUiTableColSorted.sapUiTableColFiltered {
+  padding-right: 2.5rem;
 }
 .sapUiTableColSF::after {
   content: "";
   position: absolute;
   right: 0;
-  top: 0;
+  top: 50%;
+  transform: translateY(-50%);
   font-family: SAP-Icons;
   font-size: 0.75rem;
   padding-right: 0.375rem;
   color: #ffffff;
-  line-height: 18px;
+  line-height: 2rem;
+}
+.sapUiTableColSF:active::after {
+  color: #ffffff;
 }
 .sapUiSizeCozy .sapUiTableColSF::after {
   line-height: 3rem;
@@ -482,6 +473,8 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
   width: 2rem;
   box-sizing: border-box;
   min-height: calc(2rem +  1px);
+  touch-action: none;
+  /* for touch scrolling */
 }
 .sapUiSizeCondensed .sapUiTableRowHdrScr {
   width: 2rem;
@@ -597,6 +590,17 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
   margin: 0;
   overflow: hidden;
   box-sizing: border-box;
+}
+/* disable default touch move behavior on scrollable table rows,
+   vertical and horizontal scrolling is done in TableScrollExtensions.js */
+.sapUiTableCtrlRowScroll {
+  touch-action: none;
+}
+/* disable horizontal touch move behavior on fixed table rows
+   horizontal scrolling is done in in TableScrollExtensions.js */
+.sapUiTableCtrlRowFixed,
+.sapUiTableCtrlRowFixedBottom {
+  touch-action: pan-y;
 }
 .sapUiTableVScr .sapUiTableCtrlScr {
   border-right: 1px solid #ffffff;
