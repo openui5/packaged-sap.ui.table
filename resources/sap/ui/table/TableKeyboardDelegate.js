@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.38.20
+	 * @version 1.38.21
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate
@@ -892,7 +892,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 				TableUtils.focusItem(this, iFocusedIndex + iColumns, oEvent);
 			} else {
 				// if focus is on any cell row, select last cell row.
-				this.setFirstVisibleRow(this._getRowCount() - this.getVisibleRowCount());
+				this.setFirstVisibleRow(Math.max(this._getRowCount() - this.getVisibleRowCount(), 0));
 				var iTargetIndex = oInfo.cellCount - (iColumns - iSelectedCellInRow);
 				TableUtils.focusItem(this, iTargetIndex, oEvent);
 			}
