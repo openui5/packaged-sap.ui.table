@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.46.6
+	 * @version 1.46.7
 	 *
 	 * @constructor
 	 * @public
@@ -1925,6 +1925,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	Table.prototype._onBindingLengthChange = function(sReason) {
+		if (sReason === ChangeReason.Refresh) {
+			return;
+		}
+
 		// update visualization of fixed bottom row
 		this._updateFixedBottomRows();
 		this._toggleVSb();
@@ -1974,14 +1978,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				});
 			}
 			// request contexts from binding
-			var sUpdateReason;
 			if (sReason == ChangeReason.Filter || sReason == ChangeReason.Sort) {
-				sUpdateReason = "skipNoDataUpdate";
+				sReason = "skipNoDataUpdate";
 				this.setFirstVisibleRow(0);
 			} else if (sReason == ChangeReason.Refresh) {
-				sUpdateReason = "skipNoDataUpdate";
+				sReason = "skipNoDataUpdate";
 			}
-			this._updateBindingContexts(true, iRowsToDisplay, sUpdateReason);
+			this._updateBindingContexts(true, iRowsToDisplay, sReason);
 		}
 	};
 
@@ -3797,6 +3800,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._toggleSelectAll = function() {
+		if (!TableUtils.hasData(this)) {
+			return;
+		}
+
 		// in order to fire the rowSelectionChanged event, the SourceRowIndex mus be set to -1
 		// to indicate that the selection was changed by user interaction
 		if (TableUtils.areAllRowsSelected(this)) {

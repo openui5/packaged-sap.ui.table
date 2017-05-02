@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/odata/ODataTreeBind
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.46.6
+	 * @version 1.46.7
 	 *
 	 * @constructor
 	 * @public

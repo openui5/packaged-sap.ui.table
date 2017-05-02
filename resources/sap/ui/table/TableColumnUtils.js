@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './l
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Column...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.46.6
+		 * @version 1.46.7
 		 * @namespace
 		 * @name sap.ui.table.TableColumnUtils
 		 * @private
@@ -242,19 +242,23 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/Device', './l
 				var vHeaderSpans = oColumn.getHeaderSpan();
 				var iHeaderSpan;
 
+				if (!vHeaderSpans) {
+					return 1;
+				}
+
+				if (!Array.isArray(vHeaderSpans)) {
+					vHeaderSpans = (vHeaderSpans + "").split(",");
+				}
+
 				function getSpan(sSpan) {
 					var result = parseInt(sSpan, 10);
 					return isNaN(result) ? 1 : result;
 				}
 
-				if (jQuery.isArray(vHeaderSpans)) {
-					if (isNaN(iLevel)) { // find max value of all spans in the header
-						iHeaderSpan = Math.max.apply(null, vHeaderSpans.map(getSpan));
-					} else {
-						iHeaderSpan = getSpan(vHeaderSpans[iLevel]);
-					}
+				if (isNaN(iLevel)) { // find max value of all spans in the header
+					iHeaderSpan = Math.max.apply(null, vHeaderSpans.map(getSpan));
 				} else {
-					iHeaderSpan = getSpan(vHeaderSpans);
+					iHeaderSpan = getSpan(vHeaderSpans[iLevel]);
 				}
 
 				return Math.max(iHeaderSpan, 1);

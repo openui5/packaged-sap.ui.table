@@ -331,6 +331,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 
 .sapUiTableColRowHdr {
 	display: none;
+	vertical-align: bottom;
 	position: absolute;
 	top: 0;
 	bottom: 0;
@@ -347,17 +348,9 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 	display: inline-block;
 }
 
-.sapUiSizeCozy {
-
-	.sapUiTableColRowHdr {
-		width: @_sapUiTableRowHdrWidthCozy;
-		min-height: @_sapUiTableColHdrHeightCozy;
-	}
-
-	.sapUiTableColRowHdr:active {
-		background-color: @sapUiListActiveBackground;
-	}
-
+.sapUiSizeCozy .sapUiTableColRowHdr {
+	width: @_sapUiTableRowHdrWidthCozy;
+	min-height: @_sapUiTableColHdrHeightCozy;
 }
 
 .sapUiSizeCondensed .sapUiTableColRowHdr {
@@ -368,13 +361,12 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 	background-color: contrast(@sapUiListHeaderBackground, darken(@sapUiListHeaderBackground, 6), lighten(@sapUiListHeaderBackground, 6));
 }
 
+.sapUiTableColRowHdr:active {
+	background-color: @sapUiListActiveBackground;
+}
+
 .sapUiTableColRowHdrIco {
 	display: none;
-	position: absolute;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	right: 0;
 }
 
 .sapUiTableSelModeMultiToggle .sapUiTableColRowHdr.sapUiTableSelAllEnabled .sapUiTableColRowHdrIco {
@@ -456,7 +448,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 }
 
 .sapUiTableCol {
-	vertical-align: top;
+	vertical-align: middle;
 	box-sizing: border-box;
 	min-height: @_sapUiTableColHdrHeight;
 	padding-top: 7px;
@@ -466,74 +458,60 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 	color: @sapUiListTextColor;
 }
 
-.sapUiTableColHdrTr > .sapUiTableCol {
-	position: relative;
-}
-
-.sapUiSizeCozy {
-
-	.sapUiTableCol {
-		padding-top: 0;
-		padding-bottom: 0;
-		min-height: @_sapUiTableColHdrHeightCozy;
-	}
-
-	.sapUiTableCol:active {
-		background-color: @sapUiListActiveBackground;
-	}
-
-	.sapUiTableCol:active > div > label {
-		color: @sapUiListActiveTextColor;
-	}
-
-}
-
 .sapUiTableCol:hover {
 	background-color: contrast(@sapUiListHeaderBackground, darken(@sapUiListHeaderBackground, 6), lighten(@sapUiListHeaderBackground, 6));
 	color: @sapUiListTextColor;
 }
 
-.sapUiTableColCell {
-	text-overflow: ellipsis;
-	overflow: hidden;
-	vertical-align: middle;
-	white-space: normal;
-	padding: 0 0.5rem;
+.sapUiTableCol:active {
+	background-color: @sapUiListActiveBackground;
+}
+
+.sapUiTableCol:active > div > label,
+.sapUiTableCol:active > div > span {
+	color: @sapUiListActiveTextColor;
+}
+
+.sapUiTableColHdrTr > .sapUiTableCol {
 	position: relative;
 }
 
-.sapUiTableColCell.sapUiTableColSorted,
-.sapUiTableColCell.sapUiTableColFiltered {
-	padding-right: 24px;
+.sapUiSizeCozy .sapUiTableCol {
+	min-height: @_sapUiTableColHdrHeightCozy;
 }
 
-.sapUiTableColCell.sapUiTableColSorted.sapUiTableColFiltered {
-	padding-right: 38px;
+.sapUiTableColCell {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: normal;
+	position: relative;
+	padding: 0 0.5rem;
 }
 
-.sapUiSizeCozy {
+.sapUiTableColSorted,
+.sapUiTableColFiltered {
+	padding-right: 1.5rem;
+}
 
-	.sapUiTableColCell {
-		height: 3rem;
-	}
-
-	.sapUiTableColCell > * {
-		height: 100%;
-		line-height: @_sapUiTableColHdrHeightCozy;
-	}
-
+.sapUiTableColSorted.sapUiTableColFiltered {
+	padding-right: 2.5rem;
 }
 
 .sapUiTableColSF::after {
 	content : "";
 	position: absolute;
 	right: 0;
-	top: 0;
+	top: 50%;
+	transform: translateY(-50%);
 	font-family: SAP-Icons;
 	font-size: 0.75rem;
 	padding-right: 0.375rem;
 	color: @sapUiContentNonInteractiveIconColor;
-	line-height: @sapUiLineHeight;
+	line-height: @_sapUiTableColHdrHeight;
+}
+
+.sapUiTableColSF:active::after {
+	color: @sapUiListActiveTextColor;
 }
 
 .sapUiSizeCozy .sapUiTableColSF::after {
@@ -613,6 +591,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 	width: @_sapUiTableRowHdrWidth;
 	box-sizing: border-box;
 	min-height: @_sapUiTableRowHeight;
+    touch-action: none; /* for touch scrolling */
 }
 
 .sapUiSizeCondensed .sapUiTableRowHdrScr {
@@ -735,6 +714,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 	box-sizing: border-box;
 	min-height: @_sapUiTableRowHeight;
 	z-index: 4; /* Ensure Action Area before Resize/Reorder bars*/
+	touch-action: pan-x; /* for touch scrolling, vertical only */
 }
 
 .sapUiTableRActS .sapUiTableRowActionHeader,
@@ -879,6 +859,17 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 	margin: 0;
 	overflow: hidden;
 	box-sizing: border-box;
+}
+
+/* disable default touch move behavior on scrollable table rows,
+   vertical and horizontal scrolling is done in TableScrollExtensions.js */
+.sapUiTableCtrlRowScroll {
+	touch-action: none;
+}
+/* disable horizontal touch move behavior on fixed table rows
+   horizontal scrolling is done in in TableScrollExtensions.js */
+.sapUiTableCtrlRowFixed, .sapUiTableCtrlRowFixedBottom {
+	touch-action: pan-y;
 }
 
 .sapUiTableVScr .sapUiTableCtrlScr {

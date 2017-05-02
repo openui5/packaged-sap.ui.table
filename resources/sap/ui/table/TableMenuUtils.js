@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Menu...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.46.6
+		 * @version 1.46.7
 		 * @namespace
 		 * @name sap.ui.table.TableMenuUtils
 		 * @private
