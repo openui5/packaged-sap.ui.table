@@ -25,7 +25,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.44.13
+	 * @version 1.44.14
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private

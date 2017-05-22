@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.44.13
+	 * @version 1.44.14
 	 *
 	 * @constructor
 	 * @public
@@ -2708,9 +2708,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 	Table.prototype.getFocusDomRef = function() {
 		this._getKeyboardExtension().initItemNavigation();
-		// focus is handled by item navigation. It's  not the root element of the table which may get the focus but
+
+		// Focus is handled by the item navigation. It's not the root element of the table which may get the focus but
 		// the last focused column header or cell.
-		return TableUtils.getFocusedItemInfo(this).domRef || Control.prototype.getFocusDomRef.apply(this, arguments);
+		var oFocusedItemInfo = TableUtils.getFocusedItemInfo(this);
+		if (oFocusedItemInfo !== null) {
+			return oFocusedItemInfo.domRef || Control.prototype.getFocusDomRef.apply(this, arguments);
+		}
+
+		return null;
 	};
 
 	// =============================================================================
@@ -2750,7 +2756,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (oClosestTd && ($ClosestTd.hasClass("sapUiTableTd") || $ClosestTd.hasClass("sapUiTableTDDummy"))
 			&& TableUtils.isRowSelectionAllowed(this)) {
 			var $row = $target.closest(".sapUiTableCtrl > tbody > tr");
-			if ($row.length === 1) {
+			if ($row.length === 1 && !$row.hasClass("sapUiTableColHdrTr")) {
 				var iIndex = parseInt($row.attr("data-sap-ui-rowindex"), 10);
 				this._onRowSelect(this.getRows()[iIndex].getIndex(), bShift, bCtrl);
 				return;
