@@ -888,6 +888,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 html[data-sap-ui-browser^="ie"] .sapUiTableVSb,
 html[data-sap-ui-browser^="ie"] .sapUiTableVSbBg {
   width: 18px;
+  -ms-overflow-style: scrollbar;
 }
 html[data-sap-ui-browser^="ed"] .sapUiTableVSb,
 html[data-sap-ui-browser^="ed"] .sapUiTableVSbBg {
@@ -1256,6 +1257,7 @@ html[data-sap-ui-browser^="ed"] .sapUiSizeCondensed .sapUiTableVScr.sapUiTableRA
 html[data-sap-ui-browser^="ie"] .sapUiTableHSb,
 html[data-sap-ui-browser^="ie"] .sapUiTableHSbBg {
   height: 18px;
+  -ms-overflow-style: scrollbar;
 }
 html[data-sap-ui-browser^="ed"] .sapUiTableHSb,
 html[data-sap-ui-browser^="ed"] .sapUiTableHSbBg {
