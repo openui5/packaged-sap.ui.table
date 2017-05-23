@@ -33,7 +33,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension', './TableUtils'],
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.38.21
+	 * @version 1.38.22
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
