@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.48.0
+	 * @version 1.48.1
 	 *
 	 * @constructor
 	 * @public
@@ -1043,7 +1043,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		}
 
 		if (iFixedColumnCount > 0) {
-			var iUsedHorizontalTableSpace = TableUtils.Column.getMinColumnWidth() + oSizes.tableRowHdrScrWidth;
+			var iUsedHorizontalTableSpace = oSizes.tableRowHdrScrWidth;
 
 			var oVsb = this.getDomRef("vsb");
 			if (oVsb) {
@@ -1060,6 +1060,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			// If the columns fit into the table, we do not need to ignore the fixed column count.
 			// Otherwise, check if the new fixed columns fit into the table. If they don't, the fixed column count setting will be ignored.
 			var bNonFixedColumnsFitIntoTable = oSizes.tableCtrlScrollWidth === oSizes.tableCtrlScrWidth; // Also true if no non-fixed columns exist.
+
+			if (!bNonFixedColumnsFitIntoTable) { // horizontal scroll bar should be at least 48px wide
+				iUsedHorizontalTableSpace += TableUtils.Column.getMinColumnWidth();
+			}
+
 			var bFixedColumnsFitIntoTable = oSizes.tableCtrlFixedWidth + iUsedHorizontalTableSpace <= oSizes.tableCntWidth; // Also true if no fixed columns exist.
 			var bIgnoreFixedColumnCountCandidate = false;
 
@@ -2839,9 +2844,15 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 	Table.prototype.getFocusDomRef = function() {
 		this._getKeyboardExtension().initItemNavigation();
-		// focus is handled by item navigation. It's  not the root element of the table which may get the focus but
+
+		// Focus is handled by the item navigation. It's not the root element of the table which may get the focus but
 		// the last focused column header or cell.
-		return TableUtils.getFocusedItemInfo(this).domRef || Control.prototype.getFocusDomRef.apply(this, arguments);
+		var oFocusedItemInfo = TableUtils.getFocusedItemInfo(this);
+		if (oFocusedItemInfo !== null) {
+			return oFocusedItemInfo.domRef || Control.prototype.getFocusDomRef.apply(this, arguments);
+		}
+
+		return null;
 	};
 
 
