@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.46.8
+	 * @version 1.46.9
 	 *
 	 * @constructor
 	 * @public
@@ -998,27 +998,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 		var iFixedColumnCount = this.getProperty("fixedColumnCount");
 		var iFixedHeaderWidthSum = 0;
-		var aHeaderElements = oDomRef.querySelectorAll(".sapUiTableCtrlFirstCol:not(.sapUiTableCHTHR) > th:not(.sapUiTableColSel)");
-		if (aHeaderElements) {
-			var aColumns = this.getColumns();
+		if (iFixedColumnCount) {
+			var aHeaderElements = oDomRef.querySelectorAll(".sapUiTableCtrlFirstCol:not(.sapUiTableCHTHR) > th");
 			for (var i = 0; i < aHeaderElements.length; i++) {
-				var iHeaderWidth = aHeaderElements[i].getBoundingClientRect().width;
-
-				if (i < aColumns.length && aColumns[i] && !aColumns[i].getVisible()) {
-					// the fixedColumnCount does not consider the visibility of the column, whereas the DOM only represents
-					// the visible columns. In order to match both, the fixedColumnCount (aggregation) and fixedColumnCount
-					// of the DOM, for each invisible column, 1 must be deducted from the fixedColumnCount (aggregation).
-					iFixedColumnCount--;
-				}
-
-				if (i < iFixedColumnCount) {
-					iFixedHeaderWidthSum += iHeaderWidth;
+				var iColIndex = parseInt(aHeaderElements[i].getAttribute("data-sap-ui-headcolindex"), 10);
+				if (!isNaN(iColIndex) && (iColIndex < iFixedColumnCount)) {
+					iFixedHeaderWidthSum += aHeaderElements[i].getBoundingClientRect().width;
 				}
 			}
 		}
 
-		if (iFixedColumnCount > 0) {
-			var iUsedHorizontalTableSpace = TableUtils.Column.getMinColumnWidth() + oSizes.tableRowHdrScrWidth;
+		if (iFixedHeaderWidthSum > 0) {
+			var iUsedHorizontalTableSpace = oSizes.tableRowHdrScrWidth;
 
 			var oVsb = this.getDomRef("vsb");
 			if (oVsb) {
@@ -1035,6 +1026,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			// If the columns fit into the table, we do not need to ignore the fixed column count.
 			// Otherwise, check if the new fixed columns fit into the table. If they don't, the fixed column count setting will be ignored.
 			var bNonFixedColumnsFitIntoTable = oSizes.tableCtrlScrollWidth === oSizes.tableCtrlScrWidth; // Also true if no non-fixed columns exist.
+
+			if (!bNonFixedColumnsFitIntoTable) { // horizontal scroll bar should be at least 48px wide
+				iUsedHorizontalTableSpace += TableUtils.Column.getMinColumnWidth();
+			}
+
 			var bFixedColumnsFitIntoTable = oSizes.tableCtrlFixedWidth + iUsedHorizontalTableSpace <= oSizes.tableCntWidth; // Also true if no fixed columns exist.
 			var bIgnoreFixedColumnCountCandidate = false;
 
