@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.ui.table.Row.
-sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context'],
-	function(jQuery, Element, Context) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context', './TableUtils'],
+	function(jQuery, Element, Context, TableUtils) {
 	"use strict";
 
 
@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 	 * @class
 	 * The row.
 	 * @extends sap.ui.core.Element
-	 * @version 1.48.1
+	 * @version 1.48.2
 	 *
 	 * @constructor
 	 * @public
@@ -217,7 +217,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Element', 'sap/ui/model/Context
 
 		if ($DomRefs.rowSelectorText) {
 			var sText = "";
-			if (!(this._oNodeState && this._oNodeState.sum) && !this._bHasChildren) {
+			if (!this._bHidden && !TableUtils.Grouping.isInSumRow($DomRefs.rowSelector) && !TableUtils.Grouping.isInGroupingRow($DomRefs.rowSelector)) {
 				sText = mTooltipTexts.keyboard[sSelectReference];
 			}
 			$DomRefs.rowSelectorText.text(sText);
