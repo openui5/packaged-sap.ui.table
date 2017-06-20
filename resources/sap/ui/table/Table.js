@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.44.14
+	 * @version 1.44.15
 	 *
 	 * @constructor
 	 * @public
@@ -3794,6 +3794,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._toggleSelectAll = function() {
+		if (!TableUtils.hasData(this)) {
+			return;
+		}
+
 		// in order to fire the rowSelectionChanged event, the SourceRowIndex mus be set to -1
 		// to indicate that the selection was changed by user interaction
 		if (TableUtils.areAllRowsSelected(this)) {
