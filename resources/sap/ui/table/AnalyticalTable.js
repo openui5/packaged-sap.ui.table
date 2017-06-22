@@ -20,7 +20,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/model/analytics/TreeBindingAdapter',
 	 * @class
 	 * Table which handles analytical OData backends
 	 * @extends sap.ui.table.Table
-	 * @version 1.28.45
+	 * @version 1.28.46
 	 *
 	 * @constructor
 	 * @public
