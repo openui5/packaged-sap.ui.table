@@ -307,6 +307,9 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 			if (oCountChangeInfo.initial) {
 				var oTable = oExtension.getTable();
 				sLabel = oTable.getAriaLabelledBy().join(" ") + " " + oTable.getId() + "-ariadesc " + oTable.getId() + "-ariacount";
+				if (oTable.getSelectionMode() !== SelectionMode.None) {
+					sLabel = sLabel + " " + oTable.getId() + "-ariaselection";
+				}
 			}
 
 			if (aLabels && aLabels.length) {
@@ -837,7 +840,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.48.2
+	 * @version 1.48.3
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension
