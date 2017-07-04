@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.38.23
+	 * @version 1.38.24
 	 *
 	 * @constructor
 	 * @public
@@ -3908,18 +3908,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		// update internal property to reflect the correct index
 		this.setProperty("selectedIndex", this.getSelectedIndex(), true);
 
-		var $SelAll = this.$("selall");
-		if ((oSelMode == SelectionMode.Multi || oSelMode == SelectionMode.MultiToggle)
-				&& this.getEnableSelectAll() && !$SelAll.hasClass("sapUiTableSelAll")) {
+		if ((oSelMode == SelectionMode.Multi || oSelMode == SelectionMode.MultiToggle) && this.getEnableSelectAll()) {
+			var $SelAll = this.$("selall");
 			var iSelectedIndicesCount = this._getSelectedIndicesCount();
-			var bClearSelectAll = iSelectedIndicesCount == 0;
-			if (!bClearSelectAll) {
-				var iSelectableRowCount = this._getSelectableRowCount();
-				bClearSelectAll = iSelectableRowCount == 0 || iSelectableRowCount !== iSelectedIndicesCount;
-			}
-			if (bClearSelectAll) {
-				$SelAll.addClass("sapUiTableSelAll");
-			}
+			var iSelectableRowCount = this._getSelectableRowCount();
+			var bAllRowsSelected = iSelectableRowCount > 0 && iSelectableRowCount === iSelectedIndicesCount;
+
+			$SelAll.toggleClass("sapUiTableSelAll", !bAllRowsSelected);
 		}
 	};
 
@@ -4977,7 +4972,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (!this.$("selall").hasClass("sapUiTableSelAll")) {
 			this._iSourceRowIndex = -1;
 			this.clearSelection();
-		} else {
+		} else if (this._getSelectableRowCount() > 0) {
 			this._iSourceRowIndex = 0;
 			this.selectAll();
 		}
