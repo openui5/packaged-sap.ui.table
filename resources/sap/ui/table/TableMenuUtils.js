@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Menu...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.46.10
+		 * @version 1.46.11
 		 * @namespace
 		 * @name sap.ui.table.TableMenuUtils
 		 * @private
@@ -81,7 +81,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 
 						if (bFireEvent) {
 							bExecuteDefault = oTable.fireColumnSelect({
-								column: oTable._getVisibleColumns()[iColumnIndex]
+								column: oTable.getColumns()[iColumnIndex]
 							});
 						}
 
@@ -277,6 +277,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 						var bMenuOpenAtAnotherDataCell = oTable._oCellContextMenu.bOpen && oTable._oCellContextMenu.oOpenerRef !== oCell;
 						if (bMenuOpenAtAnotherDataCell) {
 							MenuUtils.closeDataCellContextMenu(oTable);
+						}
+
+						for (var i = 0; i < oColumns.length; i++) {
+							MenuUtils.closeColumnContextMenu(oTable, i);
 						}
 
 						oTable._oCellContextMenu.open(bHoverFirstMenuItem, oCell, Popup.Dock.BeginTop, Popup.Dock.BeginBottom, oCell, "none none");
