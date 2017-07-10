@@ -18,7 +18,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Menu...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.48.3
+		 * @version 1.48.4
 		 * @namespace
 		 * @name sap.ui.table.TableMenuUtils
 		 * @private
@@ -84,7 +84,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', 'sap/ui/unified/Menu', 'sap
 
 						if (bFireEvent) {
 							bExecuteDefault = oTable.fireColumnSelect({
-								column: oTable._getVisibleColumns()[iColumnIndex]
+								column: oTable.getColumns()[iColumnIndex]
 							});
 						}
 

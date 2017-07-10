@@ -46,7 +46,7 @@ sap.ui.define([
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.48.3
+	 * @version 1.48.4
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
@@ -140,6 +140,19 @@ sap.ui.define([
 			return (oTable.getSelectionMode() !== SelectionMode.None
 					&& oTable.getSelectionBehavior() !== SelectionBehavior.RowOnly)
 					|| TableGrouping.isGroupMode(oTable);
+		},
+
+		/**
+		 * Returns whether the table has a SelectAll checkbox.
+		 *
+		 * @param {sap.ui.table.Table} oTable Instance of the table.
+		 * @return {boolean} Returns <code>true</code>, if the table has a SelectAll checkbox.
+		 * @private
+		 */
+		hasSelectAll: function(oTable) {
+			var sSelectionMode = oTable != null ? oTable.getSelectionMode() : SelectionMode.None;
+			return (sSelectionMode === SelectionMode.Multi || sSelectionMode === SelectionMode.MultiToggle)
+				   && oTable.getEnableSelectAll();
 		},
 
 		/**
