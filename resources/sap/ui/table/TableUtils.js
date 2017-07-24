@@ -44,7 +44,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.46.11
+	 * @version 1.46.12
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
@@ -213,7 +213,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/ResizeHa
 				return false;
 			}
 
-			return oTable.getDomRef().querySelector(".sapUiLocalBusyIndicator") != null;
+			return oTable.getDomRef().querySelector(".sapUiTableCnt > .sapUiLocalBusyIndicator") != null;
 		},
 
 		/**
