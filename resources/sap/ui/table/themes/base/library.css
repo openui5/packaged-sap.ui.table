@@ -751,6 +751,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: scroll;
+  -webkit-overflow-scrolling: auto;
   background-color: #ffffff;
 }
 html[data-sap-ui-browser^="ie"] .sapUiTableVSb {
@@ -795,6 +796,7 @@ html[data-sap-ui-browser^="ed"] .sapUiTableVScr .sapUiTableColHdrScr {
   box-sizing: border-box;
   overflow-x: scroll;
   overflow-y: hidden;
+  -webkit-overflow-scrolling: auto;
   background-color: #ffffff;
 }
 .sapUiTableVScr .sapUiTableHSb {
@@ -833,7 +835,7 @@ html.sap-tablet:not(.sap-desktop) .sapUiTableVSb::-webkit-scrollbar,
 html.sap-phone .sapUiTableVSb::-webkit-scrollbar,
 html.sap-tablet:not(.sap-desktop) .sapUiTableHSb::-webkit-scrollbar,
 html.sap-phone .sapUiTableHSb::-webkit-scrollbar {
-  -webkit-appearence: none;
+  -webkit-appearance: none;
   width: 0.45rem;
   height: 0.45rem;
   background-color: #ffffff;
@@ -1037,11 +1039,10 @@ html.sap-desktop .sapUiTableColRsz.sapUiTableColRszActive:hover {
 /*1.5rem*/
 /*3rem*/
 .sapUiTableTreeIcon {
-  display: none;
-  width: 25px;
-  padding: 0;
-  flex-shrink: 0;
-  margin-right: 6px;
+  flex: none;
+  text-align: center;
+  width: 2rem;
+  align-self: center;
 }
 .sapUiSizeCondensed .sapUiTableCell > .sapUiTableTreeIcon {
   padding: 0;
@@ -1070,10 +1071,6 @@ html[data-sap-ui-browser^="ie"] .sapUiTableTreeIcon:focus::before {
   .sapUiTableTreeIcon:focus {
     outline-offset: -1px;
   }
-}
-.sapUiTableTreeMode .sapUiTableTreeIcon,
-.sapUiTableTreeMode .sapUiTableTreeIcon::before {
-  display: inline-block;
 }
 .sapUiTableGroupIcon {
   display: none;
@@ -1108,12 +1105,12 @@ html[data-sap-ui-browser^="ie"] .sapUiTableTreeIcon:focus::before {
 .sapUiTableTreeIcon::before {
   font-family: "SAP-icons";
   font-size: 12px;
-  font-weight: normal;
-  display: none;
+  color: #000000;
+}
+.sapUiTableGroupIcon::before {
   width: 2rem;
   text-align: center;
   vertical-align: middle;
-  color: #000000;
 }
 .sapUiTableGroupIcon.sapUiTableGroupIconOpen::before,
 .sapUiTableTreeIcon.sapUiTableTreeIconNodeOpen::before {

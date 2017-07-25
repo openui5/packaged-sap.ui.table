@@ -25,6 +25,13 @@ sap.ui.define([
 		ALT: 4
 	};
 
+	/**
+	 * The selectors which define whether an element is interactive. Due to the usage of pseudo selectors this can only be used in jQuery.
+	 *
+	 * @type {string}
+	 */
+	var INTERACTIVE_ELEMENT_SELECTORS = ":sapTabbable, input:sapFocusable, .sapUiTableTreeIcon:not(.sapUiTableTreeIconLeaf)";
+
 	// Workaround until (if ever) these values can be set by applications.
 	var HORIZONTAL_SCROLLING_PAGE_SIZE = 5;
 	var COLUMN_RESIZE_STEP_CSS_SIZE = "1em";
@@ -49,7 +56,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.44.17
+	 * @version 1.44.18
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate2
@@ -274,7 +281,7 @@ sap.ui.define([
 			return false;
 		}
 
-		return jQuery(oElement).is(":sapTabbable, input:sapFocusable, .sapUiTableTreeIcon");
+		return jQuery(oElement).is(INTERACTIVE_ELEMENT_SELECTORS);
 	};
 
 	/**
@@ -292,7 +299,7 @@ sap.ui.define([
 		var oCellInfo = TableUtils.getCellInfo($Cell);
 
 		if (oCellInfo !== null && oCellInfo.type === TableUtils.CELLTYPES.DATACELL) {
-			var $InteractiveElements = $Cell.find(":sapTabbable, input:sapFocusable, .sapUiTableTreeIcon");
+			var $InteractiveElements = $Cell.find(INTERACTIVE_ELEMENT_SELECTORS);
 			if ($InteractiveElements.length > 0) {
 				return $InteractiveElements;
 			}
