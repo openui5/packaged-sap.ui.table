@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.38.24
+	 * @version 1.38.25
 	 * @since 1.21.1
 	 *
 	 * @constructor

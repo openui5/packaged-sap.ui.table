@@ -680,7 +680,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', './library', './Table
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.38.24
+	 * @version 1.38.25
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension
