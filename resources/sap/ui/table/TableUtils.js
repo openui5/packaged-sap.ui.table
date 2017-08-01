@@ -46,7 +46,7 @@ sap.ui.define([
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.48.4
+	 * @version 1.48.5
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
@@ -288,7 +288,7 @@ sap.ui.define([
 				return false;
 			}
 
-			return oTable.getDomRef().querySelector(".sapUiLocalBusyIndicator") != null;
+			return oTable.getDomRef().querySelector(".sapUiTableCnt > .sapUiLocalBusyIndicator") != null;
 		},
 
 		/**

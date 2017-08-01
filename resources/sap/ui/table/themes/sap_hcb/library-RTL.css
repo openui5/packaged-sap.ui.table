@@ -971,6 +971,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 .sapUiTableVSb {
   overflow-x: hidden;
   overflow-y: scroll;
+  -webkit-overflow-scrolling: auto;
   background-color: #000000;
   z-index: 4;
   /* Ensure Scrollbar before Resize/Reorder bars*/
@@ -1333,6 +1334,7 @@ html[data-sap-ui-browser^="ed"] .sapUiSizeCondensed .sapUiTableVScr.sapUiTableRA
   position: relative;
   overflow-x: scroll;
   overflow-y: hidden;
+  -webkit-overflow-scrolling: auto;
   border-left: 1px solid transparent;
   /* Simulates the right border of the table cells in the content area */
   background-color: #000000;
@@ -1403,7 +1405,7 @@ html.sap-tablet:not(.sap-desktop) .sapUiTableVSb::-webkit-scrollbar,
 html.sap-phone .sapUiTableVSb::-webkit-scrollbar,
 html.sap-tablet:not(.sap-desktop) .sapUiTableHSb::-webkit-scrollbar,
 html.sap-phone .sapUiTableHSb::-webkit-scrollbar {
-  -webkit-appearence: none;
+  -webkit-appearance: none;
   width: 8px;
   height: 8px;
   background-color: #000000;
