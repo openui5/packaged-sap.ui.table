@@ -56,7 +56,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.44.18
+	 * @version 1.44.19
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate2

@@ -753,6 +753,7 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
   overflow-y: scroll;
   -webkit-overflow-scrolling: auto;
   background-color: #ffffff;
+  z-index: 4;
 }
 html[data-sap-ui-browser^="ie"] .sapUiTableVSb {
   width: 18px;
