@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.48.5
+	 * @version 1.48.6
 	 *
 	 * @constructor
 	 * @public
@@ -948,7 +948,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			var oCCnt = oDomRef.querySelector(".sapUiTableCCnt");
 
 			if (oCCnt) {
-				var iUsedHeight = oDomRef.scrollHeight - oCCnt.clientHeight;
+				var iUsedHeight = oDomRef.scrollHeight - parseFloat(window.getComputedStyle(oCCnt).height);
 				// take into account controls above the table in the container
 				var iTableTop = 0;
 				if (oDomRef.parentNode.firstChild !== oDomRef) {
@@ -2465,7 +2465,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._getSelectableRowCount = function() {
-		return this._iBindingLength;
+		var oBinding = this.getBinding("rows");
+		return this._iBindingLength || (oBinding ? oBinding.getLength() : 0);
 	};
 
 	/**
