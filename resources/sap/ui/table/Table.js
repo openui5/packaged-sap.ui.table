@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.50.0
+	 * @version 1.50.1
 	 *
 	 * @constructor
 	 * @public
@@ -1696,8 +1696,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 			// (sPath, [oSorter], [aFilters])
 			if (oTemplate instanceof Sorter || jQuery.isArray(oSorter) && oSorter[0] instanceof Filter) {
-				oSorter = oTemplate;
 				aFilters = oSorter;
+				oSorter = oTemplate;
 				oTemplate = undefined;
 			}
 
@@ -2544,7 +2544,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._getSelectableRowCount = function() {
-		return this._iBindingLength;
+		var oBinding = this.getBinding("rows");
+		return this._iBindingLength || (oBinding ? oBinding.getLength() : 0);
 	};
 
 	/**
