@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.38.25
+	 * @version 1.38.27
 	 *
 	 * @constructor
 	 * @public
@@ -966,7 +966,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (aHeaderElements) {
 			var aColumns = this.getColumns();
 			for (var i = 0; i < aHeaderElements.length; i++) {
-				var iHeaderWidth = aHeaderElements[i].getBoundingClientRect().width;
+				var iHeaderWidth = parseInt(window.getComputedStyle(aHeaderElements[i]).width, 10);
 				aHeaderWidths.push(iHeaderWidth);
 
 				if (i < aColumns.length && aColumns[i] && !aColumns[i].getVisible()) {
@@ -2507,7 +2507,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._getSelectableRowCount = function() {
-		return this._iBindingLength;
+		var oBinding = this.getBinding("rows");
+		return this._iBindingLength || (oBinding ? oBinding.getLength() : 0);
 	};
 
 
