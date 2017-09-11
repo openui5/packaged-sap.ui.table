@@ -494,7 +494,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.19
+	 * @version 1.44.20
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
