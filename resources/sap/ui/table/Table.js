@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.38.27
+	 * @version 1.38.28
 	 *
 	 * @constructor
 	 * @public
@@ -966,7 +966,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (aHeaderElements) {
 			var aColumns = this.getColumns();
 			for (var i = 0; i < aHeaderElements.length; i++) {
-				var iHeaderWidth = parseInt(window.getComputedStyle(aHeaderElements[i]).width, 10);
+				var iHeaderWidth = aHeaderElements[i].getBoundingClientRect().width;
 				aHeaderWidths.push(iHeaderWidth);
 
 				if (i < aColumns.length && aColumns[i] && !aColumns[i].getVisible()) {

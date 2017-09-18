@@ -36,7 +36,7 @@ sap.ui.define(['jquery.sap.global', './TableExtension'],
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.38.27
+	 * @version 1.38.28
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccRenderExtension
