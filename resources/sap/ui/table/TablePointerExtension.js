@@ -100,8 +100,8 @@ sap.ui.define([
 
 			TableUtils.toggleRowSelection(oTable, $Cell, null, function(iRowIndex) {
 
-				// in case of IE and SHIFT we clear the text selection
-				if (!!Device.browser.internet_explorer && oEvent.shiftKey) {
+				// IE and Edge perform a text selection if holding shift while clicking. This is not desired for range selection of rows.
+				if ((Device.browser.msie || Device.browser.edge) && oEvent.shiftKey) {
 					oTable._clearTextSelection();
 				}
 
@@ -929,7 +929,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles mouse and touch related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.50.1
+	 * @version 1.50.2
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension
