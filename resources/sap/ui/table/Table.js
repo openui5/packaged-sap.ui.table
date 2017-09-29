@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.50.2
+	 * @version 1.50.3
 	 *
 	 * @constructor
 	 * @public
@@ -965,7 +965,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			var oCCnt = oDomRef.querySelector(".sapUiTableCCnt");
 
 			if (oCCnt) {
-				var iUsedHeight = oDomRef.scrollHeight - parseFloat(window.getComputedStyle(oCCnt).height);
+				var iUsedHeight = oDomRef.scrollHeight - oCCnt.getBoundingClientRect().height;
 				// take into account controls above the table in the container
 				var iTableTop = 0;
 				if (oDomRef.parentNode.firstChild !== oDomRef) {
@@ -979,7 +979,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				// For simplicity always add the default height of the horizontal scrollbar to the used height, even if it will not be visible.
 				iUsedHeight += 18;
 
-				return jQuery(oDomRef.parentNode).height() - iUsedHeight - iTableTop;
+				return Math.floor(oDomRef.parentNode.getBoundingClientRect().height - iUsedHeight - iTableTop);
 			}
 		}
 
@@ -1726,8 +1726,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			// Wrap the event handler of the other party to add our handler.
 			var fOriginalHandler = oBindingInfo.events[sEventName];
 			oBindingInfo.events[sEventName] = function() {
-				fOriginalHandler.apply(this, arguments);
 				fHandler.apply(this, arguments);
+				fOriginalHandler.apply(this, arguments);
 			};
 		}
 	};
@@ -4000,6 +4000,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	Table.prototype._onBindingDataReceivedListener = function (oEvent) {
 		if (oEvent.getSource() == this.getBinding("rows") && !oEvent.getParameter("__simulateAsyncAnalyticalBinding")) {
 			this._bPendingRequest = false;
+			this._updateBindingLength();
 
 			if (this._dataReceivedHandlerId != null) {
 				jQuery.sap.clearDelayedCall(this._dataReceivedHandlerId);
@@ -4015,7 +4016,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				if (this.getEnableBusyIndicator()) {
 					this.setBusy(false);
 				}
-				this._updateBindingLength(true);
 				this._updateNoData();
 				delete this._dataReceivedHandlerId;
 			});

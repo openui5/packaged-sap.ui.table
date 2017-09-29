@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 	 * @extends sap.ui.table.Column
 	 *
 	 * @author SAP SE
-	 * @version 1.50.2
+	 * @version 1.50.3
 	 *
 	 * @constructor
 	 * @public
@@ -105,7 +105,7 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 		}
 
 		var bReturn = this.setProperty("grouped", bGrouped, bSuppressInvalidate);
-		this._updateColumns(true);
+		this._updateColumns();
 
 		return bReturn;
 	};
@@ -230,10 +230,6 @@ sap.ui.define(['jquery.sap.global', './Column', './library', 'sap/ui/core/Elemen
 			}
 		}
 		return vFilterType;
-	};
-
-	AnalyticalColumn.prototype._afterSort = function() {
-		this._updateTableAnalyticalInfo();
 	};
 
 	AnalyticalColumn.prototype._updateColumns = function(bSupressRefresh, bForceChange) {

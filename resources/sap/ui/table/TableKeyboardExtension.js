@@ -241,7 +241,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles keyboard related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.50.2
+	 * @version 1.50.3
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardExtension
@@ -433,8 +433,8 @@ sap.ui.define([
 	/**
 	 * Returns the combined info about the last focused data cell (based on the item navigation).
 	 *
-	 * @protected
 	 * @returns {sap.ui.table.TableUtils.FocusedItemInfo} The cell info of the last focused cell.
+	 * @protected
 	 */
 	TableKeyboardExtension.prototype._getLastFocusedCellInfo = function() {
 		var iHeader = TableUtils.getHeaderRowCount(this.getTable());
