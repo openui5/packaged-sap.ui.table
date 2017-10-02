@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.44.20
+	 * @version 1.44.21
 	 *
 	 * @constructor
 	 * @public
@@ -858,7 +858,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			var oCCnt = oDomRef.querySelector(".sapUiTableCCnt");
 
 			if (oCCnt) {
-				var iUsedHeight = oDomRef.scrollHeight - oCCnt.getBoundingClientRect().height;
+				var iUsedHeight = oDomRef.scrollHeight - oCCnt.clientHeight;
 				// take into account controls above the table in the container
 				var iTableTop = 0;
 				if (oDomRef.parentNode.firstChild !== oDomRef) {
@@ -872,7 +872,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				// For simplicity always add the default height of the horizontal scrollbar to the used height, even if it will not be visible.
 				iUsedHeight += 18;
 
-				return Math.floor(oDomRef.parentNode.getBoundingClientRect().height - iUsedHeight - iTableTop);
+				return Math.floor(jQuery(oDomRef.parentNode).height() - iUsedHeight - iTableTop);
 			}
 		}
 
@@ -1101,7 +1101,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			// to be executed before timeouts may be executed.
 			Promise.resolve().then(this._updateTableSizes.bind(this, true));
 		} else {
-			this._updateTableSizes();
+			this._updateTableSizes(null, bEventIsMarked);
 		}
 
 		if (!bEventIsMarked) {
@@ -1833,7 +1833,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	Table.prototype._onBindingLengthChange = function(sReason) {
 		this._bBindingLengthChanged = true;
 
-		if (sReason === ChangeReason.Refresh) {
+		if (sReason === ChangeReason.Refresh && !this._iBindingLength) {
 			return;
 		}
 
