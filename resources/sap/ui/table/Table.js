@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.50.3
+	 * @version 1.50.4
 	 *
 	 * @constructor
 	 * @public
@@ -146,7 +146,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			 * Enables or disables grouping. If grouping is enabled, the table is grouped by the column which is defined
 			 * in the <code>groupBy</code> association.
 			 *
-			 * @experimental Since 1.28. This feature has a limited functionality.
 			 * The following restrictions apply:
 			 * <ul>
 			 *  <li>Only client models are supported (e.g. {@link sap.ui.model.json.JSONModel}). Grouping does not work with OData models.</li>
@@ -157,6 +156,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			 *      column or grouping is disabled.</li>
 			 * </ul>
 			 *
+			 * @experimental As of 1.28. This feature has a limited functionality.
 			 * @see sap.ui.table.Table#setGroupBy
 			 */
 			enableGrouping : {type : "boolean", group : "Behavior", defaultValue : false},
@@ -965,7 +965,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			var oCCnt = oDomRef.querySelector(".sapUiTableCCnt");
 
 			if (oCCnt) {
-				var iUsedHeight = oDomRef.scrollHeight - oCCnt.getBoundingClientRect().height;
+				var iUsedHeight = oDomRef.scrollHeight - oCCnt.clientHeight;
 				// take into account controls above the table in the container
 				var iTableTop = 0;
 				if (oDomRef.parentNode.firstChild !== oDomRef) {
@@ -979,7 +979,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				// For simplicity always add the default height of the horizontal scrollbar to the used height, even if it will not be visible.
 				iUsedHeight += 18;
 
-				return Math.floor(oDomRef.parentNode.getBoundingClientRect().height - iUsedHeight - iTableTop);
+				return Math.floor(jQuery(oDomRef.parentNode).height() - iUsedHeight - iTableTop);
 			}
 		}
 
@@ -1213,7 +1213,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			// to be executed before timeouts may be executed.
 			Promise.resolve().then(this._updateTableSizes.bind(this, TableUtils.RowsUpdateReason.Render, true));
 		} else {
-			this._updateTableSizes(TableUtils.RowsUpdateReason.Render);
+			this._updateTableSizes(TableUtils.RowsUpdateReason.Render, null, bEventIsMarked);
 		}
 
 		if (!bEventIsMarked) {
