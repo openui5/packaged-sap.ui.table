@@ -46,7 +46,7 @@ sap.ui.define([
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.48.12
+	 * @version 1.48.13
 	 * @namespace
 	 * @name sap.ui.table.TableUtils
 	 * @private
@@ -331,10 +331,14 @@ sap.ui.define([
 		 */
 		canUsePendingRequestsCounter: function(oTable) {
 			var oBinding = oTable != null ? oTable.getBinding("rows") : null;
-			var bAnalyticalBindingWithoutBatch = TableUtils.isInstanceOf(oBinding, "sap/ui/model/analytics/AnalyticalBinding")
-												 && !oBinding.bUseBatchRequests;
-			var bTreeBinding = TableUtils.isInstanceOf(oBinding, "sap/ui/model/TreeBinding");
-			return !bAnalyticalBindingWithoutBatch && !bTreeBinding;
+
+			if (TableUtils.isInstanceOf(oBinding, "sap/ui/model/analytics/AnalyticalBinding")) {
+				return oBinding.bUseBatchRequests;
+			} else if (TableUtils.isInstanceOf(oBinding, "sap/ui/model/TreeBinding")) {
+				return false;
+			}
+
+			return true;
 		},
 
 		/**

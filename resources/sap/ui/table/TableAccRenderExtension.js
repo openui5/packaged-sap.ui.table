@@ -40,7 +40,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.48.12
+	 * @version 1.48.13
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccRenderExtension
