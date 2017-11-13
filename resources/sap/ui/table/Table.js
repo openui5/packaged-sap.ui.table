@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.44.23
+	 * @version 1.44.24
 	 *
 	 * @constructor
 	 * @public
@@ -1037,15 +1037,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (sVisibleRowCountMode == VisibleRowCountMode.Interactive ||
 			sVisibleRowCountMode == VisibleRowCountMode.Fixed ||
 			(sVisibleRowCountMode == VisibleRowCountMode.Auto && this._iTableRowContentHeight && aRows.length == 0)) {
-			if (this.getBinding("rows")) {
-				this._adjustRows(this._calculateRowsToDisplay());
-			} else {
-				var that = this;
-				this._mTimeouts.onBeforeRenderingAdjustRows = this._mTimeouts.onBeforeRenderingAdjustRows || window.setTimeout(function() {
-						that._adjustRows(that._calculateRowsToDisplay());
-						that._mTimeouts.onBeforeRenderingAdjustRows = undefined;
-					}, 0);
-			}
+
+			// Necessary due to the fact that getBinding initializes the grouping functionality
+			this.getBinding("rows");
+
+			this._adjustRows(this._calculateRowsToDisplay());
 		} else if (this._bRowAggregationInvalid && aRows.length > 0) {
 			// Rows got invalidated, recreate rows with new template
 			this._adjustRows(aRows.length);
@@ -1257,6 +1253,18 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		this._determineVisibleCols(oTableSizes);
 		if (!bSkipHandleRowCountMode || bForceSetRowContentHeight) {
 			this._setRowContentHeight(iRowContentSpace);
+		}
+
+		if (this.getVisibleRowCountMode() == VisibleRowCountMode.Auto) {
+			//if visibleRowCountMode is auto change the visibleRowCount according to the parents container height
+			var iRows = this._calculateRowsToDisplay(iRowContentSpace);
+			// if minAutoRowCount has reached, table should use block this height.
+			// In case row > minAutoRowCount, the table height is 0, because ResizeTrigger must detect any changes of the table parent.
+			if (iRows == this._determineMinAutoRowCount()) {
+				this.$().height("auto");
+			} else {
+				this.$().height("0px");
+			}
 		}
 
 		this._updateHSb(oTableSizes);
@@ -2558,9 +2566,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	};
 
 	Table.prototype._handleRowCountModeAuto = function(iTableAvailableSpace) {
+		iTableAvailableSpace = iTableAvailableSpace || this._determineAvailableSpace();
+
 		var oBinding = this.getBinding("rows");
+		var iRows = this._calculateRowsToDisplay(iTableAvailableSpace);
+
 		if (oBinding && this.getRows().length > 0) {
-			return this._executeAdjustRows(iTableAvailableSpace);
+			return this._adjustRows(iRows);
 		} else {
 			var that = this;
 			var bReturn = !this._mTimeouts.handleRowCountModeAutoAdjustRows;
@@ -2576,7 +2588,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			}
 
 			this._mTimeouts.handleRowCountModeAutoAdjustRows = this._mTimeouts.handleRowCountModeAutoAdjustRows || window.setTimeout(function() {
-					if (!that._executeAdjustRows()) {
+					if (!that._adjustRows(iRows)) {
 						// table sizes were not updated by AdjustRows
 						that._updateTableSizes(false, true);
 					}
@@ -2588,22 +2600,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				}, 0);
 			return bReturn;
 		}
-	};
-
-	Table.prototype._executeAdjustRows = function(iTableAvailableSpace) {
-		iTableAvailableSpace = iTableAvailableSpace || this._determineAvailableSpace();
-
-		//if visibleRowCountMode is auto change the visibleRowCount according to the parents container height
-		var iRows = this._calculateRowsToDisplay(iTableAvailableSpace);
-		// if minAutoRowCount has reached, table should use block this height.
-		// In case row > minAutoRowCount, the table height is 0, because ResizeTrigger must detect any changes of the table parent.
-		if (iRows == this._determineMinAutoRowCount()) {
-			this.$().height("auto");
-		} else {
-			this.$().height("0px");
-		}
-
-		return this._adjustRows(iRows);
 	};
 
 	/**
