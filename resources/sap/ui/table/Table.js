@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.48.13
+	 * @version 1.48.14
 	 *
 	 * @constructor
 	 * @public
@@ -1250,7 +1250,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			this._iRowHeightsDelta = this._getRowHeightsDelta(this._aRowHeights);
 		}
 
-		var iRowContentSpace = 0;
+		var iRowContentSpace = null;
 		if (!bSkipHandleRowCountMode && this.getVisibleRowCountMode() == VisibleRowCountMode.Auto) {
 			iRowContentSpace = this._determineAvailableSpace();
 			// if no height is granted we do not need to do any further row adjustment or layout sync.
@@ -1353,7 +1353,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 		if (this.getVisibleRowCountMode() == VisibleRowCountMode.Auto) {
 			//if visibleRowCountMode is auto change the visibleRowCount according to the parents container height
-			var iRows = this._calculateRowsToDisplay(iRowContentSpace);
+			var iRows = this._calculateRowsToDisplay(iRowContentSpace != null ? iRowContentSpace : this._determineAvailableSpace());
 			// if minAutoRowCount has reached, table should use block this height.
 			// In case row > minAutoRowCount, the table height is 0, because ResizeTrigger must detect any changes of the table parent.
 			if (iRows == this._determineMinAutoRowCount()) {
@@ -1365,6 +1365,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 		this._updateHSb(oTableSizes);
 		this._updateVSbTop();
+		this._toggleVSb();
 
 		var $this = this.$();
 
@@ -3701,8 +3702,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				jQuery(this.getDomRef("tableCtrlCnt")).css("height", this._iTableRowContentHeight + "px");
 			}
 		}
-
-		this._toggleVSb();
 	};
 
 	/**
