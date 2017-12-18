@@ -52,11 +52,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.2
+	 * @version 1.52.3
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.ui.table.Table
+	 * @see {@link topic:08197fa68e4f479cbe30f639cc1cd22c sap.ui.table}
+	 * @see {@link topic:148892ff9aea4a18b912829791e38f3e Tables: Which One Should I Choose?}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var Table = Control.extend("sap.ui.table.Table", /** @lends sap.ui.table.Table.prototype */ { metadata : {
@@ -97,12 +99,17 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			/**
 			 * Selection mode of the Table. This property controls whether single or multiple rows can be selected and
 			 * how the selection can be extended. It may also influence the visual appearance.
+			 * When the selection mode is changed, the current selection is removed.
+			 * <b>Note:</b> Since the group header visualization relies on the row selectors, the row selectors are always shown if the grouping
+			 * functionality (depends on table type) is enabled, even if <code>sap.ui.table.SelectionMode.None</code> is set.
 			 */
 			selectionMode : {type : "sap.ui.table.SelectionMode", group : "Behavior", defaultValue : SelectionMode.MultiToggle},
 
 			/**
 			 * Selection behavior of the Table. This property defines whether the row selector is displayed and whether the row, the row selector or
 			 * both can be clicked to select a row.
+			 * <b>Note:</b> Since the group header visualization relies on the row selectors, the row selectors are always shown if the grouping
+			 * functionality (depends on table type) is enabled, even if <code>sap.ui.table.SelectionBehavior.RowOnly</code> is set.
 			 */
 			selectionBehavior : {type : "sap.ui.table.SelectionBehavior", group : "Behavior", defaultValue : SelectionBehavior.RowSelector},
 
@@ -1426,6 +1433,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		var oScrollExtension = this._getScrollExtension();
 		oScrollExtension.updateHorizontalScrollbar(oTableSizes);
 		oScrollExtension.updateVerticalScrollbarPosition();
+		oScrollExtension.updateVerticalScrollbarVisibility();
 
 		var $this = this.$();
 
@@ -3495,8 +3503,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				jQuery(this.getDomRef("tableCtrlCnt")).css("height", this._iTableRowContentHeight + "px");
 			}
 		}
-
-		this._getScrollExtension().updateVerticalScrollbarVisibility();
 	};
 
 	/**
@@ -3518,7 +3524,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 * @private
 	 */
 	Table.prototype._calculateRowsToDisplay = function(iTableRowContentHeight) {
-		iTableRowContentHeight = iTableRowContentHeight || this._iTableRowContentHeight;
+		// Remember the last used value for the case when this function is called with undefined iTableRowContentHeight
+		// _iTableRowContentHeight is not updated during resize and can be used as a last resort only
+		this._iRowsToDisplayHeight = iTableRowContentHeight || this._iRowsToDisplayHeight || this._iTableRowContentHeight;
+		iTableRowContentHeight = this._iRowsToDisplayHeight;
 		var sVisibleRowCountMode = this.getVisibleRowCountMode();
 		var iCalculatedRowsToDisplay = 0;
 		if (sVisibleRowCountMode == VisibleRowCountMode.Fixed) {

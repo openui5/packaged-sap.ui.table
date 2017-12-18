@@ -18,11 +18,13 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.52.2
+	 * @version 1.52.3
 	 *
 	 * @constructor
 	 * @public
 	 * @alias sap.ui.table.TreeTable
+	 * @see {@link topic:a05fe0659b9c49729168a48697ce0000 Tree Table}
+	 * @see {@link topic:148892ff9aea4a18b912829791e38f3e Tables: Which One Should I Choose?}
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var TreeTable = Table.extend("sap.ui.table.TreeTable", /** @lends sap.ui.table.TreeTable.prototype */ { metadata : {
@@ -152,12 +154,6 @@ sap.ui.define(['jquery.sap.global', './Table', 'sap/ui/model/ClientTreeBindingAd
 		}
 	};
 
-	/**
-	 * Sets the selection mode. The current selection is lost.
-	 * @param {string} sSelectionMode the selection mode, see sap.ui.table.SelectionMode
-	 * @public
-	 * @returns a reference on the table for chaining
-	 */
 	TreeTable.prototype.setSelectionMode = function (sSelectionMode) {
 		var oBinding = this.getBinding("rows");
 		if (oBinding && oBinding.clearSelection) {
