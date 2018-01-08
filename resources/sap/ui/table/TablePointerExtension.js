@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -922,7 +922,7 @@ sap.ui.define(['./library', 'jquery.sap.global', './TableExtension', './TableUti
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.48.16
+	 * @version 1.48.17
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension

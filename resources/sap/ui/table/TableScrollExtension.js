@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -327,24 +327,26 @@ sap.ui.define([
 		 */
 		onMouseWheelScrolling: function(oEvent) {
 			var oScrollExtension = this._getScrollExtension();
-			var oOriginalEvent = oEvent.originalEvent;
-			var bHorizontalScrolling = oOriginalEvent.shiftKey;
-			var bScrollingForward;
+			var bVerticalDelta = Math.abs(oEvent.originalEvent.deltaY) > Math.abs(oEvent.originalEvent.deltaX);
+			var iScrollDelta = bVerticalDelta ? oEvent.originalEvent.deltaY : oEvent.originalEvent.deltaX;
+			var bHorizontalScrolling = bVerticalDelta && oEvent.originalEvent.shiftKey || !bVerticalDelta;
+			var bScrollingForward = iScrollDelta > 0;
 			var bScrolledToEnd = false;
-			var iScrollDelta = 0;
 
-			if (Device.browser.firefox) {
-				iScrollDelta = oOriginalEvent.detail;
-			} else if (bHorizontalScrolling) {
-				iScrollDelta = oOriginalEvent.deltaX;
-			} else {
-				iScrollDelta = oOriginalEvent.deltaY;
+			if (iScrollDelta === 0) {
+				return;
 			}
-
-			bScrollingForward = iScrollDelta > 0;
 
 			if (bHorizontalScrolling) {
 				var oHSb = oScrollExtension.getHorizontalScrollbar();
+
+				if (oEvent.originalEvent.deltaMode > 0 /* Not DOM_DELTA_PIXEL */) {
+					// For simplicity and performance reasons horizontal line and page scrolling is always performed by the distance of one minimum
+					// column width. To determine the real scroll distance reading from the DOM is necessary, but this should be avoided in an
+					// event handler.
+					var iMinColumnWidth = TableUtils.Column.getMinColumnWidth();
+					iScrollDelta = bScrollingForward ? iMinColumnWidth : -iMinColumnWidth;
+				}
 
 				if (bScrollingForward) {
 					bScrolledToEnd = oHSb.scrollLeft === oHSb.scrollWidth - oHSb.clientWidth;
@@ -353,14 +355,20 @@ sap.ui.define([
 				}
 
 				if (oScrollExtension.isHorizontalScrollbarVisible() && !bScrolledToEnd) {
-					oEvent.preventDefault();
-					oEvent.stopPropagation();
-
 					oHSb.scrollLeft = oHSb.scrollLeft + iScrollDelta;
 				}
 
-			} else {
+				oEvent.preventDefault();
+				oEvent.stopPropagation();
+
+			} else { // Vertical scrolling
 				var oVSb = oScrollExtension.getVerticalScrollbar();
+
+				if (oEvent.originalEvent.deltaMode === 1 /* DOM_DELTA_LINE */) {
+					iScrollDelta *= this._getScrollingPixelsForRow();
+				} else if (oEvent.originalEvent.deltaMode === 2 /* DOM_DELTA_PAGE */) {
+					iScrollDelta *= this._getScrollingPixelsForRow() * this.getVisibleRowCount();
+				}
 
 				if (bScrollingForward) {
 					bScrolledToEnd = oVSb.scrollTop === oVSb.scrollHeight - oVSb.clientHeight;
@@ -494,7 +502,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.48.16
+	 * @version 1.48.17
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
@@ -527,11 +535,7 @@ sap.ui.define([
 			VerticalScrollingHelper.addEventListeners(oTable);
 
 			// Mouse wheel
-			if (Device.browser.firefox) {
-				oTable._getScrollTargets().on("MozMousePixelScroll.sapUiTableMouseWheel", ExtensionHelper.onMouseWheelScrolling.bind(oTable));
-			} else {
-				oTable._getScrollTargets().on("wheel.sapUiTableMouseWheel", ExtensionHelper.onMouseWheelScrolling.bind(oTable));
-			}
+			oTable._getScrollTargets().on("wheel", ExtensionHelper.onMouseWheelScrolling.bind(oTable));
 		},
 
 		/*
@@ -544,11 +548,7 @@ sap.ui.define([
 			VerticalScrollingHelper.removeEventListeners(oTable);
 
 			// Mouse wheel
-			if (Device.browser.firefox) {
-				oTable._getScrollTargets().off("MozMousePixelScroll.sapUiTableMouseWheel");
-			} else {
-				oTable._getScrollTargets().off("wheel.sapUiTableMouseWheel");
-			}
+			oTable._getScrollTargets().off("wheel");
 		},
 
 		/*
