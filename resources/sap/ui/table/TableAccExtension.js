@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -391,6 +391,11 @@ sap.ui.define([
 				if (((!oInfo || oInfo.focusable) && !this._readonly) || (bIsTreeColumnCell && oTableInstances.row
 																		 && oTableInstances.row._bHasChildren)) {
 					aDescriptions.push(sTableId + "-toggleedit");
+				}
+
+				if (TableUtils.Grouping.isTreeMode(oTable) && !!$Cell.parent().attr("aria-selected")) {
+					// aria-selected on the row seems not be enough for treegrids
+					aLabels.push(sTableId + "-ariarowselected");
 				}
 			}
 
@@ -855,7 +860,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.52.3
+	 * @version 1.52.4
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension

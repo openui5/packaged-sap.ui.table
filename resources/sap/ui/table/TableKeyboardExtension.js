@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -192,7 +192,9 @@ sap.ui.define([
 					}
 
 					if (bHasRowActions) {
-						aHeaderDomRefs.push($Table.find(".sapUiTableRowActionHeader").get(0));
+						// Only add a dummy (inivisible inner text) to fullfill matrix for item navigation.
+						// Header should not be focuable.
+						aHeaderDomRefs.push($Table.find(".sapUiTableRowActionHeader").children().get(0));
 					}
 				}
 
@@ -241,7 +243,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles keyboard related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.52.3
+	 * @version 1.52.4
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardExtension

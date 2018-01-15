@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -333,8 +333,9 @@ sap.ui.define([
 		 */
 		onMouseWheelScrolling: function(oEvent) {
 			var oScrollExtension = this._getScrollExtension();
-			var bHorizontalScrolling = oEvent.shiftKey;
-			var iScrollDelta = oEvent.deltaY;
+			var bVerticalDelta = Math.abs(oEvent.deltaY) > Math.abs(oEvent.deltaX);
+			var iScrollDelta = bVerticalDelta ? oEvent.deltaY : oEvent.deltaX;
+			var bHorizontalScrolling = bVerticalDelta && oEvent.shiftKey || !bVerticalDelta;
 			var bScrollingForward = iScrollDelta > 0;
 			var bScrolledToEnd = false;
 
@@ -653,7 +654,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles scrolling.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.52.3
+	 * @version 1.52.4
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
