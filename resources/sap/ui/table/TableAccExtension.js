@@ -740,9 +740,7 @@ sap.ui.define([
 					break;
 
 				case TableAccExtension.ELEMENTTYPES.COLUMNHEADER_ROW: //The area which contains the column headers
-					if (!TableUtils.hasRowHeader(oTable)) {
-						mAttributes["role"] = "row";
-					}
+					mAttributes["role"] = "row";
 					addAriaForOverlayOrNoData(oTable, mAttributes, true, false);
 					break;
 
@@ -752,7 +750,9 @@ sap.ui.define([
 
 				case TableAccExtension.ELEMENTTYPES.TH: //The "technical" column headers
 					var bHasFixedColumns = oTable.getFixedColumnCount() > 0;
-					mAttributes["role"] = bHasFixedColumns ? "columnheader" : "presentation";
+					if (!bHasFixedColumns) {
+						mAttributes["role"] = "presentation";
+					}
 					mAttributes["scope"] = "col";
 					if (bHasFixedColumns) {
 						if (mParams && mParams.column) {
@@ -860,7 +860,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.52.4
+	 * @version 1.52.5
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension
