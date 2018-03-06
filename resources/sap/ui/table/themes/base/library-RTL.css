@@ -134,7 +134,8 @@
   opacity: 0;
 }
 .sapUiTableOverlayArea:focus,
-.sapUiTableCtrlEmpty:focus {
+.sapUiTableCtrlEmpty:focus,
+.sapUiTableCnt > .sapUiLocalBusyIndicator:focus {
   outline-width: 1px;
   outline-style: dotted;
   outline-offset: -3px;
@@ -143,13 +144,17 @@
 html[data-sap-ui-browser^="ie"] .sapUiTableOverlayArea:focus,
 html[data-sap-ui-browser^="ed"] .sapUiTableOverlayArea:focus,
 html[data-sap-ui-browser^="ie"] .sapUiTableCtrlEmpty:focus,
-html[data-sap-ui-browser^="ed"] .sapUiTableCtrlEmpty:focus {
+html[data-sap-ui-browser^="ed"] .sapUiTableCtrlEmpty:focus,
+html[data-sap-ui-browser^="ie"] .sapUiTableCnt > .sapUiLocalBusyIndicator:focus,
+html[data-sap-ui-browser^="ed"] .sapUiTableCnt > .sapUiLocalBusyIndicator:focus {
   outline-width: 0;
 }
 html[data-sap-ui-browser^="ie"] .sapUiTableOverlayArea:focus:before,
 html[data-sap-ui-browser^="ed"] .sapUiTableOverlayArea:focus:before,
 html[data-sap-ui-browser^="ie"] .sapUiTableCtrlEmpty:focus:before,
-html[data-sap-ui-browser^="ed"] .sapUiTableCtrlEmpty:focus:before {
+html[data-sap-ui-browser^="ed"] .sapUiTableCtrlEmpty:focus:before,
+html[data-sap-ui-browser^="ie"] .sapUiTableCnt > .sapUiLocalBusyIndicator:focus:before,
+html[data-sap-ui-browser^="ed"] .sapUiTableCnt > .sapUiLocalBusyIndicator:focus:before {
   position: absolute;
   top: 2px;
   right: 2px;
