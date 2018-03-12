@@ -837,6 +837,36 @@ html[data-sap-ui-browser^="ed"] .sapUiTableHScr .sapUiTableColReorderIndicator,
 html[data-sap-ui-browser^="ed"] .sapUiTableHScr .sapUiTableColRsz {
   bottom: 12px;
 }
+html.sap-desktop:not(.sap-tablet) .sapUiTableVSb::-webkit-scrollbar-thumb,
+html.sap-desktop.sap-tablet .sapUiTableVSb::-webkit-scrollbar-thumb {
+  border-left: 0.125rem solid #000000;
+  border-right: 0.125rem solid #000000;
+}
+html.sap-desktop:not(.sap-tablet) .sapUiTableVSb::-webkit-scrollbar:vertical,
+html.sap-desktop.sap-tablet .sapUiTableVSb::-webkit-scrollbar:vertical {
+  width: 16px;
+}
+html.sap-desktop:not(.sap-tablet) .sapUiTableHSb::-webkit-scrollbar-thumb,
+html.sap-desktop.sap-tablet .sapUiTableHSb::-webkit-scrollbar-thumb {
+  border-top: 0.125rem solid #000000;
+  border-bottom: 0.125rem solid #000000;
+}
+html.sap-desktop:not(.sap-tablet) .sapUiTableHSb::-webkit-scrollbar:horizontal,
+html.sap-desktop.sap-tablet .sapUiTableHSb::-webkit-scrollbar:horizontal {
+  height: 16px;
+}
+html.sap-desktop:not(.sap-tablet) .sapUiTableVSb::-webkit-scrollbar-thumb,
+html.sap-desktop.sap-tablet .sapUiTableVSb::-webkit-scrollbar-thumb,
+html.sap-desktop:not(.sap-tablet) .sapUiTableHSb::-webkit-scrollbar-thumb,
+html.sap-desktop.sap-tablet .sapUiTableHSb::-webkit-scrollbar-thumb {
+  background-color: #999999;
+}
+html.sap-desktop:not(.sap-tablet) .sapUiTableVSb::-webkit-scrollbar,
+html.sap-desktop.sap-tablet .sapUiTableVSb::-webkit-scrollbar,
+html.sap-desktop:not(.sap-tablet) .sapUiTableHSb::-webkit-scrollbar,
+html.sap-desktop.sap-tablet .sapUiTableHSb::-webkit-scrollbar {
+  background-color: #000000;
+}
 html.sap-tablet:not(.sap-desktop) .sapUiTableVSb::-webkit-scrollbar,
 html.sap-phone .sapUiTableVSb::-webkit-scrollbar,
 html.sap-tablet:not(.sap-desktop) .sapUiTableHSb::-webkit-scrollbar,
