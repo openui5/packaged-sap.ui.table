@@ -27,7 +27,7 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 	 * @see http://scn.sap.com/docs/DOC-44986
 	 *
 	 * @extends sap.ui.table.Table
-	 * @version 1.54.0
+	 * @version 1.54.1
 	 *
 	 * @constructor
 	 * @public
@@ -760,6 +760,12 @@ sap.ui.define(['jquery.sap.global', './AnalyticalColumn', './Table', './TreeTabl
 		if (!this._bSuspendUpdateAnalyticalInfo) {
 			this._updateTableColumnDetails();
 			this.updateAnalyticalInfo(bSuppressRefresh, bForceChange);
+
+			if (this.bOutput) {
+				// If the table was already rendered if the column information has been updated, it needs to be invalidated. The necessity to render
+				// certain columns might have changed.
+				this.invalidate();
+			}
 		}
 	};
 

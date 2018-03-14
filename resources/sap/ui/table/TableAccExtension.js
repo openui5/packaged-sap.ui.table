@@ -863,7 +863,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.54.0
+	 * @version 1.54.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension

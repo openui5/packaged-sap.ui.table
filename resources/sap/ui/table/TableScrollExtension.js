@@ -220,8 +220,10 @@ sap.ui.define([
 				oScrollExtension._iFirstVisibleRowInBuffer = null;
 			}
 
+			jQuery.sap.clearDelayedCall(this._mTimeouts.largeDataScrolling);
+			delete this._mTimeouts.largeDataScrolling;
+
 			if (this._bLargeDataScrolling && !oScrollExtension._bIsScrolledVerticallyByWheel) {
-				jQuery.sap.clearDelayedCall(this._mTimeouts.largeDataScrolling);
 				this._mTimeouts.largeDataScrolling = jQuery.sap.delayedCall(300, this, function() {
 					delete this._mTimeouts.largeDataScrolling;
 					VerticalScrollingHelper.updateFirstVisibleRow(this);
@@ -380,8 +382,7 @@ sap.ui.define([
 		isUpdatePending: function(oTable) {
 			return oTable != null
 				   && (oTable._mAnimationFrames.verticalScrollUpdate != null
-					   || oTable._mTimeouts.verticalScrollUpdate != null
-					   || oTable._mTimeouts.largeDataScrolling != null);
+					   || oTable._mTimeouts.verticalScrollUpdate != null);
 		},
 
 		/**
@@ -828,7 +829,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles scrolling.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.54.0
+	 * @version 1.54.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
@@ -1525,8 +1526,9 @@ sap.ui.define([
 	 */
 	TableScrollExtension.prototype.updateInnerVerticalScrollPosition = function() {
 		var oTable = this.getTable();
+		var oContentDomRef = oTable == null ? null : oTable.getDomRef("tableCCnt");
 
-		if (oTable == null || VerticalScrollingHelper.isUpdatePending(oTable)) {
+		if (oContentDomRef == null || VerticalScrollingHelper.isUpdatePending(oTable)) {
 			return;
 		}
 
@@ -1538,7 +1540,7 @@ sap.ui.define([
 			// position should be reset.
 
 			jQuery.sap.log.debug("sap.ui.table.TableScrollExtension", "updateInnerVerticalScrollPosition: 0", oTable);
-			oTable.getDomRef("tableCCnt").scrollTop = 0;
+			oContentDomRef.scrollTop = 0;
 			return;
 		}
 
@@ -1615,7 +1617,7 @@ sap.ui.define([
 			"updateInnerVerticalScrollPosition: " + iInnerScrollPosition + " of " + iInnerScrollRange + " (" + (nInnerScrollPercentage * 100) + "%)"
 			+ " (in buffer: " + bScrollPositionInBuffer + ")", oTable);
 
-		oTable.getDomRef("tableCCnt").scrollTop = iInnerScrollPosition;
+		oContentDomRef.scrollTop = iInnerScrollPosition;
 	};
 
 	/**
