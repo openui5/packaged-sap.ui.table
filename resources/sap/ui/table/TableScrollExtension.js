@@ -654,7 +654,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles scrolling.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.52.8
+	 * @version 1.52.9
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension

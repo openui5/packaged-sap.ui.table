@@ -1415,6 +1415,18 @@ html.sap-desktop:not(.sap-tablet) .sapUiTableHSb::-webkit-scrollbar:horizontal,
 html.sap-desktop.sap-tablet .sapUiTableHSb::-webkit-scrollbar:horizontal {
   height: 16px;
 }
+html.sap-desktop:not(.sap-tablet) .sapUiTableVSb::-webkit-scrollbar-thumb,
+html.sap-desktop.sap-tablet .sapUiTableVSb::-webkit-scrollbar-thumb,
+html.sap-desktop:not(.sap-tablet) .sapUiTableHSb::-webkit-scrollbar-thumb,
+html.sap-desktop.sap-tablet .sapUiTableHSb::-webkit-scrollbar-thumb {
+  background-color: #999999;
+}
+html.sap-desktop:not(.sap-tablet) .sapUiTableVSb::-webkit-scrollbar,
+html.sap-desktop.sap-tablet .sapUiTableVSb::-webkit-scrollbar,
+html.sap-desktop:not(.sap-tablet) .sapUiTableHSb::-webkit-scrollbar,
+html.sap-desktop.sap-tablet .sapUiTableHSb::-webkit-scrollbar {
+  background-color: #000000;
+}
 html.sap-tablet:not(.sap-desktop) .sapUiTableVSb::-webkit-scrollbar,
 html.sap-phone .sapUiTableVSb::-webkit-scrollbar,
 html.sap-tablet:not(.sap-desktop) .sapUiTableHSb::-webkit-scrollbar,
@@ -2004,6 +2016,9 @@ html.sap-phone .sapUiTableGroupMode .sapUiTableCtrlScroll .sapUiTableGroupHeader
 }
 .sapUiTableRowHdr.sapUiTableRowHvr::after {
   background-color: #0f5d94;
+}
+.sapUiTableRowHighlight.sapUiTableRowHighlightInformation {
+  background-color: #6bd3ff;
 }
 /* ======================================= */
 /* CSS for control sap.ui.table/Scrolling  */
