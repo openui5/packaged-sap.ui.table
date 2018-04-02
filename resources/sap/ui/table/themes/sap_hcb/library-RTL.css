@@ -134,6 +134,9 @@
 .sapUiTableEmpty .sapUiTableCtrlEmpty {
   display: block;
 }
+.sapUiTableEmpty .sapUiTableCtrlAfter {
+  display: none;
+}
 .sapUiTableEmpty .sapUiTableRowHdr,
 .sapUiTableEmpty .sapUiTableRowAction {
   opacity: 0;
@@ -1893,6 +1896,9 @@ html.sap-phone .sapUiTableGroupMode .sapUiTableCtrlScroll .sapUiTableGroupHeader
   border-right: 0;
   border-left: 0;
   background-color: #000000;
+}
+.sapUiAnalyticalTable .sapUiTableRowHdr.sapUiAnalyticalTableSum.sapUiTableRowHvr {
+  background-color: #7a5100;
 }
 .sapUiAnalyticalTable .sapUiTableRowHdr.sapUiAnalyticalTableDummy {
   font-size: 14px;

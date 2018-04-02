@@ -679,15 +679,14 @@ sap.ui.define([
 
 				case TableAccExtension.ELEMENTTYPES.DATACELL:
 					mAttributes["role"] = "gridcell";
-					if (mParams && typeof mParams.index === "number") {
-						mAttributes["headers"] = sTableId + "_col" + mParams.index;
-					}
 
 					var aLabels = [],
 						oColumn = mParams && mParams.column ? mParams.column : null;
 
 					if (oColumn) {
 						aLabels = ExtensionHelper.getRelevantColumnHeaders(oTable, oColumn);
+						mAttributes["headers"] = aLabels.join(" ");
+
 						for (var i = 0; i < aLabels.length; i++) {
 							aLabels[i] = aLabels[i] + "-inner";
 						}
@@ -862,7 +861,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.52.9
+	 * @version 1.52.10
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension

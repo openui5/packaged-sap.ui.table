@@ -52,7 +52,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.9
+	 * @version 1.52.10
 	 *
 	 * @constructor
 	 * @public
@@ -1016,7 +1016,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				var iAvailableSpaceDifference = Math.abs(iNewAvailableSpace - this._iLastAvailableSpace);
 
 				if (iAvailableSpaceDifference >= 5) {
-					this._iLastAvailableSpace = Math.floor(iNewAvailableSpace);
+					this._iLastAvailableSpace = iNewAvailableSpace;
 				}
 
 				return this._iLastAvailableSpace;
@@ -2098,7 +2098,6 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if ((this.bOutput && sVisibleRowCountMode === VisibleRowCountMode.Auto) || sVisibleRowCountMode !== VisibleRowCountMode.Auto) {
 			// the correct number of records to be requested can only be determined when the table row content height is known or if the
 			// visible row count mode is not Auto
-			var iRowsToDisplay = this._calculateRowsToDisplay();
 			if (this.bOutput) {
 				oBinding.attachEventOnce("dataRequested", function() {
 					// doing it in a timeout will allow the data request to be sent before the rows get created
@@ -2106,7 +2105,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 						window.clearTimeout(that._mTimeouts.refreshRowsAdjustRows);
 					}
 					that._mTimeouts.refreshRowsAdjustRows = window.setTimeout(function() {
-						that._updateRows(iRowsToDisplay, sReason, false);
+						that._updateRows(that._calculateRowsToDisplay(), sReason, false);
 					}, 0);
 				});
 			}
@@ -2114,7 +2113,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			if (sReason === ChangeReason.Filter || sReason === ChangeReason.Sort) {
 				this.setFirstVisibleRow(0);
 			}
-			this._updateBindingContexts(iRowsToDisplay, true);
+			this._updateBindingContexts(this._calculateRowsToDisplay(), true);
 		}
 	};
 
