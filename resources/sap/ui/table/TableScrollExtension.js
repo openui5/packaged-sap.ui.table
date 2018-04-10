@@ -245,22 +245,22 @@ sap.ui.define([
 			var iNewFirstVisibleRowIndex = oScrollExtension.getRowIndexAtCurrentScrollPosition();
 			var iOldFirstVisibleRowIndex = oTable.getFirstVisibleRow();
 			var bNewFirstVisibleRowInBuffer = iNewFirstVisibleRowIndex < 0;
-			var iOldFirstVisibleRowInBuffer = iOldFirstVisibleRowIndex >= oTable._getMaxFirstRenderedRowIndex();
+			var bOldFirstVisibleRowInBuffer = iOldFirstVisibleRowIndex >= oTable._getMaxFirstRenderedRowIndex();
 			var bFirstVisibleRowChanged = iNewFirstVisibleRowIndex !== iOldFirstVisibleRowIndex;
-			var bRowsUpdateRequired = bFirstVisibleRowChanged && !(bNewFirstVisibleRowInBuffer && iOldFirstVisibleRowInBuffer);
+			var bRowsUpdateRequired = bFirstVisibleRowChanged && !(bNewFirstVisibleRowInBuffer && bOldFirstVisibleRowInBuffer);
 
 			if (bRowsUpdateRequired) {
 				if (bNewFirstVisibleRowInBuffer) {
 					// The actual new first visible row cannot be determined yet. It will be done when the inner scroll position gets updated.
-					iNewFirstVisibleRowIndex = oTable._getMaxFirstVisibleRowIndex();
+					iNewFirstVisibleRowIndex = oTable._getMaxFirstRenderedRowIndex();
 				}
 				jQuery.sap.log.debug("sap.ui.table.TableScrollExtension",
 					"updateFirstVisibleRow: From " + iOldFirstVisibleRowIndex + " to " + iNewFirstVisibleRowIndex, oTable);
 				oTable.setFirstVisibleRow(iNewFirstVisibleRowIndex, true);
-				VerticalScrollingHelper._bIgnoreOnRowsUpdated = true;
+				oTable._bIgnoreOnRowsUpdatedOnScroll = true;
 				oTable.attachEventOnce("_rowsUpdated", function() {
 					oScrollExtension.updateInnerVerticalScrollPosition();
-					delete VerticalScrollingHelper._bIgnoreOnRowsUpdated;
+					delete oTable._bIgnoreOnRowsUpdatedOnScroll;
 				});
 			} else if (TableUtils.isVariableRowHeightEnabled(oTable)) {
 				jQuery.sap.log.debug("sap.ui.table.TableScrollExtension",
@@ -289,7 +289,7 @@ sap.ui.define([
 		 * @private
 		 */
 		onRowsUpdated: function(oEvent) {
-			if (VerticalScrollingHelper._bIgnoreOnRowsUpdated) {
+			if (this._bIgnoreOnRowsUpdatedOnScroll) {
 				return;
 			}
 
@@ -711,35 +711,37 @@ sap.ui.define([
 		},
 
 		onfocusin: function(oEvent) {
-			var $ctrlScr;
-			var $FocusedDomRef = jQuery(oEvent.target);
-			if ($FocusedDomRef.parent(".sapUiTableTr").length > 0) {
-				$ctrlScr = jQuery(this.getDomRef("sapUiTableCtrlScr"));
-			} else if ($FocusedDomRef.parent(".sapUiTableColHdrTr").length > 0) {
-				$ctrlScr = jQuery(this.getDomRef("sapUiTableColHdrScr"));
+			// Many browsers do not scroll the focused element into the viewport if it is partially visible. With this logic we ensure that the
+			// focused cell always gets scrolled into the viewport. If the cell is wider than the row container, no action is performed.
+			var oRowContainer;
+			var oCellInfo = TableUtils.getCellInfo(oEvent.target);
+
+			if (oCellInfo.isOfType(TableUtils.CELLTYPE.DATACELL)) {
+				oRowContainer = this.getDomRef("sapUiTableCtrlScr");
+			} else if (oCellInfo.isOfType(TableUtils.CELLTYPE.COLUMNHEADER)) {
+				oRowContainer = this.getDomRef("sapUiTableColHdrScr");
 			}
 
-			// Many browsers do not scroll the focused element into the viewport, if it is partially visible. With this
-			// logic we ensure, that the focused element always gets scrolled into the viewport in a similar way.
-			if ($ctrlScr && $ctrlScr.length > 0) {
-				var iCtrlScrScrollLeft = $ctrlScr.scrollLeft();
-				var iCtrlScrWidth = $ctrlScr.width();
-				var iCellLeft = $FocusedDomRef.position().left;
-				var iCellRight = iCellLeft + $FocusedDomRef.width();
-				var iOffsetLeft = iCellLeft - iCtrlScrScrollLeft;
-				var iOffsetRight = iCellRight - iCtrlScrWidth - iCtrlScrScrollLeft;
+			if (oRowContainer != null && oCellInfo.columnIndex >= this.getFixedColumnCount()) {
+				var oCell = oCellInfo.cell[0];
+				var iScrollLeft = oRowContainer.scrollLeft;
+				var iRowContainerWidth = oRowContainer.clientWidth;
+				var iCellLeft = oCell.offsetLeft;
+				var iCellRight = iCellLeft + oCell.offsetWidth;
+				var iOffsetLeft = iCellLeft - iScrollLeft;
+				var iOffsetRight = iCellRight - iRowContainerWidth - iScrollLeft;
 				var oHSb = this._getScrollExtension().getHorizontalScrollbar();
 
-				if (iOffsetRight > 0) {
-					oHSb.scrollLeft = oHSb.scrollLeft + iOffsetRight + 1;
-				} else if (iOffsetLeft < 0) {
-					oHSb.scrollLeft = oHSb.scrollLeft + iOffsetLeft - 1;
+				if (iOffsetLeft < 0 && iOffsetRight < 0) {
+					oHSb.scrollLeft = iScrollLeft + iOffsetLeft;
+				} else if (iOffsetRight > 0 && iOffsetLeft > 0) {
+					oHSb.scrollLeft = iScrollLeft + iOffsetRight;
 				}
 			}
 
 			// On focus, the browsers scroll elements which are not visible into the viewport (IE also scrolls if elements are partially visible).
 			// This causes scrolling inside table cells, which is not desired.
-			// Flickering of the cell content can not be avoided, as the browser performs scrolling after the event. This behavior can not be
+			// Flickering of the cell content cannot be avoided, as the browser performs scrolling after the event. This behavior cannot be
 			// prevented, only reverted.
 			var $ParentCell = TableUtils.getParentCell(this, oEvent.target);
 
@@ -829,7 +831,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles scrolling.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.54.2
+	 * @version 1.54.3
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
@@ -1223,9 +1225,13 @@ sap.ui.define([
 
 		if (nScrollPosition == null) {
 			var iFirstVisibleRowIndex = oTable.getFirstVisibleRow();
-			if (iFirstVisibleRowIndex >= oTable._getMaxFirstRenderedRowIndex()) {
+			var iMaxFirstRenderedRowIndex = oTable._getMaxFirstRenderedRowIndex();
+			if (iFirstVisibleRowIndex > iMaxFirstRenderedRowIndex) {
+				// The first visible row is inside the buffer. The table will be scrolled to the bottom to receive the heights of the rows in the
+				// buffer. The first visible row will then be correctly displayed on top when the inner scroll position is updated.
+				// This process is not required for the first row in the buffer.
 				this._nVerticalScrollPosition = this.getVerticalScrollRange();
-				this._iFirstVisibleRowInBuffer = iFirstVisibleRowIndex - oTable._getMaxFirstRenderedRowIndex();
+				this._iFirstVisibleRowInBuffer = iFirstVisibleRowIndex - iMaxFirstRenderedRowIndex;
 			} else {
 				this._nVerticalScrollPosition = iFirstVisibleRowIndex * this.getVerticalScrollRangeRowFraction();
 				this._iFirstVisibleRowInBuffer = null;

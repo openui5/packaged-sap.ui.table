@@ -91,7 +91,7 @@ sap.ui.define([
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.2
+	 * @version 1.54.3
 	 *
 	 * @constructor
 	 * @public
@@ -1110,7 +1110,7 @@ sap.ui.define([
 				var iAvailableSpaceDifference = Math.abs(iNewAvailableSpace - this._iLastAvailableSpace);
 
 				if (iAvailableSpaceDifference >= 5) {
-					this._iLastAvailableSpace = Math.floor(iNewAvailableSpace);
+					this._iLastAvailableSpace = iNewAvailableSpace;
 				}
 
 				return this._iLastAvailableSpace;
@@ -1781,6 +1781,7 @@ sap.ui.define([
 			Table._addBindingListener(oBindingInfo, "change", this._onBindingChange.bind(this));
 			Table._addBindingListener(oBindingInfo, "dataRequested", this._onBindingDataRequested.bind(this));
 			Table._addBindingListener(oBindingInfo, "dataReceived", this._onBindingDataReceived.bind(this));
+			this._bContextsRequested = false;
 		}
 
 		// Create the binding.
@@ -2030,6 +2031,14 @@ sap.ui.define([
 		}
 	};
 
+	Table.prototype._computeRequestLength = function(iLength) {
+		if (this.getVisibleRowCountMode() === VisibleRowCountMode.Auto && !this._bContextsRequested) {
+			var iEstimatedRowCount = Math.ceil(Device.resize.height / TableUtils.DEFAULT_ROW_HEIGHT.sapUiSizeCondensed);
+			return Math.max(iLength, iEstimatedRowCount);
+		}
+		return iLength;
+	};
+
 	/**
 	 * Requests all contexts from the binding which are required to display the data in the current viewport.
 	 *
@@ -2098,8 +2107,10 @@ sap.ui.define([
 		// if this is done before requesting fixed bottom rows, it saves some performance for the analytical table
 		// since the tree gets only build once (as result of getContexts call). If first the fixed bottom row would
 		// be requested the analytical binding would build the tree twice.
-		aTmpContexts = this._getContexts(iStartIndex, iLength, iThreshold);
+		aTmpContexts = this._getContexts(iStartIndex, this._computeRequestLength(iLength), iThreshold);
 		var iBindingLength = this._updateTotalRowCount(!bSuppressUpdate);
+
+		this._bContextsRequested = true;
 
 		// iLength is the number of rows which shall get filled. It might be more than the binding actually has data.
 		// Therefore Math.min is required to make sure to not request data again from the binding.
@@ -2205,7 +2216,6 @@ sap.ui.define([
 		if ((this.bOutput && sVisibleRowCountMode === VisibleRowCountMode.Auto) || sVisibleRowCountMode !== VisibleRowCountMode.Auto) {
 			// the correct number of records to be requested can only be determined when the table row content height is known or if the
 			// visible row count mode is not Auto
-			var iRowsToDisplay = this._calculateRowsToDisplay();
 			if (this.bOutput) {
 				oBinding.attachEventOnce("dataRequested", function() {
 					// doing it in a timeout will allow the data request to be sent before the rows get created
@@ -2213,7 +2223,7 @@ sap.ui.define([
 						window.clearTimeout(that._mTimeouts.refreshRowsAdjustRows);
 					}
 					that._mTimeouts.refreshRowsAdjustRows = window.setTimeout(function() {
-						that._updateRows(iRowsToDisplay, sReason, false);
+						that._updateRows(that._calculateRowsToDisplay(), sReason, false);
 					}, 0);
 				});
 			}
@@ -2221,7 +2231,7 @@ sap.ui.define([
 			if (sReason === ChangeReason.Filter || sReason === ChangeReason.Sort) {
 				this.setFirstVisibleRow(0);
 			}
-			this._updateBindingContexts(iRowsToDisplay, true);
+			this._updateBindingContexts(this._calculateRowsToDisplay(), true);
 		}
 	};
 
@@ -2689,14 +2699,7 @@ sap.ui.define([
 			return this._updateRows(iRows, sReason);
 		} else {
 			var bReturn = !this._mTimeouts.handleRowCountModeAutoAdjustRows;
-			var iBusyIndicatorDelay = this.getBusyIndicatorDelay();
-			var bBusyIndicatorEnabled = this.getEnableBusyIndicator();
 			var that = this;
-
-			if (oBinding && bBusyIndicatorEnabled) {
-				this.setBusyIndicatorDelay(0);
-				this.setBusy(true);
-			}
 
 			if (iTableAvailableSpace) {
 				this._setRowContentHeight(iTableAvailableSpace);
@@ -2709,11 +2712,6 @@ sap.ui.define([
 				}
 
 				delete that._mTimeouts.handleRowCountModeAutoAdjustRows;
-
-				if (oBinding && bBusyIndicatorEnabled) {
-					that.setBusyIndicatorDelay(iBusyIndicatorDelay);
-					that.setBusy(false);
-				}
 			}, 0);
 
 			return bReturn;

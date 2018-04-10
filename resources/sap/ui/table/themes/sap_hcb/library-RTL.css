@@ -129,6 +129,9 @@
 .sapUiTableEmpty .sapUiTableCtrlEmpty {
   display: block;
 }
+.sapUiTableEmpty .sapUiTableCtrlAfter {
+  display: none;
+}
 .sapUiTableEmpty .sapUiTableRowHdr,
 .sapUiTableEmpty .sapUiTableRowAction {
   opacity: 0;
@@ -1409,6 +1412,18 @@ html.sap-desktop:not(.sap-tablet) .sapUiTableHSb::-webkit-scrollbar:horizontal,
 html.sap-desktop.sap-tablet .sapUiTableHSb::-webkit-scrollbar:horizontal {
   height: 16px;
 }
+html.sap-desktop:not(.sap-tablet) .sapUiTableVSb::-webkit-scrollbar-thumb,
+html.sap-desktop.sap-tablet .sapUiTableVSb::-webkit-scrollbar-thumb,
+html.sap-desktop:not(.sap-tablet) .sapUiTableHSb::-webkit-scrollbar-thumb,
+html.sap-desktop.sap-tablet .sapUiTableHSb::-webkit-scrollbar-thumb {
+  background-color: #999999;
+}
+html.sap-desktop:not(.sap-tablet) .sapUiTableVSb::-webkit-scrollbar,
+html.sap-desktop.sap-tablet .sapUiTableVSb::-webkit-scrollbar,
+html.sap-desktop:not(.sap-tablet) .sapUiTableHSb::-webkit-scrollbar,
+html.sap-desktop.sap-tablet .sapUiTableHSb::-webkit-scrollbar {
+  background-color: #000000;
+}
 html.sap-tablet:not(.sap-desktop) .sapUiTableVSb::-webkit-scrollbar,
 html.sap-phone .sapUiTableVSb::-webkit-scrollbar,
 html.sap-tablet:not(.sap-desktop) .sapUiTableHSb::-webkit-scrollbar,
@@ -1876,6 +1891,9 @@ html.sap-phone .sapUiTableGroupMode .sapUiTableCtrlScroll .sapUiTableGroupHeader
   border-left: 0;
   background-color: #000000;
 }
+.sapUiAnalyticalTable .sapUiTableRowHdr.sapUiAnalyticalTableSum.sapUiTableRowHvr {
+  background-color: #7a5100;
+}
 .sapUiAnalyticalTable .sapUiTableRowHdr.sapUiAnalyticalTableDummy {
   font-size: 14px;
   line-height: 28px;
@@ -2003,6 +2021,9 @@ html.sap-phone .sapUiTableGroupMode .sapUiTableCtrlScroll .sapUiTableGroupHeader
 .sapUiTableRowHdr::before {
   color: #ffffff;
 }
+.sapUiTableRowHighlight.sapUiTableRowHighlightInformation {
+  background-color: #6bd3ff;
+}
 /* ======================================= */
 /* CSS for control sap.ui.table/Scrolling  */
 /* High Contrast Black theme               */
@@ -2033,4 +2054,4 @@ html.sap-desktop .sapUiTableHSb::-webkit-scrollbar-thumb {
 /* ====================================== */
 
 /* Inline theming parameters */
-#sap-ui-theme-sap\.ui\.table { background-image: url('data:text/plain;utf-8,%7B%22_sap_ui_table_FocusOutlineWidth%22:%222px%22,%22_sap_ui_table_Table_FocusOutlineOffset%22:%22-3px%22,%22_sap_ui_table_DragDrop_ColumnDnDHighlightColor%22:%22#03b803%22,%22_sap_ui_table_Grouping_GroupIconBorderWidth%22:%223px%22%7D'); }
+#sap-ui-theme-sap\.ui\.table { background-image: url('data:text/plain;utf-8,%7B%22_sap_ui_table_RowBorderWidth%22:%221px%22,%22_sap_ui_table_FocusOutlineWidth%22:%222px%22,%22_sap_ui_table_RowHdrWidth%22:%222rem%22,%22_sap_ui_table_RowHdrWidthCozy%22:%223rem%22,%22_sap_ui_table_RowHdrWidthCondensed%22:%222rem%22,%22_sap_ui_table_RowHeight%22:%22calc%282rem +  1px%29%22,%22_sap_ui_table_RowHeightCozy%22:%22calc%283rem +  1px%29%22,%22_sap_ui_table_RowHeightCondensed%22:%22calc%281.5rem +  1px%29%22,%22_sap_ui_table_Table_ToolbarDesign%22:%22Transparent%22,%22_sap_ui_table_Table_FocusOutlineOffset%22:%22-3px%22,%22_sap_ui_table_Table_ColHdrHeight%22:%222rem%22,%22_sap_ui_table_Table_ColHdrHeightCozy%22:%223rem%22,%22_sap_ui_table_Table_RowHighlightWidth%22:%226px%22,%22_sap_ui_table_Scrolling_DefaultScrollbarSize%22:%2216px%22,%22_sap_ui_table_Scrolling_ScrollbarSizeIE%22:%2218px%22,%22_sap_ui_table_Scrolling_ScrollbarSizeEDGE%22:%2212px%22,%22_sap_ui_table_Scrolling_ScrollbarSizeMOBILE%22:%228px%22,%22_sap_ui_table_Scrolling_ScrollbarBg%22:%22#000000%22,%22_sap_ui_table_DragDrop_ColumnDnDHighlightColor%22:%22#03b803%22,%22_sap_ui_table_DragDrop_ReorderIndicatorWidth%22:%222px%22,%22_sap_ui_table_Grouping_GroupIconHeightDefault%22:%2232px%22,%22_sap_ui_table_Grouping_GroupIconHeightCondensed%22:%2224px%22,%22_sap_ui_table_Grouping_GroupIconHeightCozy%22:%2248px%22,%22_sap_ui_table_Grouping_GroupHeaderBackground%22:%22#000000%22,%22_sap_ui_table_Grouping_GroupOutlineWidth%22:%222px%22,%22_sap_ui_table_Grouping_GroupIconBorderWidth%22:%223px%22,%22_sap_ui_table_Grouping_GroupIconFontSize%22:%220.875rem%22,%22_sap_ui_table_RowAction_Size%22:%221.625rem%22,%22_sap_ui_table_RowAction_SizeCozy%22:%222.5rem%22,%22_sap_ui_table_RowAction_SizeCondensed%22:%221.375rem%22%7D'); }
