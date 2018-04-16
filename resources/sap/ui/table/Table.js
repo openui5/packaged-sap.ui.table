@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.38.33
+	 * @version 1.38.34
 	 *
 	 * @constructor
 	 * @public
@@ -1148,6 +1148,8 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 		if (this._iScrollLeft) {
 			this.getDomRef(SharedDomRef.HorizontalScrollBar).scrollLeft = this._iScrollLeft;
 		}
+		this.getDomRef(SharedDomRef.VerticalScrollBar).style.maxHeight = this._getVSbHeight() + "px";
+		this._updateVSbRange();
 
 		this._updateGroupHeader();
 
