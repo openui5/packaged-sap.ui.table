@@ -91,7 +91,7 @@ sap.ui.define([
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.4
+	 * @version 1.54.5
 	 *
 	 * @constructor
 	 * @public
@@ -1624,7 +1624,7 @@ sap.ui.define([
 	 */
 	Table.prototype.applyFocusInfo = function(mFocusInfo) {
 		if (mFocusInfo && mFocusInfo.customId) {
-			this.$().find("#" + mFocusInfo.customId).focus();
+			jQuery.sap.byId(mFocusInfo.customId, this.getDomRef()).focus();
 		} else {
 			//TBD: should be applyFocusInfo but changing it breaks the unit tests
 			Element.prototype.getFocusInfo.apply(this, arguments);
@@ -2227,10 +2227,12 @@ sap.ui.define([
 				});
 			}
 			// request contexts from binding
+			var bSuppressUpdate = false;
 			if (sReason === ChangeReason.Filter || sReason === ChangeReason.Sort) {
 				this.setFirstVisibleRow(0);
+				bSuppressUpdate = true;
 			}
-			this._updateBindingContexts(this._calculateRowsToDisplay(), true);
+			this._updateBindingContexts(this._calculateRowsToDisplay(), bSuppressUpdate);
 		}
 	};
 
