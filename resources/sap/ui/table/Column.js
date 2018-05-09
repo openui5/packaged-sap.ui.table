@@ -25,7 +25,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	 * @class
 	 * The column allows you to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.52.11
+	 * @version 1.52.12
 	 *
 	 * @constructor
 	 * @public
