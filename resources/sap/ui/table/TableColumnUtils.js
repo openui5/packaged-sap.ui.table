@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device', './library'],
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Column...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.56.0
+		 * @version 1.56.1
 		 * @namespace
 		 * @alias sap.ui.table.TableColumnUtils
 		 * @private
