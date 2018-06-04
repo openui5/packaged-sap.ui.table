@@ -52,7 +52,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.13
+	 * @version 1.52.14
 	 *
 	 * @constructor
 	 * @public
@@ -1254,6 +1254,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 		this._updateTableContent();
 
+		// If only the rows are rendered, the css flag is not removed while the positioning of the actions is reset. Therefore, the flag must be
+		// manually removed so that the actions are later correctly positioned.
+		this.getDomRef().classList.remove("sapUiTableRActFlexible");
+
 		if (this._bFirstRendering && this.getVisibleRowCountMode() == VisibleRowCountMode.Auto) {
 			this._bFirstRendering = false;
 			// Wait until everything is rendered (parent height!) before reading/updating sizes. Use a promise to make sure
@@ -2060,15 +2064,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			// If the binding length changes, some parts of the UI need to be updated.
 			if (bUpdateUI !== false) {
 				var oScrollExtension = this._getScrollExtension();
-				var bClientBinding = TableUtils.isInstanceOf(oBinding, "sap/ui/model/ClientListBinding")
-									 || TableUtils.isInstanceOf(oBinding, "sap/ui/model/ClientTreeBinding");
 
 				this._updateFixedBottomRows();
 				oScrollExtension.updateVerticalScrollbarVisibility();
 				oScrollExtension.updateVerticalScrollHeight();
 
-				if (oBinding == null || bClientBinding) {
-					// A client binding does not fire dataReceived events. Therefore we need to update the no data area here.
+				if (!oBinding || !TableUtils.hasPendingRequests(this)) {
+					// A client binding -or- an $expand filled list binding does not fire dataReceived events. Therefore we need to update the no data area here.
 					// When the binding has been removed, the table might not be completely re-rendered (just the content). But the cached binding
 					// length changes. In this case the no data area needs to be updated.
 					this._updateNoData();
