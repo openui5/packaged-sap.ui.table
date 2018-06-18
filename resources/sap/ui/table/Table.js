@@ -91,7 +91,7 @@ sap.ui.define([
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.54.6
+	 * @version 1.54.7
 	 *
 	 * @constructor
 	 * @public
@@ -1406,7 +1406,7 @@ sap.ui.define([
 		this._aRowHeights = this._collectRowHeights(false);
 		var aColumnHeaderRowHeights = this._collectRowHeights(true);
 
-		if (TableUtils.isVariableRowHeightEnabled(this)) {
+		if (TableUtils.isVariableRowHeightEnabled(this) && !TableUtils.isNoDataVisible(this)) {
 			// Necessary in case the visible row count does not change after a resize (for example, this is always the case
 			// if visibleRowCountMode is set to "Fixed"). The row heights might change due to decreased column widths, so the inner scroll position
 			// must be adjusted.
@@ -2181,15 +2181,13 @@ sap.ui.define([
 			// If the binding length changes, some parts of the UI need to be updated.
 			if (bUpdateUI !== false) {
 				var oScrollExtension = this._getScrollExtension();
-				var bClientBinding = TableUtils.isInstanceOf(oBinding, "sap/ui/model/ClientListBinding")
-									 || TableUtils.isInstanceOf(oBinding, "sap/ui/model/ClientTreeBinding");
 
 				this._updateFixedBottomRows();
 				oScrollExtension.updateVerticalScrollbarVisibility();
 				oScrollExtension.updateVerticalScrollHeight();
 
-				if (oBinding == null || bClientBinding) {
-					// A client binding does not fire dataReceived events. Therefore we need to update the no data area here.
+				if (!oBinding || !TableUtils.hasPendingRequests(this)) {
+					// A client binding -or- an $expand filled list binding does not fire dataReceived events. Therefore we need to update the no data area here.
 					// When the binding has been removed, the table might not be completely re-rendered (just the content). But the cached binding
 					// length changes. In this case the no data area needs to be updated.
 					this._updateNoData();
@@ -2231,11 +2229,10 @@ sap.ui.define([
 				});
 			}
 			// request contexts from binding
-			var bSuppressUpdate = false;
 			if (sReason === ChangeReason.Filter || sReason === ChangeReason.Sort) {
 				this.setFirstVisibleRow(0);
-				bSuppressUpdate = true;
 			}
+			var bSuppressUpdate = sReason != null;
 			this._updateBindingContexts(this._calculateRowsToDisplay(), bSuppressUpdate);
 		}
 	};
@@ -3518,6 +3515,10 @@ sap.ui.define([
 			}
 		}
 		this._ignoreInvalidateOfChildControls = false;
+
+		if (TableUtils.isVariableRowHeightEnabled(this)) {
+			this._iRenderedFirstVisibleRow = this._getFirstRenderedRowIndex();
+		}
 
 		var bFireRowsUpdated = bUpdateUI && aContexts.length > 0;
 		return this._renderRows(sReason, bFireRowsUpdated);
