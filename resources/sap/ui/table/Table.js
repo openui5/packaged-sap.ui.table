@@ -52,7 +52,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.14
+	 * @version 1.52.15
 	 *
 	 * @constructor
 	 * @public
@@ -2112,11 +2112,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				});
 			}
 			// request contexts from binding
-			var bSuppressUpdate = false;
 			if (sReason === ChangeReason.Filter || sReason === ChangeReason.Sort) {
 				this.setFirstVisibleRow(0);
-				bSuppressUpdate = true;
 			}
+			var bSuppressUpdate = sReason != null;
 			this._updateBindingContexts(this._calculateRowsToDisplay(), bSuppressUpdate);
 		}
 	};
