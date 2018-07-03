@@ -141,7 +141,7 @@ sap.ui.define([
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.56.2
+	 * @version 1.56.3
 	 * @namespace
 	 * @alias sap.ui.table.TableUtils
 	 * @private
@@ -552,7 +552,7 @@ sap.ui.define([
 		 * @private
 		 */
 		isVariableRowHeightEnabled : function(oTable) {
-			return oTable._bVariableRowHeightEnabled && oTable.getFixedRowCount() <= 0 && oTable.getFixedBottomRowCount() <= 0;
+			return oTable && oTable._bVariableRowHeightEnabled && oTable.getFixedRowCount() <= 0 && oTable.getFixedBottomRowCount() <= 0;
 		},
 
 		/**
