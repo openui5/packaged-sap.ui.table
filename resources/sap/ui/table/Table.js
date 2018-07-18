@@ -52,7 +52,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.52.15
+	 * @version 1.52.16
 	 *
 	 * @constructor
 	 * @public
@@ -1080,12 +1080,25 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 		var iFixedColumnCount = this.getProperty("fixedColumnCount");
 		var iFixedHeaderWidthSum = 0;
+
 		if (iFixedColumnCount) {
+			var aColumns = this.getColumns();
 			var aHeaderElements = oDomRef.querySelectorAll(".sapUiTableCtrlFirstCol:not(.sapUiTableCHTHR) > th");
+
 			for (var i = 0; i < aHeaderElements.length; i++) {
 				var iColIndex = parseInt(aHeaderElements[i].getAttribute("data-sap-ui-headcolindex"), 10);
+
 				if (!isNaN(iColIndex) && (iColIndex < iFixedColumnCount)) {
-					iFixedHeaderWidthSum += aHeaderElements[i].getBoundingClientRect().width;
+					var oColumn = aColumns[iColIndex];
+					var iWidth;
+
+					if (oColumn._iFixWidth != null) {
+						iWidth = oColumn._iFixWidth;
+					} else {
+						iWidth = aHeaderElements[i].getBoundingClientRect().width;
+					}
+
+					iFixedHeaderWidthSum += iWidth;
 				}
 			}
 		}
@@ -1105,20 +1118,11 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 				}
 			}
 
-			// If the columns fit into the table, we do not need to ignore the fixed column count.
-			// Otherwise, check if the new fixed columns fit into the table. If they don't, the fixed column count setting will be ignored.
-			var bNonFixedColumnsFitIntoTable = oSizes.tableCtrlScrollWidth === oSizes.tableCtrlScrWidth; // Also true if no non-fixed columns exist.
+			iUsedHorizontalTableSpace += TableUtils.Column.getMinColumnWidth();
 
-			if (!bNonFixedColumnsFitIntoTable) { // horizontal scrollbar should be at least 48px wide
-				iUsedHorizontalTableSpace += TableUtils.Column.getMinColumnWidth();
-			}
-
-			var bFixedColumnsFitIntoTable = oSizes.tableCtrlFixedWidth + iUsedHorizontalTableSpace <= oSizes.tableCntWidth; // Also true if no fixed columns exist.
-			var bIgnoreFixedColumnCountCandidate = false;
-
-			if (!bNonFixedColumnsFitIntoTable || !bFixedColumnsFitIntoTable) {
-				bIgnoreFixedColumnCountCandidate = (oSizes.tableCntWidth - iUsedHorizontalTableSpace < iFixedHeaderWidthSum);
-			}
+			var iAvailableSpace = oSizes.tableCntWidth - iUsedHorizontalTableSpace;
+			var bFixedColumnsFitIntoTable = iAvailableSpace > iFixedHeaderWidthSum;
+			var bIgnoreFixedColumnCountCandidate = !bFixedColumnsFitIntoTable;
 
 			if (this._bIgnoreFixedColumnCount !== bIgnoreFixedColumnCountCandidate) {
 				this._bIgnoreFixedColumnCount = bIgnoreFixedColumnCountCandidate;
@@ -1307,7 +1311,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 			return;
 		}
 
-		if (!oDomRef.offsetWidth) { // do not update sizes of an invisible table
+		if (oDomRef.offsetWidth === 0) { // do not update sizes of an invisible table
 			TableUtils.deregisterResizeHandler(this, "");
 			registerResizeHandler();
 			return;
