@@ -141,7 +141,7 @@ sap.ui.define([
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.56.3
+	 * @version 1.56.4
 	 * @namespace
 	 * @alias sap.ui.table.TableUtils
 	 * @private
