@@ -771,13 +771,17 @@ sap.ui.define([
 
 			if ($ParentCell) {
 				Promise.resolve().then(function() {
-					var oInnerCellElement = $ParentCell.find(".sapUiTableCell")[0];
+					var $InnerCellElement = $ParentCell.find(".sapUiTableCell");
 
-					if (oInnerCellElement) {
-						oInnerCellElement.scrollLeft = 0;
-						oInnerCellElement.scrollTop = 0;
+					if ($InnerCellElement.length > 0) {
+						if (this._bRtlMode) {
+							$InnerCellElement.scrollLeftRTL($InnerCellElement[0].scrollWidth - $InnerCellElement[0].clientWidth);
+						} else {
+							$InnerCellElement[0].scrollLeft = 0;
+						}
+						$InnerCellElement[0].scrollTop = 0;
 					}
-				});
+				}.bind(this));
 			}
 		}
 	};
@@ -855,7 +859,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles scrolling.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.56.5
+	 * @version 1.56.6
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
@@ -1464,7 +1468,7 @@ sap.ui.define([
 				// large data or when zoomed in Chrome. In this case it can not be scrolled to the last row. To overcome this issue we consider the
 				// table to be scrolled to the end, if the scroll position is less than 1 pixel away from the maximum.
 				var nDistanceToMaximumScrollPosition = iScrollRange - nScrollPosition;
-				var bScrolledViaScrollTop = this.getVerticalScrollbar()._scrollTop == null;
+				var bScrolledViaScrollTop = this.getVerticalScrollbar()._scrollTop == null || this._bIsScrolledVerticallyByWheel;
 				var bScrolledToBottom = nDistanceToMaximumScrollPosition < 1;
 
 				if (bScrolledToBottom && bScrolledViaScrollTop) {
