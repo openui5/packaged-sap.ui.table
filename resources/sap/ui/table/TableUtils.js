@@ -164,7 +164,7 @@ sap.ui.define([
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.58.0
+	 * @version 1.58.1
 	 * @namespace
 	 * @alias sap.ui.table.TableUtils
 	 * @private
@@ -1203,7 +1203,7 @@ sap.ui.define([
 		 * Facilitates dynamic calling.
 		 *
 		 * @param {function():T | T} vObject The object, or a function returning the object, on which methods will be called.
-		 * @param {function(this:U, T) | Object<string, *[]>} vCall Called if <code>vObject</code> is, or returns an object.
+		 * @param {function(this:U, T) | Object<string, Array.<*>>} vCall Called if <code>vObject</code> is, or returns an object.
 		 * @param {U} [oThis] Context in the function calls, or in the callback if <code>vCall</code>is a function. Default is <code>vObject</code>.
 		 * @template T, U
 		 */

@@ -36,7 +36,7 @@ sap.ui.define([
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.58.0
+	 * @version 1.58.1
 	 *
 	 * @constructor
 	 * @public
