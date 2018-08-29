@@ -191,6 +191,11 @@ sap.ui.define([
 				var iScrollTop = oVSb.scrollTop;
 				oScrollExtension._iVerticalScrollPosition = iScrollTop;
 
+				if (oScrollExtension._bSkipUpdateFirstVisibleRow) {
+					oScrollExtension._bSkipUpdateFirstVisibleRow = false;
+					return;
+				}
+
 				var iNewFirstVisibleRowIndex = oScrollExtension.getRowIndexAtScrollPosition(iScrollTop);
 				var iOldFirstVisibleRowIndex = oTable.getFirstVisibleRow();
 				var bFirstVisibleRowChanged = iNewFirstVisibleRowIndex !== iOldFirstVisibleRowIndex;
@@ -637,13 +642,17 @@ sap.ui.define([
 
 			if ($ParentCell != null) {
 				Promise.resolve().then(function() {
-					var oInnerCellElement = $ParentCell.find(".sapUiTableCell")[0];
+					var $InnerCellElement = $ParentCell.find(".sapUiTableCell");
 
-					if (oInnerCellElement != null) {
-						oInnerCellElement.scrollLeft = 0;
-						oInnerCellElement.scrollTop = 0;
+					if ($InnerCellElement.length > 0) {
+						if (this._bRtlMode) {
+							$InnerCellElement.scrollLeftRTL($InnerCellElement[0].scrollWidth - $InnerCellElement[0].clientWidth);
+						} else {
+							$InnerCellElement[0].scrollLeft = 0;
+						}
+						$InnerCellElement[0].scrollTop = 0;
 					}
-				});
+				}.bind(this));
 			}
 		}
 	};
@@ -656,7 +665,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles scrolling.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.52.17
+	 * @version 1.52.18
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
@@ -676,6 +685,7 @@ sap.ui.define([
 			this._iInnerVerticalScrollRange = 0;
 			this._bIsScrolledVerticallyByWheel = false;
 			this._bIsScrolledVerticallyByKeyboard = false;
+			this._bSkipUpdateFirstVisibleRow = false;
 			this._mTouchSessionData = null;
 
 			oTable.addEventDelegate(this._delegate, oTable);
@@ -1029,13 +1039,18 @@ sap.ui.define([
 
 		if (iScrollTop == null) {
 			iScrollTop = Math.ceil(oTable.getFirstVisibleRow() * this.getVerticalScrollRangeRowFraction());
+			this._bSkipUpdateFirstVisibleRow = true;
 		}
 
 		this._iVerticalScrollPosition = null;
 
 		window.requestAnimationFrame(function() {
+			var iOldScrollTop = oVSb.scrollTop;
 			oVSb.scrollTop = iScrollTop;
-		});
+			if (oVSb.scrollTop === iOldScrollTop) {
+				this._bSkipUpdateFirstVisibleRow = false;
+			}
+		}.bind(this));
 	};
 
 	/**
