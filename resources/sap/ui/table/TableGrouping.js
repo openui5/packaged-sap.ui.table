@@ -21,7 +21,7 @@ sap.ui.define([
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Grouping...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.58.2
+	 * @version 1.58.3
 	 * @namespace
 	 * @alias sap.ui.table.TableGrouping
 	 * @private

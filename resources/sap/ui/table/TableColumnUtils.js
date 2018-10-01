@@ -15,7 +15,7 @@ sap.ui.define(['sap/ui/Device', './library', "sap/base/Log"],
 		 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Column...</code>
 		 *
 		 * @author SAP SE
-		 * @version 1.58.2
+		 * @version 1.58.3
 		 * @namespace
 		 * @alias sap.ui.table.TableColumnUtils
 		 * @private

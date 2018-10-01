@@ -39,7 +39,7 @@ sap.ui.define(["./TableExtension", "./TableUtils", "./library"], function(TableE
 	 * @class Extension for sap.ui.table.TableRenderer which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.58.2
+	 * @version 1.58.3
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccRenderExtension

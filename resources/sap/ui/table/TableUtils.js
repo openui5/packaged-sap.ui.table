@@ -164,7 +164,7 @@ sap.ui.define([
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.58.2
+	 * @version 1.58.3
 	 * @namespace
 	 * @alias sap.ui.table.TableUtils
 	 * @private
@@ -1233,6 +1233,8 @@ sap.ui.define([
 		 * Invokes a function if a certain time has passed since the last call.
 		 */
 		throttle: function(fn, iWait, mOptions) {
+			// Functionality taken from lodash open source library and adapted as needed
+
 			mOptions = Object.assign({
 				leading: true,
 				trailing: true
@@ -1246,6 +1248,8 @@ sap.ui.define([
 		 * Invokes a function if it has not been called for a certain time.
 		 */
 		debounce: function(fn, iWait, mOptions) {
+			// Functionality taken from lodash open source library and adapted as needed
+
 			mOptions = Object.assign({
 				leading: false,
 				asyncLeading: false,
