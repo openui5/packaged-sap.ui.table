@@ -237,7 +237,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles keyboard related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.56.10
+	 * @version 1.56.11
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardExtension
