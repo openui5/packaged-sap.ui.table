@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 	 * @class
 	 * The column menu provides all common actions that can be performed on a column.
 	 * @extends sap.ui.unified.Menu
-	 * @version 1.56.11
+	 * @version 1.56.12
 	 *
 	 * @constructor
 	 * @public
