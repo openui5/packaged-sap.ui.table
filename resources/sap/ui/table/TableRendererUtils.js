@@ -15,7 +15,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control'],
 	 * Static collection of utility functions related to the sap.ui.table.TableRenderer
 	 *
 	 * @author SAP SE
-	 * @version 1.56.14
+	 * @version 1.56.15
 	 * @namespace
 	 * @alias sap.ui.table.TableRendererUtils
 	 * @private

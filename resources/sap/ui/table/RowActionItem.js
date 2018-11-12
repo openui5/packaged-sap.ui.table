@@ -25,7 +25,7 @@ sap.ui.define(['sap/ui/core/Element', './library', 'sap/ui/unified/MenuItem', "s
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.56.14
+	 * @version 1.56.15
 	 * @since 1.45.0
 	 *
 	 * @constructor
