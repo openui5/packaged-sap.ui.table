@@ -511,7 +511,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.44.37
+	 * @version 1.44.38
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
@@ -593,19 +593,16 @@ sap.ui.define([
 		 * @param {boolean} [bPage=false] If <code>true</code>, the amount of visible scrollable rows (a page) is scrolled, otherwise a single row is
 		 *     scrolled.
 		 * @param {boolean} [bIsKeyboardScroll=false] Indicates whether scrolling is initiated by a keyboard action.
+		 * @param {boolean} [bAsync=false] Whether to set the first visible row asynchronously.
+		 * @param {function} [fnBeforeScroll] Callback that is called synchronously before the property <code>firstVisibleRow</code> is set.
 		 * @return {boolean} Returns <code>true</code>, if scrolling was actually performed.
 		 * @private
 		 */
-		scroll: function(bDown, bPage, bIsKeyboardScroll) {
-			if (bDown == null) {
-				bDown = false;
-			}
-			if (bPage == null) {
-				bPage = false;
-			}
-			if (bIsKeyboardScroll == null) {
-				bIsKeyboardScroll = false;
-			}
+		scroll: function(bDown, bPage, bIsKeyboardScroll, bAsync, fnBeforeScroll) {
+			bDown = bDown === true;
+			bPage = bPage === true;
+			bIsKeyboardScroll = bIsKeyboardScroll === true;
+			bAsync = bAsync === true;
 
 			var oTable = this.getTable();
 			var bScrolled = false;
@@ -617,11 +614,29 @@ sap.ui.define([
 
 			if (bDown) {
 				if (iFirstVisibleScrollableRow + iVisibleRowCount < iRowCount) {
-					oTable.setFirstVisibleRow(Math.min(iFirstVisibleScrollableRow + iSize, iRowCount - iVisibleRowCount));
+					if (fnBeforeScroll) {
+						fnBeforeScroll();
+					}
+					if (bAsync) {
+						setTimeout(function() {
+							oTable.setFirstVisibleRow(Math.min(iFirstVisibleScrollableRow + iSize, iRowCount - iVisibleRowCount));
+						}, 0);
+					} else {
+						oTable.setFirstVisibleRow(Math.min(iFirstVisibleScrollableRow + iSize, iRowCount - iVisibleRowCount));
+					}
 					bScrolled = true;
 				}
 			} else if (iFirstVisibleScrollableRow > 0) {
-				oTable.setFirstVisibleRow(Math.max(iFirstVisibleScrollableRow - iSize, 0));
+				if (fnBeforeScroll) {
+					fnBeforeScroll();
+				}
+				if (bAsync) {
+					setTimeout(function() {
+						oTable.setFirstVisibleRow(Math.max(iFirstVisibleScrollableRow - iSize, 0));
+					}, 0);
+				} else {
+					oTable.setFirstVisibleRow(Math.max(iFirstVisibleScrollableRow - iSize, 0));
+				}
 				bScrolled = true;
 			}
 

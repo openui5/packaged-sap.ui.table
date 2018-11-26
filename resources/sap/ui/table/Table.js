@@ -54,7 +54,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.44.37
+	 * @version 1.44.38
 	 *
 	 * @constructor
 	 * @public
