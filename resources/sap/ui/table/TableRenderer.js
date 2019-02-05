@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -625,12 +625,10 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/core/Control', 'sap/ui/core/theming/
 			rm.addClass("sapUiTableCHT"); // marker for the column header table
 		}
 		rm.writeClasses();
-		rm.addStyle("min-width", oTable._getColumnsWidth(iStartColumn, iEndColumn) + "px");
-		//Firefox and chrome and safari need a defined width for the fixed table
-		if (bFixedTable && (!!Device.browser.firefox || !!Device.browser.chrome || !!Device.browser.safari)) {
-			rm.addStyle("width", oTable._getColumnsWidth(iStartColumn, iEndColumn) + "px");
-		}
+
+		rm.addStyle(bFixedTable ? "width" : "min-width", oTable._getColumnsWidth(iStartColumn, iEndColumn) + "px");
 		rm.writeStyles();
+
 		rm.write(">");
 
 		rm.write("<thead>");

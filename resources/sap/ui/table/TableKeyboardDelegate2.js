@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -56,7 +56,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.44.38
+	 * @version 1.44.39
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate2
@@ -781,7 +781,7 @@ sap.ui.define([
 					// The FocusHandler triggers the "sapfocusleave" event in a timeout of 0ms after a blur event. To give the control in the cell
 					// enough time to react to the "sapfocusleave" event (e.g. sap.m.Input - changes its value), scrolling is performed
 					// asynchronously.
-					var bAllowSapFocusLeave = oCellInfo.type === CellType.DATACELL;
+					var bAllowSapFocusLeave = TableUtils.getCellInfo($Cell).type === CellType.DATACELL;
 					bScrolled = this._getScrollExtension().scroll(true, false, true, bAllowSapFocusLeave, function() {
 						if (bAllowSapFocusLeave) {
 							document.activeElement.blur();
@@ -910,7 +910,7 @@ sap.ui.define([
 					// The FocusHandler triggers the "sapfocusleave" event in a timeout of 0ms after a blur event. To give the control in the cell
 					// enough time to react to the "sapfocusleave" event (e.g. sap.m.Input - changes its value), scrolling is performed
 					// asynchronously.
-					var bAllowSapFocusLeave = oCellInfo.type === CellType.DATACELL;
+					var bAllowSapFocusLeave = TableUtils.getCellInfo($Cell).type === CellType.DATACELL;
 					bScrolled = this._getScrollExtension().scroll(false, false, true, bAllowSapFocusLeave, function() {
 						if (bAllowSapFocusLeave) {
 							document.activeElement.blur();
