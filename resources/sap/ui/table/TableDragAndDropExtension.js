@@ -256,7 +256,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.52.24
+	 * @version 1.52.25
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableDragAndDropExtension
