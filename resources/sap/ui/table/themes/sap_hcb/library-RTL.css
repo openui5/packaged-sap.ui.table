@@ -1467,7 +1467,11 @@ html.sap-phone .sapUiTableVScr .sapUiTableCtrlScr,
 html.sap-tablet:not(.sap-desktop) .sapUiTableVScr .sapUiTableColHdrScr,
 html.sap-phone .sapUiTableVScr .sapUiTableColHdrScr,
 html.sap-tablet:not(.sap-desktop) .sapUiTableVScr .sapUiTableHSb,
-html.sap-phone .sapUiTableVScr .sapUiTableHSb {
+html.sap-phone .sapUiTableVScr .sapUiTableHSb,
+html.sap-tablet:not(.sap-desktop) .sapUiTableVScr .sapUiTableRowActionScr,
+html.sap-phone .sapUiTableVScr .sapUiTableRowActionScr,
+html.sap-tablet:not(.sap-desktop) .sapUiTableVScr .sapUiTableRowActionHeader,
+html.sap-phone .sapUiTableVScr .sapUiTableRowActionHeader {
   margin-left: 8px;
 }
 html.sap-tablet:not(.sap-desktop) .sapUiTableHScr .sapUiTableColReorderIndicator,
