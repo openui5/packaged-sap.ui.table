@@ -391,7 +391,7 @@ sap.ui.define([
 					oEvent.preventDefault();
 					oEvent.stopPropagation();
 
-					var iRowsPerStep = iScrollDelta / this._getDefaultRowHeight();
+					var iRowsPerStep = iScrollDelta / (oEvent.deltaMode === 0 ? this._getDefaultRowHeight() : oScrollExtension.getVerticalScrollRangeRowFraction());
 
 					// If at least one row is scrolled, floor to full rows.
 					// Below one row, we scroll pixels.
@@ -665,7 +665,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles scrolling.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.52.27
+	 * @version 1.52.28
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension

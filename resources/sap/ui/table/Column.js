@@ -25,7 +25,7 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	 * @class
 	 * The column allows you to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.52.27
+	 * @version 1.52.28
 	 *
 	 * @constructor
 	 * @public
@@ -295,18 +295,21 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 	 */
 	Column.prototype.exit = function() {
 		this._destroyTemplateClones();
+		ColumnMenu._destroyColumnVisibilityMenuItem();
 	};
 
 	/**
 	 * called when the column's parent is set
 	 */
 	Column.prototype.setParent = function(oParent, sAggregationName, bSuppressRerendering) {
-		Element.prototype.setParent.apply(this, arguments);
+		var vReturn = Element.prototype.setParent.apply(this, arguments);
 		var oMenu = this.getAggregation("menu");
 		if (oMenu && typeof oMenu._updateReferences === "function") {
 			//if menu is set update menus internal references
 			oMenu._updateReferences(this);
 		}
+		ColumnMenu._destroyColumnVisibilityMenuItem();
+		return vReturn;
 	};
 
 	/*
@@ -1033,6 +1036,19 @@ function(jQuery, Element, coreLibrary, Popup, Filter, FilterOperator, FilterType
 			}
 		}
 		this._aTemplateClones = [];
+	};
+
+	Column.prototype._closeMenu = function() {
+		var oMenu = this.getAggregation("menu");
+		if (oMenu) {
+			oMenu.close();
+		}
+	};
+
+	Column.prototype.setVisible = function(bVisible) {
+		this.setProperty("visible", bVisible);
+		ColumnMenu._updateVisibilityIcon(this.getIndex(), bVisible);
+		return this;
 	};
 
 	return Column;
