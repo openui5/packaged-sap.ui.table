@@ -23,7 +23,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 	 * @class
 	 * The column menu provides all common actions that can be performed on a column.
 	 * @extends sap.ui.unified.Menu
-	 * @version 1.52.31
+	 * @version 1.52.32
 	 *
 	 * @constructor
 	 * @public
@@ -508,9 +508,15 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/ui/unified/Menu', 'sap/ui/
 				return;
 			}
 			var aItems = oSubmenu.getItems();
-			var oItem = aItems.find(function(element) {
-				return element.getId().endsWith("-item-" + iIndex);
-			});
+			var oItem;
+			for (var i = 0; i < aItems.length; i++) {
+				var sItemId = aItems[i].getId();
+				var sSearch = "-item-" + iIndex;
+				if (sItemId.substring(sItemId.length - sSearch.length) === sSearch) {
+					oItem = aItems[i];
+					break;
+				}
+			}
 			if (!oItem){
 				return;
 			}
