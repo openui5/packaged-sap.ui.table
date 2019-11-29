@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -59,7 +59,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 	 *
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.38.39
+	 * @version 1.38.43
 	 *
 	 * @constructor
 	 * @public
@@ -3057,20 +3057,21 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/Device',
 
 		if (bIsHorizontal) {
 			var oHsb = this.getDomRef(SharedDomRef.HorizontalScrollBar);
-			if (oHsb) {
+			if (oHsb && this.$().hasClass("sapUiTableHScr")) {
 				oHsb.scrollLeft = oHsb.scrollLeft + iScrollDelta;
+				oEvent.preventDefault();
+				oEvent.stopPropagation();
 			}
 		} else {
 			var oVsb = this.getDomRef(SharedDomRef.VerticalScrollBar);
-			if (oVsb) {
+			if (oVsb && this.$().hasClass("sapUiTableVScr")) {
 				this._bIsScrolledByWheel = true;
 				this._bIsScrolledByKeyboard = false;
 				oVsb.scrollTop = oVsb.scrollTop + iScrollDelta;
+				oEvent.preventDefault();
+				oEvent.stopPropagation();
 			}
 		}
-
-		oEvent.preventDefault();
-		oEvent.stopPropagation();
 	};
 
 	/**
