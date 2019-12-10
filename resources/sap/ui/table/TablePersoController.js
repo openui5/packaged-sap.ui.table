@@ -21,7 +21,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.52.36
+	 * @version 1.52.37
 	 * @since 1.21.1
 	 *
 	 * @constructor
@@ -357,7 +357,13 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/ManagedObject'],
 				}
 			}
 			if (bForDialog) {
-				oColumnInfo.text = oColumn.getLabel() && oColumn.getLabel().getText() || sPersoKey;
+				oColumnInfo.text = sPersoKey;
+				var aMultiLabels = oColumn.getMultiLabels();
+				if (aMultiLabels && aMultiLabels.length > 0) {
+					oColumnInfo.text = aMultiLabels[aMultiLabels.length - 1].getText();
+				} else if (oColumn.getLabel()) {
+					oColumnInfo.text = oColumn.getLabel().getText();
+				}
 			}
 			oData.aColumns.push(oColumnInfo);
 		}
