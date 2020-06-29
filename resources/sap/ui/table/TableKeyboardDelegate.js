@@ -19,7 +19,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/base/Object', './library', './Row', 
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.38.45
+	 * @version 1.38.46
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate
