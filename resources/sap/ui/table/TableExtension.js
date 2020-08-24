@@ -19,7 +19,7 @@ sap.ui.define([
 	 * @abstract
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.52.43
+	 * @version 1.52.44
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableExtension
